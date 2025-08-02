@@ -1,0 +1,49 @@
+{
+  "fields": [
+    {
+      "name": "level",
+      "nullable": "false",
+      "type": "string"
+    },
+    {
+      "name": "mdt",
+      "nullable": "false",
+      "type": "int8"
+    },
+    {
+      "name": "timestamp",
+      "nullable": "false",
+      "type": "timestamp",
+      "unit": "nanoseconds"
+    },
+    {
+      "name": "operation",
+      "nullable": "true",
+      "type": "int8"
+    },
+    {
+      "name": "depth",
+      "nullable": "true",
+      "type": "int8"
+    },
+    {
+      "name": "market_maker",
+      "nullable": "true",
+      "type": "string"
+    },
+    {
+      "name": "price",
+      "nullable": "false",
+      "precision": "13",
+      "scale": "2",
+      "type": "decimal128"
+    },
+    {
+      "name": "volume",
+      "nullable": "false",
+      "type": "int32"
+    }
+  ],
+  "schema_type": "arrow_dynamic",
+  "version": "1.0"
+}
