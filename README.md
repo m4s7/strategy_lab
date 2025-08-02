@@ -1,10 +1,10 @@
 # Strategy Lab - Futures Trading Backtesting Framework
 
-A modular backtesting and optimization framework for CME MNQ futures trading strategies, built with Python and VectorBT.
+A modular backtesting and optimization framework for CME MNQ futures trading strategies, built with Python and hftbacktest.
 
 ## Features
 
-- **High-Performance Backtesting**: Process millions of ticks per day with VectorBT
+- **High-Performance Backtesting**: Process millions of ticks per day with hftbacktest
 - **Modular Strategy Design**: Pluggable strategy architecture for easy development
 - **Trading Strategies Bases**: 
   - Scalping
@@ -70,3 +70,9 @@ uv run mypy src
 ## Data Structure
 
 See `./knowledge-base/data.md`
+
+
+## Backtesting engine
+
+https://github.com/nkaz001/hftbacktest
+https://hftbacktest.readthedocs.io/en/latest/index.html

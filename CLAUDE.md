@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Strategy Lab is a modular backtesting and optimization framework for CME MNQ futures trading strategies, built with Python and VectorBT. The project contains extensive MNQ (Micro E-mini NASDAQ-100 futures) market data in Parquet format and uses the BMad Method (Business Automation and Development) for structured development.
+Strategy Lab is a modular backtesting and optimization framework for CME MNQ futures trading strategies, built with Python and hftbacktest. The project contains extensive MNQ (Micro E-mini NASDAQ-100 futures) market data in Parquet format and uses the BMad Method (Business Automation and Development) for structured development.
 
 ### Deployment Environment
 - **Single User**: Personal trading research environment
@@ -117,6 +117,6 @@ The `.bmad-core/` directory contains the development methodology framework:
 - Data files should not be committed to git (see .gitignore)
 - Knowledge base documents in `knowledge-base/` provide detailed information about:
   - Trading NQ and MNQ futures
-  - VectorBT framework
+  - hftbacktest framework
   - Data structure details
   - Trading strategies
