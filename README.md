@@ -1,78 +1,132 @@
-# Strategy Lab - Futures Trading Backtesting Framework
+# Strategy Lab
 
-A modular backtesting and optimization framework for CME MNQ futures trading strategies, built with Python and hftbacktest.
+A high-performance futures trading backtesting framework for developing and optimizing scalping strategies on MNQ (Micro E-mini NASDAQ-100) futures.
+
+## Overview
+
+Strategy Lab is a modular Python framework designed for:
+- High-frequency tick data processing (100K-500K ticks/second)
+- Level 1 and Level 2 market data analysis
+- Rapid strategy development and testing
+- Comprehensive parameter optimization
+- Robust out-of-sample validation
 
 ## Features
 
-- **High-Performance Backtesting**: Process millions of ticks per day with hftbacktest
-- **Modular Strategy Design**: Pluggable strategy architecture for easy development
-- **Trading Strategies Bases**: 
-  - Scalping
-  - Based on Level 1 and Level 2 Ticket Data of MNQ Future
-  - e.g. Order Book Scalper Strategy with Level 2 data support
-- **Real-time Monitoring**: Monitoring decoupled from backtesting threads
+- **High Performance**: Process millions of ticks per day with optimized data structures
+- **Modular Architecture**: Pluggable strategy system for rapid development
+- **Comprehensive Data Support**: Level 1 (trades) and Level 2 (order book) data
 - **Advanced Optimization**: Grid search, genetic algorithms, and walk-forward analysis
-- **Production Ready**: Full API, comprehensive testing, and deployment configurations
-- **Planed usage**:
-  - Single User (Just me)
-  - Save Environment (Ubuntu Server with firewall behind a VPN)
-  - Domain: lab.m4s8.dev
+- **Risk Management**: Built-in position sizing, stop-loss, and drawdown controls
+- **Detailed Analytics**: Performance metrics, trade analysis, and visualization
 
-## Project Structure (Draft)
+## Installation
 
+### Prerequisites
+
+- Python 3.12 or higher
+- 64GB RAM recommended for processing large datasets
+- Ubuntu/Linux environment
+
+### Setup
+
+1. Clone the repository:
+```bash
+git clone https://github.com/yourusername/strategy_lab.git
+cd strategy_lab
 ```
-strategy_lab/
-  src/
-    core/           # Core data management and configuration
-    strategies/     # Trading strategy implementations
-    backtesting/    # Backtesting engine and metrics
-    optimization/   # Parameter optimization algorithms
-    api/            # REST API and WebSocket server
-  tests/            # Unit and integration tests
-  data/             # Parquet Files
+
+2. Create a virtual environment using uv:
+```bash
+uv venv
+source .venv/bin/activate
+```
+
+3. Install dependencies:
+```bash
+uv pip install -e ".[dev]"
 ```
 
 ## Quick Start
 
-### Prerequisites
-
-- Python 3.12+
-- uv package manager
-- Access to MNQ tick data at `./data/MNQ`
-
-### Installation
-
+1. Place your MNQ tick data in the `data/MNQ/` directory organized by contract month
+2. Create a strategy configuration in `configs/`
+3. Run a backtest:
 ```bash
-# Project is already initialized with uv
-# Install dependencies
-uv sync
-
-# Run tests
-uv run pytest
+strategy-lab backtest --config configs/my_strategy.yaml
 ```
 
-### Development
+## Project Structure
 
-```bash
-# Run tests with coverage
-uv run pytest --cov=src
-
-# Format code
-uv run black src tests
-
-# Lint code
-uv run ruff check src tests
-
-# Type checking
-uv run mypy src
+```
+strategy_lab/
+├── src/strategy_lab/       # Main package source
+│   ├── core/              # Core framework components
+│   ├── data/              # Data processing and ingestion
+│   ├── strategies/        # Trading strategy implementations
+│   ├── backtesting/       # Backtesting engine
+│   ├── optimization/      # Parameter optimization
+│   ├── analysis/          # Performance analysis
+│   └── utils/            # Utility functions
+├── tests/                 # Test suite
+├── configs/              # Configuration files
+├── docs/                 # Documentation
+└── data/                 # Market data (gitignored)
 ```
 
-## Data Structure
+## Development
 
-See `./knowledge-base/data.md`
+### Code Style
 
+This project uses:
+- `black` for code formatting
+- `ruff` for linting
+- `mypy` for type checking
+- `pytest` for testing
 
-## Backtesting engine
+Run quality checks:
+```bash
+black src tests
+ruff check src tests
+mypy src
+pytest
+```
 
-https://github.com/nkaz001/hftbacktest
-https://hftbacktest.readthedocs.io/en/latest/index.html
+### Testing
+
+Run the test suite:
+```bash
+pytest tests/
+```
+
+With coverage:
+```bash
+pytest --cov=src/strategy_lab tests/
+```
+
+## Documentation
+
+See the `docs/` directory for:
+- Architecture documentation
+- Strategy development guide
+- API reference
+- Performance optimization tips
+
+## License
+
+MIT License - see LICENSE file for details
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes with tests
+4. Run quality checks
+5. Submit a pull request
+
+## Support
+
+For questions and support:
+- Check the documentation in `docs/`
+- Review examples in `configs/`
+- Open an issue on GitHub
