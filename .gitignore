@@ -134,6 +134,7 @@ dmypy.json
 
 # Project specific
 data/
+!src/strategy_lab/data/
 logs/
 results/
 *.parquet
