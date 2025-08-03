@@ -8,7 +8,31 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
-from tqdm import tqdm
+try:
+    from tqdm import tqdm
+except ImportError:
+    # Mock tqdm if not available
+    class tqdm:
+        def __init__(self, *args, **kwargs):
+            self.desc = kwargs.get("desc", "")
+            self.total = kwargs.get("total", 0)
+            self.current = 0
+
+        def update(self, n=1):
+            self.current += n
+
+        def set_description(self, desc):
+            self.desc = desc
+
+        def close(self):
+            pass
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            pass
+
 
 from ..core.parameter_space import ParameterSpace
 from ..core.results import OptimizationResult, OptimizationResultSet

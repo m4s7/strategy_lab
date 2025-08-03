@@ -3,7 +3,6 @@
 import logging
 from dataclasses import dataclass
 from datetime import datetime
-from typing import List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
@@ -16,14 +15,14 @@ class DrawdownPeriod:
     """Represents a single drawdown period."""
 
     start_date: datetime
-    end_date: Optional[datetime]
+    end_date: datetime | None
     trough_date: datetime
     peak_value: float
     trough_value: float
-    end_value: Optional[float]
+    end_value: float | None
     drawdown_pct: float
     duration_days: int
-    recovery_days: Optional[int]
+    recovery_days: int | None
     is_active: bool
 
     @property
@@ -47,11 +46,11 @@ class DrawdownAnalysis:
     max_drawdown_duration: int
     avg_drawdown: float
     avg_recovery_time: int
-    drawdown_periods: List[DrawdownPeriod]
+    drawdown_periods: list[DrawdownPeriod]
     underwater_curve: pd.Series
     recovery_factor: float
-    worst_periods: List[DrawdownPeriod]
-    current_drawdown: Optional[float]
+    worst_periods: list[DrawdownPeriod]
+    current_drawdown: float | None
     time_underwater_pct: float
 
     @property
@@ -90,7 +89,7 @@ class DrawdownCalculator:
         self.threshold = threshold
 
     def analyze_drawdowns(
-        self, equity_curve: pd.Series, initial_capital: Optional[float] = None
+        self, equity_curve: pd.Series, initial_capital: float | None = None
     ) -> DrawdownAnalysis:
         """Perform comprehensive drawdown analysis.
 
@@ -160,7 +159,7 @@ class DrawdownCalculator:
 
     def _identify_drawdown_periods(
         self, equity_curve: pd.Series, drawdown: pd.Series
-    ) -> List[DrawdownPeriod]:
+    ) -> list[DrawdownPeriod]:
         """Identify individual drawdown periods."""
         periods = []
         in_drawdown = False
@@ -265,7 +264,7 @@ class DrawdownCalculator:
 
         return results
 
-    def analyze_recovery_patterns(self, drawdown_periods: List[DrawdownPeriod]) -> dict:
+    def analyze_recovery_patterns(self, drawdown_periods: list[DrawdownPeriod]) -> dict:
         """Analyze recovery patterns from drawdowns.
 
         Args:

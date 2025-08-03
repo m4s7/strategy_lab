@@ -53,9 +53,17 @@ class ContinuousParameter(Parameter):
             n_steps = int(np.round((self.max_value - self.min_value) / self.step)) + 1
             values = [self.min_value + i * self.step for i in range(n_steps)]
             # Ensure we don't exceed max_value due to floating point errors
-            return [v for v in values if v <= self.max_value + self.step * 0.1]
+            # Round to avoid floating point precision issues
+            decimal_places = max(0, -int(np.floor(np.log10(abs(self.step))))) + 2
+            return [
+                round(v, decimal_places)
+                for v in values
+                if v <= self.max_value + self.step * 0.1
+            ]
         else:
-            return list(np.arange(self.min_value, self.max_value, self.step))
+            values = list(np.arange(self.min_value, self.max_value, self.step))
+            decimal_places = max(0, -int(np.floor(np.log10(abs(self.step))))) + 2
+            return [round(v, decimal_places) for v in values]
 
     def get_range_info(self) -> Dict[str, Any]:
         """Get range information."""

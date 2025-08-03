@@ -168,7 +168,9 @@ class TestGridSearchOptimizer:
             None,
         )
 
-        mock_executor_instance = Mock()
+        from unittest.mock import MagicMock
+
+        mock_executor_instance = MagicMock()
         mock_executor_instance.submit.return_value = mock_future
         mock_executor_instance.__enter__.return_value = mock_executor_instance
         mock_executor_instance.__exit__.return_value = None
@@ -245,7 +247,9 @@ class TestGridSearchOptimizer:
     def test_empty_parameter_space(self):
         """Test with empty parameter space."""
         empty_space = ParameterSpace([])
-        optimizer = GridSearchOptimizer(GridSearchConfig(show_progress=False))
+        optimizer = GridSearchOptimizer(
+            GridSearchConfig(show_progress=False, n_workers=1)
+        )
 
         def objective():
             return {"value": 1.0}

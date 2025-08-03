@@ -205,7 +205,7 @@ class SystemConfig(BaseModel):
     version: str = Field(default="1.0.0", description="Configuration version")
     environment: str = Field(
         default="development",
-        pattern="^(development|staging|production)$",
+        pattern="^(development|staging|production|test)$",
         description="Environment name",
     )
     logging: LoggingConfig = Field(

@@ -1,5 +1,6 @@
 """Configuration file loading and parsing."""
 
+import copy
 import json
 import os
 from pathlib import Path
@@ -50,7 +51,7 @@ class ConfigLoader:
         # Check cache
         cache_key = str(file_path.absolute())
         if cache_key in self._cache:
-            return self._cache[cache_key].copy()
+            return copy.deepcopy(self._cache[cache_key])
 
         # Check file format
         suffix = file_path.suffix.lower()
@@ -70,10 +71,10 @@ class ConfigLoader:
         except (yaml.YAMLError, json.JSONDecodeError) as e:
             raise ValueError(f"Failed to parse {file_path}: {e}")
 
-        # Cache the result
-        self._cache[cache_key] = config
+        # Cache the result (store a deep copy to prevent mutation)
+        self._cache[cache_key] = copy.deepcopy(config)
 
-        return config
+        return copy.deepcopy(config)
 
     def load_directory(
         self, directory: Path, pattern: str = "*.yaml", recursive: bool = False

@@ -1,7 +1,6 @@
 """Visualization configuration."""
 
 from dataclasses import dataclass
-from typing import Optional, Tuple
 
 
 @dataclass
@@ -9,7 +8,7 @@ class PlotConfig:
     """Configuration for plots and visualizations."""
 
     # Figure settings
-    figure_size: Tuple[int, int] = (12, 8)
+    figure_size: tuple[int, int] = (12, 8)
     dpi: int = 100
     style: str = "seaborn-v0_8-darkgrid"
 
@@ -29,7 +28,7 @@ class PlotConfig:
     grid_alpha: float = 0.3
 
     # Save settings
-    save_path: Optional[str] = None
+    save_path: str | None = None
     save_format: str = "png"
 
     # Interactive settings

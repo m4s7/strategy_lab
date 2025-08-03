@@ -11,7 +11,7 @@ from typing import Any
 
 import numpy as np
 
-from src.strategy_lab.data.adapters.hftbacktest import DataPipeline
+from ...data.adapters.hftbacktest import DataPipeline
 
 from .config import MNQConfig
 from .data_feed import HftDataFeed, TickData

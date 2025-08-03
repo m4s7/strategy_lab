@@ -3,7 +3,6 @@
 import logging
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
@@ -58,7 +57,7 @@ class PerformanceMetrics:
     end_date: datetime
     trading_days: int
 
-    def to_dict(self) -> Dict[str, float]:
+    def to_dict(self) -> dict[str, float]:
         """Convert metrics to dictionary."""
         return {
             # Profitability
@@ -109,7 +108,7 @@ class MetricsCalculator:
         self,
         equity_curve: pd.Series,
         trades: pd.DataFrame,
-        benchmark: Optional[pd.Series] = None,
+        benchmark: pd.Series | None = None,
     ) -> PerformanceMetrics:
         """Calculate comprehensive performance metrics.
 
@@ -203,7 +202,7 @@ class MetricsCalculator:
 
         # Profit consistency (% of positive months)
         if len(returns) >= 20:  # At least 20 days
-            monthly_returns = returns.resample("M").apply(lambda x: (1 + x).prod() - 1)
+            monthly_returns = returns.resample("ME").apply(lambda x: (1 + x).prod() - 1)
             profit_consistency = (monthly_returns > 0).mean()
         else:
             profit_consistency = win_rate
@@ -304,7 +303,7 @@ class MetricsCalculator:
 
     def calculate_regime_metrics(
         self, equity_curve: pd.Series, market_regimes: pd.Series
-    ) -> Dict[str, PerformanceMetrics]:
+    ) -> dict[str, PerformanceMetrics]:
         """Calculate metrics for different market regimes.
 
         Args:
@@ -331,6 +330,139 @@ class MetricsCalculator:
             )
 
         return regime_metrics
+
+    def calculate_advanced_metrics(
+        self, returns: pd.Series, trades: pd.DataFrame, equity_curve: pd.Series
+    ) -> dict[str, float]:
+        """Calculate advanced performance metrics.
+
+        Args:
+            returns: Return series
+            trades: Trade data
+            equity_curve: Equity curve
+
+        Returns:
+            Dictionary of advanced metrics
+        """
+        metrics = {}
+
+        # Omega ratio (probability-weighted ratio of gains to losses)
+        threshold = 0.0
+        gains = returns[returns > threshold] - threshold
+        losses = threshold - returns[returns <= threshold]
+
+        if len(losses) > 0 and losses.sum() > 0:
+            metrics["omega_ratio"] = gains.sum() / losses.sum()
+        else:
+            metrics["omega_ratio"] = np.inf
+
+        # Gain-to-pain ratio
+        positive_returns = returns[returns > 0]
+        if len(returns) > 0:
+            metrics["gain_to_pain_ratio"] = positive_returns.sum() / abs(
+                returns[returns < 0].sum()
+            )
+        else:
+            metrics["gain_to_pain_ratio"] = 0
+
+        # Ulcer index (measure of downside volatility)
+        running_max = equity_curve.cummax()
+        drawdown_pct = ((equity_curve - running_max) / running_max) * 100
+        metrics["ulcer_index"] = np.sqrt(np.mean(drawdown_pct**2))
+
+        # Martin ratio (excess return / Ulcer index)
+        excess_return = returns.mean() * 252 - self.risk_free_rate
+        metrics["martin_ratio"] = (
+            excess_return / metrics["ulcer_index"] if metrics["ulcer_index"] > 0 else 0
+        )
+
+        # Burke ratio (excess return / sqrt of sum of squared drawdowns)
+        squared_dd_sum = np.sum(drawdown_pct**2)
+        metrics["burke_ratio"] = (
+            excess_return / np.sqrt(squared_dd_sum) if squared_dd_sum > 0 else 0
+        )
+
+        # Rachev ratio (ratio of VaR in right tail to VaR in left tail)
+        right_tail_var = np.percentile(returns, 95)
+        left_tail_var = abs(np.percentile(returns, 5))
+        metrics["rachev_ratio"] = (
+            right_tail_var / left_tail_var if left_tail_var > 0 else np.inf
+        )
+
+        # Sterling ratio
+        avg_annual_dd = abs(drawdown_pct.resample("YE").min().mean())
+        metrics["sterling_ratio"] = (
+            excess_return / avg_annual_dd if avg_annual_dd > 0 else 0
+        )
+
+        # Information ratio (if benchmark provided)
+        metrics[
+            "information_ratio"
+        ] = 0.0  # Placeholder for when benchmark is available
+
+        # Hit rate by market condition
+        if "market_condition" in trades.columns:
+            conditions = trades["market_condition"].unique()
+            for condition in conditions:
+                cond_trades = trades[trades["market_condition"] == condition]
+                hit_rate = (cond_trades["pnl"] > 0).mean()
+                metrics[f"hit_rate_{condition}"] = hit_rate
+
+        return metrics
+
+    def calculate_time_based_metrics(
+        self, equity_curve: pd.Series, trades: pd.DataFrame
+    ) -> dict[str, float]:
+        """Calculate time-based performance metrics.
+
+        Args:
+            equity_curve: Equity curve
+            trades: Trade data
+
+        Returns:
+            Dictionary of time-based metrics
+        """
+        metrics = {}
+
+        # Best/worst periods
+        returns = equity_curve.pct_change().dropna()
+
+        # Daily
+        metrics["best_day"] = returns.max()
+        metrics["worst_day"] = returns.min()
+
+        # Monthly
+        monthly_returns = returns.resample("ME").apply(lambda x: (1 + x).prod() - 1)
+        if len(monthly_returns) > 0:
+            metrics["best_month"] = monthly_returns.max()
+            metrics["worst_month"] = monthly_returns.min()
+            metrics["positive_months_pct"] = (monthly_returns > 0).mean()
+
+        # Quarterly
+        quarterly_returns = returns.resample("QE").apply(lambda x: (1 + x).prod() - 1)
+        if len(quarterly_returns) > 0:
+            metrics["best_quarter"] = quarterly_returns.max()
+            metrics["worst_quarter"] = quarterly_returns.min()
+
+        # Time of day analysis (if timestamps have time component)
+        if "entry_time" in trades.columns:
+            trades_copy = trades.copy()
+            trades_copy["hour"] = pd.to_datetime(trades_copy["entry_time"]).dt.hour
+
+            # Performance by hour
+            hourly_perf = trades_copy.groupby("hour")["pnl"].agg(
+                ["mean", "count", "sum"]
+            )
+            metrics["best_hour"] = hourly_perf["mean"].idxmax()
+            metrics["worst_hour"] = hourly_perf["mean"].idxmin()
+
+            # Day of week analysis
+            trades_copy["dow"] = pd.to_datetime(trades_copy["entry_time"]).dt.dayofweek
+            dow_perf = trades_copy.groupby("dow")["pnl"].mean()
+            metrics["best_dow"] = dow_perf.idxmax()
+            metrics["worst_dow"] = dow_perf.idxmin()
+
+        return metrics
 
     def _create_synthetic_trades(self, equity_curve: pd.Series) -> pd.DataFrame:
         """Create synthetic trade data from equity curve."""

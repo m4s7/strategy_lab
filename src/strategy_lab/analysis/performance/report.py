@@ -5,7 +5,7 @@ import logging
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 import pandas as pd
 
@@ -29,7 +29,17 @@ class PerformanceReport:
     equity_curve: pd.Series
     trades: pd.DataFrame
 
-    def to_dict(self) -> Dict[str, Any]:
+    # Additional analysis components (added dynamically)
+    advanced_metrics: dict[str, float] | None = None
+    time_based_metrics: dict[str, float] | None = None
+    seasonality: dict[str, float] | None = None
+    market_regimes: pd.DataFrame | None = None
+    persistence: dict[str, float] | None = None
+    trade_clustering: dict[str, float] | None = None
+    trade_patterns: dict[str, float] | None = None
+    kelly_sizing: dict[str, float] | None = None
+
+    def to_dict(self) -> dict[str, Any]:
         """Convert report to dictionary."""
         return {
             "metrics": self.metrics.to_dict(),
@@ -39,7 +49,7 @@ class PerformanceReport:
             "summary": self.get_summary(),
         }
 
-    def get_summary(self) -> Dict[str, Any]:
+    def get_summary(self) -> dict[str, Any]:
         """Get executive summary of performance."""
         return {
             "performance": {
@@ -254,5 +264,340 @@ class PerformanceReport:
         </body>
         </html>
         """
+
+        return html
+
+    def export_to_excel(self, filepath: Path):
+        """Export comprehensive report to Excel file.
+
+        Args:
+            filepath: Excel file path
+        """
+        try:
+            from openpyxl import Workbook
+            from openpyxl.styles import Font
+        except ImportError:
+            logger.warning("openpyxl not installed. Cannot export to Excel.")
+            return
+
+        wb = Workbook()
+
+        # Summary sheet
+        ws_summary = wb.active
+        ws_summary.title = "Summary"
+        self._write_summary_sheet(ws_summary)
+
+        # Metrics sheet
+        ws_metrics = wb.create_sheet("Performance Metrics")
+        self._write_metrics_sheet(ws_metrics)
+
+        # Trade Analysis sheet
+        ws_trades = wb.create_sheet("Trade Analysis")
+        self._write_trade_analysis_sheet(ws_trades)
+
+        # Risk Analysis sheet
+        ws_risk = wb.create_sheet("Risk Analysis")
+        self._write_risk_analysis_sheet(ws_risk)
+
+        # Trades Data sheet
+        ws_data = wb.create_sheet("Trade Data")
+        self._write_trades_data_sheet(ws_data)
+
+        # Save file
+        wb.save(filepath)
+        logger.info(f"Saved Excel report to {filepath}")
+
+    def _write_summary_sheet(self, ws):
+        """Write executive summary to worksheet."""
+        try:
+            from openpyxl.styles import Font
+        except ImportError:
+            Font = None
+
+        # Title
+        ws["A1"] = "Performance Analysis Report"
+        if Font:
+            ws["A1"].font = Font(size=16, bold=True)
+
+        # Period
+        ws["A3"] = "Analysis Period"
+        ws["B3"] = f"{self.metrics.start_date.date()} to {self.metrics.end_date.date()}"
+
+        # Key metrics
+        row = 5
+        metrics_to_show = [
+            ("Total Return", f"{self.metrics.total_return:.1%}"),
+            ("Annual Return", f"{self.metrics.annualized_return:.1%}"),
+            ("Sharpe Ratio", f"{self.metrics.sharpe_ratio:.2f}"),
+            ("Max Drawdown", f"{self.metrics.max_drawdown:.1%}"),
+            ("Win Rate", f"{self.metrics.win_rate:.1%}"),
+            ("Total Trades", str(self.metrics.total_trades)),
+            ("Profit Factor", f"{self.metrics.profit_factor:.2f}"),
+        ]
+
+        for metric_name, metric_value in metrics_to_show:
+            ws[f"A{row}"] = metric_name
+            ws[f"B{row}"] = metric_value
+            row += 1
+
+    def _write_metrics_sheet(self, ws):
+        """Write detailed metrics to worksheet."""
+        try:
+            from openpyxl.styles import Font
+        except ImportError:
+            Font = None
+
+        metrics_dict = self.metrics.to_dict()
+
+        row = 1
+        ws["A1"] = "Metric"
+        ws["B1"] = "Value"
+        if Font:
+            ws["A1"].font = Font(bold=True)
+            ws["B1"].font = Font(bold=True)
+
+        row = 2
+        for key, value in metrics_dict.items():
+            ws[f"A{row}"] = key.replace("_", " ").title()
+            if isinstance(value, float):
+                ws[f"B{row}"] = f"{value:.4f}"
+            else:
+                ws[f"B{row}"] = str(value)
+            row += 1
+
+    def _write_trade_analysis_sheet(self, ws):
+        """Write trade analysis to worksheet."""
+        try:
+            from openpyxl.styles import Font
+        except ImportError:
+            Font = None
+
+        trade_dict = self.trade_statistics.to_dict()
+
+        row = 1
+        for category, data in trade_dict.items():
+            ws[f"A{row}"] = category.replace("_", " ").title()
+            if Font:
+                ws[f"A{row}"].font = Font(bold=True)
+            row += 1
+
+            if isinstance(data, dict):
+                for key, value in data.items():
+                    ws[f"B{row}"] = str(key)
+                    ws[f"C{row}"] = str(value)
+                    row += 1
+            row += 1
+
+    def _write_risk_analysis_sheet(self, ws):
+        """Write risk analysis to worksheet."""
+        try:
+            from openpyxl.styles import Font
+        except ImportError:
+            Font = None
+
+        risk_dict = self.risk_metrics.to_dict()
+
+        row = 1
+        ws["A1"] = "Risk Metric"
+        ws["B1"] = "Value"
+        if Font:
+            ws["A1"].font = Font(bold=True)
+            ws["B1"].font = Font(bold=True)
+
+        row = 2
+        for key, value in risk_dict.items():
+            ws[f"A{row}"] = key.replace("_", " ").title()
+            if isinstance(value, float):
+                ws[f"B{row}"] = f"{value:.4f}"
+            else:
+                ws[f"B{row}"] = str(value)
+            row += 1
+
+    def _write_trades_data_sheet(self, ws):
+        """Write trades data to worksheet."""
+        try:
+            from openpyxl.styles import Font
+        except ImportError:
+            Font = None
+
+        if self.trades.empty:
+            return
+
+        # Write column headers
+        for col_idx, col_name in enumerate(self.trades.columns, 1):
+            ws.cell(row=1, column=col_idx, value=col_name)
+            if Font:
+                ws.cell(row=1, column=col_idx).font = Font(bold=True)
+
+        # Write data
+        for row_idx, row in enumerate(self.trades.itertuples(index=False), 2):
+            for col_idx, value in enumerate(row, 1):
+                ws.cell(row=row_idx, column=col_idx, value=value)
+
+    def create_interactive_dashboard(self, output_path: str | None = None) -> str:
+        """Create interactive HTML dashboard using Plotly.
+
+        Args:
+            output_path: Optional output file path
+
+        Returns:
+            HTML string
+        """
+        try:
+            import plotly.graph_objects as go
+            from plotly.subplots import make_subplots
+        except ImportError:
+            logger.warning("Plotly not installed. Cannot create interactive dashboard.")
+            return ""
+
+        # Create subplots
+        fig = make_subplots(
+            rows=3,
+            cols=2,
+            subplot_titles=(
+                "Equity Curve",
+                "Monthly Returns",
+                "Trade Distribution",
+                "Rolling Metrics",
+                "Drawdown Analysis",
+                "Performance Table",
+            ),
+            specs=[
+                [{"type": "scatter"}, {"type": "heatmap"}],
+                [{"type": "histogram"}, {"type": "scatter"}],
+                [{"type": "scatter"}, {"type": "table"}],
+            ],
+            vertical_spacing=0.1,
+            horizontal_spacing=0.1,
+        )
+
+        # 1. Equity Curve
+        fig.add_trace(
+            go.Scatter(
+                x=self.equity_curve.index,
+                y=self.equity_curve.values,
+                mode="lines",
+                name="Equity",
+                line=dict(color="blue", width=2),
+            ),
+            row=1,
+            col=1,
+        )
+
+        # 2. Monthly Returns Heatmap
+        monthly_returns = self.equity_curve.resample("M").last().pct_change()
+        returns_pivot = (
+            monthly_returns.groupby(
+                [monthly_returns.index.year, monthly_returns.index.month]
+            )
+            .mean()
+            .unstack()
+        )
+
+        fig.add_trace(
+            go.Heatmap(
+                z=returns_pivot.values * 100,
+                x=[
+                    "Jan",
+                    "Feb",
+                    "Mar",
+                    "Apr",
+                    "May",
+                    "Jun",
+                    "Jul",
+                    "Aug",
+                    "Sep",
+                    "Oct",
+                    "Nov",
+                    "Dec",
+                ],
+                y=returns_pivot.index,
+                colorscale="RdYlGn",
+                zmid=0,
+                text=[
+                    [f"{val:.1f}%" for val in row] for row in returns_pivot.values * 100
+                ],
+                texttemplate="%{text}",
+                textfont={"size": 10},
+            ),
+            row=1,
+            col=2,
+        )
+
+        # 3. Trade Distribution
+        if not self.trades.empty and "pnl" in self.trades.columns:
+            fig.add_trace(
+                go.Histogram(
+                    x=self.trades["pnl"],
+                    nbinsx=30,
+                    name="Trade P&L",
+                    marker_color="lightblue",
+                ),
+                row=2,
+                col=1,
+            )
+
+        # 4. Rolling Metrics
+        if not self.rolling_metrics.empty:
+            fig.add_trace(
+                go.Scatter(
+                    x=self.rolling_metrics.index,
+                    y=self.rolling_metrics["sharpe_ratio"],
+                    mode="lines",
+                    name="Rolling Sharpe",
+                    line=dict(color="green"),
+                ),
+                row=2,
+                col=2,
+            )
+
+        # 5. Drawdown
+        fig.add_trace(
+            go.Scatter(
+                x=self.drawdown_analysis.underwater_curve.index,
+                y=self.drawdown_analysis.underwater_curve.values * 100,
+                fill="tozeroy",
+                name="Drawdown",
+                line=dict(color="red"),
+                fillcolor="rgba(255,0,0,0.3)",
+            ),
+            row=3,
+            col=1,
+        )
+
+        # 6. Performance Table
+        table_data = [
+            ["Total Return", f"{self.metrics.total_return:.1%}"],
+            ["Annual Return", f"{self.metrics.annualized_return:.1%}"],
+            ["Sharpe Ratio", f"{self.metrics.sharpe_ratio:.2f}"],
+            ["Max Drawdown", f"{self.metrics.max_drawdown:.1%}"],
+            ["Win Rate", f"{self.metrics.win_rate:.1%}"],
+            ["Total Trades", str(self.metrics.total_trades)],
+        ]
+
+        fig.add_trace(
+            go.Table(
+                header=dict(values=["Metric", "Value"]),
+                cells=dict(values=list(zip(*table_data))),
+            ),
+            row=3,
+            col=2,
+        )
+
+        # Update layout
+        fig.update_layout(
+            title="Strategy Performance Dashboard",
+            showlegend=False,
+            height=1200,
+            width=1600,
+        )
+
+        # Generate HTML
+        html = fig.to_html(include_plotlyjs="cdn")
+
+        if output_path:
+            with open(output_path, "w") as f:
+                f.write(html)
+            logger.info(f"Saved interactive dashboard to {output_path}")
 
         return html

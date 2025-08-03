@@ -1,7 +1,6 @@
 """Risk analysis implementation."""
 
 import logging
-from typing import Optional
 
 import numpy as np
 import pandas as pd
@@ -16,13 +15,12 @@ class RiskAnalyzer:
 
     def __init__(self):
         """Initialize risk analyzer."""
-        pass
 
     def analyze_risk(
         self,
         equity_curve: pd.Series,
         trades: pd.DataFrame,
-        positions: Optional[pd.DataFrame] = None,
+        positions: pd.DataFrame | None = None,
     ) -> RiskMetrics:
         """Perform comprehensive risk analysis.
 

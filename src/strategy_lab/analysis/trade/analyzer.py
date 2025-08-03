@@ -1,7 +1,6 @@
 """Trade analysis implementation."""
 
 import logging
-from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
@@ -16,10 +15,9 @@ class TradeAnalyzer:
 
     def __init__(self):
         """Initialize trade analyzer."""
-        pass
 
     def analyze_trades(
-        self, trades: pd.DataFrame, market_data: Optional[pd.DataFrame] = None
+        self, trades: pd.DataFrame, market_data: pd.DataFrame | None = None
     ) -> TradeStatistics:
         """Perform comprehensive trade analysis.
 
@@ -133,16 +131,42 @@ class TradeAnalyzer:
             "skewness": self._calculate_skewness(pnl),
             "kurtosis": self._calculate_kurtosis(pnl),
             "percentiles": {
+                "1%": np.percentile(pnl, 1),
                 "5%": np.percentile(pnl, 5),
+                "10%": np.percentile(pnl, 10),
                 "25%": np.percentile(pnl, 25),
+                "50%": np.percentile(pnl, 50),
                 "75%": np.percentile(pnl, 75),
+                "90%": np.percentile(pnl, 90),
                 "95%": np.percentile(pnl, 95),
+                "99%": np.percentile(pnl, 99),
             },
         }
 
         # Distribution shape
         distribution["is_normal"] = self._test_normality(pnl)
         distribution["tail_ratio"] = self._calculate_tail_ratio(pnl)
+
+        # Additional distribution metrics
+        distribution["coefficient_of_variation"] = (
+            np.std(pnl) / np.mean(pnl) if np.mean(pnl) != 0 else 0
+        )
+        distribution["interquartile_range"] = np.percentile(pnl, 75) - np.percentile(
+            pnl, 25
+        )
+
+        # Outlier detection
+        q1, q3 = np.percentile(pnl, [25, 75])
+        iqr = q3 - q1
+        outlier_bounds = {"lower": q1 - 1.5 * iqr, "upper": q3 + 1.5 * iqr}
+        outliers = pnl[
+            (pnl < outlier_bounds["lower"]) | (pnl > outlier_bounds["upper"])
+        ]
+        distribution["outliers"] = {
+            "count": len(outliers),
+            "percentage": len(outliers) / len(pnl) * 100,
+            "bounds": outlier_bounds,
+        }
 
         # Bins for histogram
         n_bins = min(50, max(10, len(trades) // 10))
@@ -246,7 +270,7 @@ class TradeAnalyzer:
         }
 
     def _analyze_entry_exit(
-        self, trades: pd.DataFrame, market_data: Optional[pd.DataFrame]
+        self, trades: pd.DataFrame, market_data: pd.DataFrame | None
     ) -> dict:
         """Analyze entry and exit quality."""
         analysis = {}
@@ -404,3 +428,138 @@ class TradeAnalyzer:
         # This is a simplified implementation
         # Would need proper market volume data
         return 0.0
+
+    def analyze_trade_clustering(self, trades: pd.DataFrame) -> dict:
+        """Analyze trade clustering patterns."""
+        if len(trades) < 10 or "entry_time" not in trades.columns:
+            return {}
+
+        # Time-based clustering
+        entry_times = pd.to_datetime(trades["entry_time"])
+        time_diffs = entry_times.diff().dt.total_seconds() / 60  # Minutes
+
+        clustering = {
+            "avg_time_between_trades": time_diffs.mean(),
+            "median_time_between_trades": time_diffs.median(),
+            "trade_density": len(trades)
+            / ((entry_times.max() - entry_times.min()).days + 1),
+        }
+
+        # Identify clusters (trades within 60 minutes of each other)
+        cluster_threshold = 60  # minutes
+        clusters = []
+        current_cluster = [0]
+
+        for i in range(1, len(time_diffs)):
+            if pd.notna(time_diffs.iloc[i]) and time_diffs.iloc[i] <= cluster_threshold:
+                current_cluster.append(i)
+            else:
+                if len(current_cluster) > 1:
+                    clusters.append(current_cluster)
+                current_cluster = [i]
+
+        if len(current_cluster) > 1:
+            clusters.append(current_cluster)
+
+        clustering["n_clusters"] = len(clusters)
+        clustering["avg_cluster_size"] = (
+            np.mean([len(c) for c in clusters]) if clusters else 0
+        )
+        clustering["max_cluster_size"] = (
+            max([len(c) for c in clusters]) if clusters else 0
+        )
+
+        # Analyze cluster performance
+        if clusters:
+            cluster_pnls = []
+            for cluster in clusters:
+                cluster_pnl = trades.iloc[cluster]["pnl"].sum()
+                cluster_pnls.append(cluster_pnl)
+
+            clustering["avg_cluster_pnl"] = np.mean(cluster_pnls)
+            clustering["cluster_win_rate"] = sum(p > 0 for p in cluster_pnls) / len(
+                cluster_pnls
+            )
+
+        return clustering
+
+    def analyze_trade_patterns(self, trades: pd.DataFrame) -> dict:
+        """Analyze patterns in trade sequences."""
+        if len(trades) < 20:
+            return {}
+
+        patterns = {}
+
+        # Win/loss patterns
+        is_win = (trades["pnl"] > 0).astype(int)
+
+        # After-win/loss performance
+        win_after_win = []
+        win_after_loss = []
+
+        for i in range(1, len(is_win)):
+            if is_win.iloc[i - 1] == 1:  # Previous was win
+                win_after_win.append(is_win.iloc[i])
+            else:  # Previous was loss
+                win_after_loss.append(is_win.iloc[i])
+
+        patterns["win_rate_after_win"] = np.mean(win_after_win) if win_after_win else 0
+        patterns["win_rate_after_loss"] = (
+            np.mean(win_after_loss) if win_after_loss else 0
+        )
+
+        # Momentum effect
+        patterns["has_momentum"] = bool(
+            patterns["win_rate_after_win"] > patterns["win_rate_after_loss"]
+        )
+
+        # Mean reversion effect
+        patterns["has_mean_reversion"] = bool(
+            patterns["win_rate_after_loss"] > patterns["win_rate_after_win"]
+        )
+
+        # Trade size patterns after wins/losses
+        if "position_size" in trades.columns:
+            size_after_win = []
+            size_after_loss = []
+
+            for i in range(1, len(trades)):
+                if trades.iloc[i - 1]["pnl"] > 0:
+                    size_after_win.append(trades.iloc[i]["position_size"])
+                else:
+                    size_after_loss.append(trades.iloc[i]["position_size"])
+
+            patterns["avg_size_after_win"] = (
+                np.mean(size_after_win) if size_after_win else 0
+            )
+            patterns["avg_size_after_loss"] = (
+                np.mean(size_after_loss) if size_after_loss else 0
+            )
+            patterns["scales_up_after_wins"] = (
+                patterns["avg_size_after_win"] > patterns["avg_size_after_loss"]
+            )
+
+        return patterns
+
+    def calculate_kelly_criterion(self, trades: pd.DataFrame) -> dict:
+        """Calculate Kelly Criterion for optimal position sizing."""
+        wins = trades[trades["pnl"] > 0]["pnl"]
+        losses = trades[trades["pnl"] < 0]["pnl"]
+
+        if len(wins) == 0 or len(losses) == 0:
+            return {"kelly_fraction": 0, "half_kelly": 0}
+
+        win_rate = len(wins) / len(trades)
+        avg_win = wins.mean()
+        avg_loss = abs(losses.mean())
+
+        # Kelly formula: f = (p * b - q) / b
+        # where p = win rate, q = loss rate, b = win/loss ratio
+        b = avg_win / avg_loss
+        kelly = (win_rate * b - (1 - win_rate)) / b
+
+        return {
+            "kelly_fraction": max(0, min(kelly, 0.25)),  # Cap at 25%
+            "half_kelly": max(0, min(kelly / 2, 0.125)),  # Half Kelly
+            "quarter_kelly": max(0, min(kelly / 4, 0.0625)),  # Quarter Kelly
+        }

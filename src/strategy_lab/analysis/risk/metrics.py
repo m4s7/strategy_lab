@@ -1,7 +1,7 @@
 """Risk metrics data structures."""
 
 from dataclasses import dataclass
-from typing import Dict, Any
+from typing import Any
 
 
 @dataclass
@@ -23,7 +23,7 @@ class RiskMetrics:
     correlation_risk: float
     beta: float
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "volatility": self.volatility,

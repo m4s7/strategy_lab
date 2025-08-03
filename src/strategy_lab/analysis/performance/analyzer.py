@@ -1,16 +1,16 @@
 """Main performance analyzer orchestrating all analysis components."""
 
 import logging
-from typing import Dict, List, Optional, Union
 
 import pandas as pd
 
 from ..risk.analyzer import RiskAnalyzer
-from ..risk.drawdown import DrawdownAnalysis, DrawdownCalculator
+from ..risk.drawdown import DrawdownCalculator
 from ..trade.analyzer import TradeAnalyzer
-from ..trade.statistics import TradeStatistics
+from .comparison import StrategyComparator
 from .metrics import MetricsCalculator, PerformanceMetrics
 from .report import PerformanceReport
+from .time_series import TimeSeriesAnalyzer
 
 logger = logging.getLogger(__name__)
 
@@ -28,15 +28,17 @@ class PerformanceAnalyzer:
         self.risk_analyzer = RiskAnalyzer()
         self.trade_analyzer = TradeAnalyzer()
         self.drawdown_calculator = DrawdownCalculator()
+        self.time_series_analyzer = TimeSeriesAnalyzer()
+        self.comparator = StrategyComparator(risk_free_rate)
         self.risk_free_rate = risk_free_rate
 
     def analyze(
         self,
         equity_curve: pd.Series,
         trades: pd.DataFrame,
-        positions: Optional[pd.DataFrame] = None,
-        market_data: Optional[pd.DataFrame] = None,
-        benchmark: Optional[pd.Series] = None,
+        positions: pd.DataFrame | None = None,
+        market_data: pd.DataFrame | None = None,
+        benchmark: pd.Series | None = None,
     ) -> PerformanceReport:
         """Perform comprehensive performance analysis.
 
@@ -71,7 +73,38 @@ class PerformanceAnalyzer:
             equity_curve
         )
 
-        # Create comprehensive report
+        # Advanced metrics
+        returns = equity_curve.pct_change().dropna()
+        advanced_metrics = self.metrics_calculator.calculate_advanced_metrics(
+            returns, trades, equity_curve
+        )
+
+        # Time-based metrics
+        time_based_metrics = self.metrics_calculator.calculate_time_based_metrics(
+            equity_curve, trades
+        )
+
+        # Seasonality analysis
+        seasonality = self.time_series_analyzer.analyze_seasonality(returns)
+
+        # Regime detection
+        regimes = self.time_series_analyzer.detect_regime_changes(returns)
+
+        # Performance persistence
+        persistence = self.time_series_analyzer.calculate_performance_persistence(
+            returns
+        )
+
+        # Trade clustering
+        trade_clustering = self.trade_analyzer.analyze_trade_clustering(trades)
+
+        # Trade patterns
+        trade_patterns = self.trade_analyzer.analyze_trade_patterns(trades)
+
+        # Kelly criterion
+        kelly_sizing = self.trade_analyzer.calculate_kelly_criterion(trades)
+
+        # Enhanced report with all analysis
         report = PerformanceReport(
             metrics=metrics,
             risk_metrics=risk_metrics,
@@ -82,15 +115,25 @@ class PerformanceAnalyzer:
             trades=trades,
         )
 
+        # Add additional analysis to report
+        report.advanced_metrics = advanced_metrics
+        report.time_based_metrics = time_based_metrics
+        report.seasonality = seasonality
+        report.market_regimes = regimes
+        report.persistence = persistence
+        report.trade_clustering = trade_clustering
+        report.trade_patterns = trade_patterns
+        report.kelly_sizing = kelly_sizing
+
         logger.info("Performance analysis completed")
 
         return report
 
     def compare_strategies(
         self,
-        strategies: Dict[str, Dict[str, pd.DataFrame]],
-        benchmark: Optional[pd.Series] = None,
-    ) -> Dict[str, PerformanceReport]:
+        strategies: dict[str, dict[str, pd.DataFrame]],
+        benchmark: pd.Series | None = None,
+    ) -> dict[str, PerformanceReport]:
         """Compare multiple strategies.
 
         Args:
@@ -119,7 +162,7 @@ class PerformanceAnalyzer:
         return reports
 
     def analyze_parameter_sensitivity(
-        self, parameter_results: Dict[tuple, Dict[str, pd.DataFrame]]
+        self, parameter_results: dict[tuple[float, ...], dict[str, pd.DataFrame]]
     ) -> pd.DataFrame:
         """Analyze performance sensitivity to parameters.
 
@@ -197,12 +240,11 @@ class PerformanceAnalyzer:
         """Determine risk rating based on metrics."""
         if metrics.volatility < 0.10:
             return "Low"
-        elif metrics.volatility < 0.20:
+        if metrics.volatility < 0.20:
             return "Medium"
-        else:
-            return "High"
+        return "High"
 
-    def _identify_strengths(self, report: PerformanceReport) -> List[str]:
+    def _identify_strengths(self, report: PerformanceReport) -> list[str]:
         """Identify strategy strengths."""
         strengths = []
         metrics = report.metrics
@@ -224,7 +266,7 @@ class PerformanceAnalyzer:
 
         return strengths
 
-    def _identify_weaknesses(self, report: PerformanceReport) -> List[str]:
+    def _identify_weaknesses(self, report: PerformanceReport) -> list[str]:
         """Identify strategy weaknesses."""
         weaknesses = []
         metrics = report.metrics
@@ -246,7 +288,7 @@ class PerformanceAnalyzer:
 
         return weaknesses
 
-    def _generate_recommendations(self, report: PerformanceReport) -> List[str]:
+    def _generate_recommendations(self, report: PerformanceReport) -> list[str]:
         """Generate improvement recommendations."""
         recommendations = []
         metrics = report.metrics

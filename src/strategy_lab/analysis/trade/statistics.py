@@ -1,7 +1,7 @@
 """Trade statistics data structures."""
 
 from dataclasses import dataclass
-from typing import Dict, Any
+from typing import Any
 
 
 @dataclass
@@ -29,7 +29,7 @@ class TradeSummary:
     avg_win_time: float
     avg_loss_time: float
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "total_trades": self.total_trades,
@@ -57,13 +57,13 @@ class TradeStatistics:
     """Comprehensive trade analysis statistics."""
 
     summary: TradeSummary
-    pnl_distribution: Dict[str, Any]
-    time_analysis: Dict[str, Any]
-    streak_analysis: Dict[str, Any]
-    entry_exit_analysis: Dict[str, Any]
-    sizing_analysis: Dict[str, Any]
+    pnl_distribution: dict[str, Any]
+    time_analysis: dict[str, Any]
+    streak_analysis: dict[str, Any]
+    entry_exit_analysis: dict[str, Any]
+    sizing_analysis: dict[str, Any]
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "summary": self.summary.to_dict(),

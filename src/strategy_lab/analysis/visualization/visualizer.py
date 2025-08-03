@@ -1,10 +1,9 @@
 """Performance visualization implementation."""
 
 import logging
-from typing import Dict, List, Optional, Tuple, Union
 
-import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from matplotlib.figure import Figure
@@ -28,7 +27,7 @@ logger = logging.getLogger(__name__)
 class PerformanceVisualizer:
     """Creates visualizations for performance analysis."""
 
-    def __init__(self, config: Optional[PlotConfig] = None):
+    def __init__(self, config: PlotConfig | None = None):
         """Initialize visualizer.
 
         Args:
@@ -92,8 +91,8 @@ class PerformanceVisualizer:
     def plot_equity_curve(
         self,
         equity_curve: pd.Series,
-        drawdown: Optional[pd.Series] = None,
-        benchmark: Optional[pd.Series] = None,
+        drawdown: pd.Series | None = None,
+        benchmark: pd.Series | None = None,
     ) -> Figure:
         """Plot equity curve with optional drawdown.
 
@@ -535,3 +534,258 @@ class PerformanceVisualizer:
         )
 
         logger.info(f"Saved figure to {filepath}")
+
+    def _plot_holding_times(self, ax: plt.Axes, trades: pd.DataFrame):
+        """Plot holding time distribution."""
+        if "holding_time" not in trades.columns:
+            return
+
+        holding_times = trades["holding_time"]
+
+        # Convert to appropriate units (e.g., minutes to hours)
+        holding_hours = holding_times / 60
+
+        ax.hist(holding_hours, bins=30, alpha=0.7, color=self.config.primary_color)
+        ax.axvline(
+            holding_hours.mean(),
+            color="red",
+            linestyle="--",
+            label=f"Mean: {holding_hours.mean():.1f}h",
+        )
+
+        ax.set_xlabel("Holding Time (hours)")
+        ax.set_ylabel("Frequency")
+        ax.set_title("Holding Time Distribution")
+        ax.legend()
+        ax.grid(True, alpha=self.config.grid_alpha)
+
+    def _plot_win_loss_streaks(self, ax: plt.Axes, trades: pd.DataFrame):
+        """Plot win/loss streak visualization."""
+        if "pnl" not in trades.columns:
+            return
+
+        # Calculate cumulative win/loss streaks
+        is_win = (trades["pnl"] > 0).astype(int)
+        streak_changes = is_win.diff().fillna(is_win.iloc[0])
+        streak_groups = streak_changes.ne(0).cumsum()
+
+        streaks = []
+        for group, data in is_win.groupby(streak_groups):
+            streak_type = data.iloc[0]
+            streak_length = len(data)
+            streaks.append((streak_type, streak_length))
+
+        # Plot streaks
+        x_pos = 0
+        for streak_type, length in streaks:
+            color = (
+                self.config.positive_color
+                if streak_type
+                else self.config.negative_color
+            )
+            ax.barh(0, length, left=x_pos, height=0.5, color=color, alpha=0.7)
+            x_pos += length
+
+        ax.set_ylim(-0.5, 0.5)
+        ax.set_xlabel("Trade Number")
+        ax.set_title("Win/Loss Streaks")
+        ax.set_yticks([])
+
+        # Add legend
+        win_patch = plt.Rectangle(
+            (0, 0), 1, 1, fc=self.config.positive_color, alpha=0.7
+        )
+        loss_patch = plt.Rectangle(
+            (0, 0), 1, 1, fc=self.config.negative_color, alpha=0.7
+        )
+        ax.legend([win_patch, loss_patch], ["Winning Streak", "Losing Streak"])
+
+    def _plot_risk_radar(self, ax: plt.Axes, risk_metrics):
+        """Plot risk metrics radar chart."""
+        # Define metrics to include
+        categories = ["Volatility", "Drawdown", "VaR", "Skewness", "Tail Risk"]
+
+        # Normalize metrics to 0-1 scale
+        values = [
+            min(risk_metrics.volatility / 0.3, 1),  # Cap at 30% vol
+            min(abs(risk_metrics.max_drawdown_duration) / 180, 1),  # Cap at 180 days
+            min(abs(risk_metrics.var_95) / 0.05, 1),  # Cap at 5% VaR
+            min(abs(risk_metrics.skewness) / 2, 1),  # Cap at |2| skewness
+            1 / risk_metrics.tail_ratio if risk_metrics.tail_ratio > 0 else 1,
+        ]
+
+        # Number of variables
+        num_vars = len(categories)
+
+        # Compute angle for each axis
+        angles = [n / float(num_vars) * 2 * np.pi for n in range(num_vars)]
+        values += values[:1]
+        angles += angles[:1]
+
+        # Plot
+        ax.plot(angles, values, "o-", linewidth=2, color=self.config.primary_color)
+        ax.fill(angles, values, alpha=0.25, color=self.config.primary_color)
+
+        # Set labels
+        ax.set_xticks(angles[:-1])
+        ax.set_xticklabels(categories)
+        ax.set_ylim(0, 1)
+        ax.set_title("Risk Profile")
+        ax.grid(True)
+
+    def _plot_drawdown_periods(self, ax: plt.Axes, drawdown_analysis: DrawdownAnalysis):
+        """Plot drawdown periods analysis."""
+        if not drawdown_analysis.drawdown_periods:
+            return
+
+        # Extract drawdown magnitudes and durations
+        magnitudes = [
+            abs(p.drawdown_pct) * 100 for p in drawdown_analysis.drawdown_periods
+        ]
+        durations = [p.duration_days for p in drawdown_analysis.drawdown_periods]
+
+        # Create scatter plot
+        scatter = ax.scatter(
+            durations, magnitudes, s=100, alpha=0.6, c=magnitudes, cmap="Reds"
+        )
+
+        # Highlight worst drawdown
+        worst_idx = np.argmax(magnitudes)
+        ax.scatter(
+            durations[worst_idx],
+            magnitudes[worst_idx],
+            s=200,
+            color="red",
+            marker="*",
+            label=f"Worst: {magnitudes[worst_idx]:.1f}%",
+        )
+
+        ax.set_xlabel("Duration (days)")
+        ax.set_ylabel("Drawdown (%)")
+        ax.set_title("Drawdown Periods")
+        ax.legend()
+        ax.grid(True, alpha=self.config.grid_alpha)
+
+        # Add colorbar
+        plt.colorbar(scatter, ax=ax, label="Magnitude (%)")
+
+    def _plot_rolling_volatility(self, ax: plt.Axes, equity_curve: pd.Series):
+        """Plot rolling volatility."""
+        returns = equity_curve.pct_change().dropna()
+
+        # Calculate rolling volatilities
+        vol_30 = returns.rolling(30).std() * np.sqrt(252) * 100
+        vol_60 = returns.rolling(60).std() * np.sqrt(252) * 100
+        vol_120 = returns.rolling(120).std() * np.sqrt(252) * 100
+
+        ax.plot(vol_30.index, vol_30, label="30-day", alpha=0.8)
+        ax.plot(vol_60.index, vol_60, label="60-day", alpha=0.8)
+        ax.plot(vol_120.index, vol_120, label="120-day", alpha=0.8)
+
+        ax.set_ylabel("Volatility (%)")
+        ax.set_title("Rolling Volatility")
+        ax.legend()
+        ax.grid(True, alpha=self.config.grid_alpha)
+
+        # Format x-axis
+        ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
+        ax.xaxis.set_major_locator(mdates.MonthLocator(interval=3))
+        plt.setp(ax.xaxis.get_majorticklabels(), rotation=45)
+
+    def plot_strategy_comparison(
+        self, strategies: dict[str, pd.Series], normalize: bool = True
+    ) -> Figure:
+        """Plot multiple strategy equity curves for comparison.
+
+        Args:
+            strategies: Dict mapping strategy names to equity curves
+            normalize: Whether to normalize curves to start at 1
+
+        Returns:
+            Matplotlib figure
+        """
+        fig, ax = plt.subplots(figsize=self.config.figure_size)
+
+        for name, equity_curve in strategies.items():
+            if normalize:
+                normalized = equity_curve / equity_curve.iloc[0]
+                ax.plot(
+                    normalized.index,
+                    normalized.values,
+                    label=name,
+                    linewidth=2,
+                    alpha=0.8,
+                )
+            else:
+                ax.plot(
+                    equity_curve.index,
+                    equity_curve.values,
+                    label=name,
+                    linewidth=2,
+                    alpha=0.8,
+                )
+
+        ax.set_ylabel("Portfolio Value" + (" (Normalized)" if normalize else ""))
+        ax.set_title("Strategy Comparison")
+        ax.legend(loc="best")
+        ax.grid(True, alpha=self.config.grid_alpha)
+
+        # Format x-axis
+        ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
+        ax.xaxis.set_major_locator(mdates.MonthLocator(interval=3))
+        plt.setp(ax.xaxis.get_majorticklabels(), rotation=45)
+
+        plt.tight_layout()
+        return fig
+
+    def plot_correlation_heatmap(self, correlation_matrix: pd.DataFrame) -> Figure:
+        """Plot correlation heatmap between strategies.
+
+        Args:
+            correlation_matrix: Correlation matrix DataFrame
+
+        Returns:
+            Matplotlib figure
+        """
+        fig, ax = plt.subplots(figsize=(10, 8))
+
+        if SEABORN_AVAILABLE:
+            sns.heatmap(
+                correlation_matrix,
+                annot=True,
+                fmt=".2f",
+                cmap="coolwarm",
+                center=0,
+                square=True,
+                linewidths=1,
+                cbar_kws={"shrink": 0.8},
+                ax=ax,
+            )
+        else:
+            im = ax.imshow(correlation_matrix, cmap="coolwarm", aspect="auto")
+
+            # Add text annotations
+            for i in range(len(correlation_matrix)):
+                for j in range(len(correlation_matrix)):
+                    text = ax.text(
+                        j,
+                        i,
+                        f"{correlation_matrix.iloc[i, j]:.2f}",
+                        ha="center",
+                        va="center",
+                        color="black",
+                    )
+
+            # Set ticks
+            ax.set_xticks(np.arange(len(correlation_matrix.columns)))
+            ax.set_yticks(np.arange(len(correlation_matrix.index)))
+            ax.set_xticklabels(correlation_matrix.columns)
+            ax.set_yticklabels(correlation_matrix.index)
+
+            plt.colorbar(im, ax=ax, shrink=0.8)
+
+        ax.set_title("Strategy Correlation Matrix")
+        plt.setp(ax.xaxis.get_majorticklabels(), rotation=45, ha="right")
+
+        plt.tight_layout()
+        return fig
