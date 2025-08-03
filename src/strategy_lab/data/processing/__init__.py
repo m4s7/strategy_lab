@@ -4,7 +4,7 @@ from .order_book import OrderBook, OrderBookLevel, OrderBookSnapshot, OrderBookA
 
 __all__ = [
     "OrderBook",
-    "OrderBookLevel", 
+    "OrderBookLevel",
     "OrderBookSnapshot",
     "OrderBookAnalytics",
 ]

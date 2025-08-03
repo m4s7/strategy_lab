@@ -76,7 +76,9 @@ class OrderBookAnalytics:
         return (bid_volume - ask_volume) / total_volume
 
     @staticmethod
-    def calculate_depth_weighted_price(levels: list[OrderBookLevel], depth: int = 5) -> Decimal | None:
+    def calculate_depth_weighted_price(
+        levels: list[OrderBookLevel], depth: int = 5
+    ) -> Decimal | None:
         """Calculate volume-weighted average price for given depth."""
         if not levels or depth <= 0:
             return None
@@ -95,7 +97,9 @@ class OrderBookAnalytics:
         return weighted_price_sum / total_volume
 
     @staticmethod
-    def calculate_book_pressure(snapshot: OrderBookSnapshot, depth: int = 5) -> dict[str, float]:
+    def calculate_book_pressure(
+        snapshot: OrderBookSnapshot, depth: int = 5
+    ) -> dict[str, float]:
         """Calculate various book pressure metrics."""
         bid_volume = sum(level.volume for level in snapshot.bid_levels[:depth])
         ask_volume = sum(level.volume for level in snapshot.ask_levels[:depth])
@@ -109,7 +113,7 @@ class OrderBookAnalytics:
                 bid_volume / (bid_volume + ask_volume)
                 if (bid_volume + ask_volume) > 0
                 else 0.5
-            )
+            ),
         }
 
 
@@ -169,7 +173,7 @@ class OrderBook:
         volume: int,
         operation: int,
         depth: int | None = None,  # noqa: ARG002
-        market_maker: str | None = None
+        market_maker: str | None = None,
     ) -> bool:
         """
         Process a single Level 2 operation.
@@ -191,7 +195,9 @@ class OrderBook:
 
             # Validate timestamp ordering
             if self._last_timestamp and timestamp < self._last_timestamp:
-                logger.warning(f"Out-of-sequence timestamp: {timestamp} < {self._last_timestamp}")
+                logger.warning(
+                    f"Out-of-sequence timestamp: {timestamp} < {self._last_timestamp}"
+                )
             self._last_timestamp = timestamp
 
             # Convert price to Decimal for precision
@@ -204,9 +210,13 @@ class OrderBook:
 
             # Route to appropriate side
             if mdt == self.MDT_BID:
-                return self._process_bid_operation(price_decimal, volume, operation, market_maker)
+                return self._process_bid_operation(
+                    price_decimal, volume, operation, market_maker
+                )
             if mdt == self.MDT_ASK:
-                return self._process_ask_operation(price_decimal, volume, operation, market_maker)
+                return self._process_ask_operation(
+                    price_decimal, volume, operation, market_maker
+                )
             logger.warning(f"Unknown MDT: {mdt}")
             self._invalid_operations += 1
             return False
@@ -216,7 +226,9 @@ class OrderBook:
             self._invalid_operations += 1
             return False
 
-    def _validate_operation(self, mdt: int, price: Decimal, volume: int, operation: int) -> bool:
+    def _validate_operation(
+        self, mdt: int, price: Decimal, volume: int, operation: int
+    ) -> bool:
         """Validate operation parameters."""
         if mdt not in [self.MDT_ASK, self.MDT_BID]:
             logger.warning(f"Invalid MDT: {mdt}")
@@ -237,7 +249,11 @@ class OrderBook:
         return True
 
     def _process_bid_operation(
-        self, price: Decimal, volume: int, operation: int, market_maker: str | None = None
+        self,
+        price: Decimal,
+        volume: int,
+        operation: int,
+        market_maker: str | None = None,
     ) -> bool:
         """Process operation on bid side."""
         if operation == self.OP_ADD:
@@ -249,7 +265,11 @@ class OrderBook:
         return False
 
     def _process_ask_operation(
-        self, price: Decimal, volume: int, operation: int, market_maker: str | None = None
+        self,
+        price: Decimal,
+        volume: int,
+        operation: int,
+        market_maker: str | None = None,
     ) -> bool:
         """Process operation on ask side."""
         if operation == self.OP_ADD:
@@ -260,13 +280,19 @@ class OrderBook:
             return self._remove_ask_level(price)
         return False
 
-    def _add_bid_level(self, price: Decimal, volume: int, market_maker: str | None = None) -> bool:
+    def _add_bid_level(
+        self, price: Decimal, volume: int, market_maker: str | None = None
+    ) -> bool:
         """Add new bid level."""
         if price in self._bid_levels:
-            logger.warning(f"Bid level already exists at price {price}, updating instead")
+            logger.warning(
+                f"Bid level already exists at price {price}, updating instead"
+            )
             return self._update_bid_level(price, volume, market_maker)
 
-        level = OrderBookLevel(price=price, volume=volume, order_count=1, market_maker=market_maker)
+        level = OrderBookLevel(
+            price=price, volume=volume, order_count=1, market_maker=market_maker
+        )
         self._bid_levels[price] = level
 
         # Insert into sorted price list maintaining descending order
@@ -280,13 +306,19 @@ class OrderBook:
 
         return True
 
-    def _add_ask_level(self, price: Decimal, volume: int, market_maker: str | None = None) -> bool:
+    def _add_ask_level(
+        self, price: Decimal, volume: int, market_maker: str | None = None
+    ) -> bool:
         """Add new ask level."""
         if price in self._ask_levels:
-            logger.warning(f"Ask level already exists at price {price}, updating instead")
+            logger.warning(
+                f"Ask level already exists at price {price}, updating instead"
+            )
             return self._update_ask_level(price, volume, market_maker)
 
-        level = OrderBookLevel(price=price, volume=volume, order_count=1, market_maker=market_maker)
+        level = OrderBookLevel(
+            price=price, volume=volume, order_count=1, market_maker=market_maker
+        )
         self._ask_levels[price] = level
 
         # Insert into sorted price list (ascending order)
@@ -297,7 +329,9 @@ class OrderBook:
 
         return True
 
-    def _update_bid_level(self, price: Decimal, volume: int, market_maker: str | None = None) -> bool:
+    def _update_bid_level(
+        self, price: Decimal, volume: int, market_maker: str | None = None
+    ) -> bool:
         """Update existing bid level."""
         if price not in self._bid_levels:
             logger.warning(f"No bid level exists at price {price}, adding instead")
@@ -314,7 +348,9 @@ class OrderBook:
 
         return True
 
-    def _update_ask_level(self, price: Decimal, volume: int, market_maker: str | None = None) -> bool:
+    def _update_ask_level(
+        self, price: Decimal, volume: int, market_maker: str | None = None
+    ) -> bool:
         """Update existing ask level."""
         if price not in self._ask_levels:
             logger.warning(f"No ask level exists at price {price}, adding instead")
@@ -386,7 +422,7 @@ class OrderBook:
         return OrderBookSnapshot(
             timestamp=snapshot_timestamp,
             bid_levels=bid_levels.copy(),
-            ask_levels=ask_levels.copy()
+            ask_levels=ask_levels.copy(),
         )
 
     def get_best_bid(self) -> OrderBookLevel | None:
@@ -483,7 +519,7 @@ class OrderBook:
                 volume=int(row["volume"]),
                 operation=int(row["operation"]),
                 depth=row.get("depth"),
-                market_maker=row.get("market_maker")
+                market_maker=row.get("market_maker"),
             )
 
             if success:
@@ -594,7 +630,7 @@ class OrderBookReconstructor:
         file_path: str,
         start_time: int,
         end_time: int,
-        interval_ns: int = 1_000_000_000  # 1 second default
+        interval_ns: int = 1_000_000_000,  # 1 second default
     ) -> list[OrderBookSnapshot]:
         """
         Reconstruct order book snapshots over time range.
@@ -610,11 +646,15 @@ class OrderBookReconstructor:
         """
         # Load and filter data
         data_df = pd.read_parquet(file_path)
-        level2_data = data_df[
-            (data_df["level"] == "2") &
-            (data_df["timestamp"] >= start_time) &
-            (data_df["timestamp"] <= end_time)
-        ].copy().sort_values("timestamp")
+        level2_data = (
+            data_df[
+                (data_df["level"] == "2")
+                & (data_df["timestamp"] >= start_time)
+                & (data_df["timestamp"] <= end_time)
+            ]
+            .copy()
+            .sort_values("timestamp")
+        )
 
         snapshots = []
         current_time = start_time
@@ -625,9 +665,10 @@ class OrderBookReconstructor:
 
         while current_time <= end_time:
             # Process all operations up to current_time
-            while (data_index < len(level2_data) and
-                   level2_data.iloc[data_index]["timestamp"] <= current_time):
-
+            while (
+                data_index < len(level2_data)
+                and level2_data.iloc[data_index]["timestamp"] <= current_time
+            ):
                 row = level2_data.iloc[data_index]
                 self.order_book.process_operation(
                     timestamp=int(row["timestamp"]),
@@ -636,7 +677,7 @@ class OrderBookReconstructor:
                     volume=int(row["volume"]),
                     operation=int(row["operation"]),
                     depth=row.get("depth"),
-                    market_maker=row.get("market_maker")
+                    market_maker=row.get("market_maker"),
                 )
                 data_index += 1
 
@@ -647,4 +688,3 @@ class OrderBookReconstructor:
             current_time += interval_ns
 
         return snapshots
-
