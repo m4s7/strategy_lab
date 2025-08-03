@@ -1,0 +1,31 @@
+# Order Book Imbalance Strategy Configuration Template
+
+strategies:
+  order_book_imbalance:
+    name: "order_book_imbalance"
+    enabled: true
+
+    parameters:
+      # Imbalance thresholds for signal generation
+      positive_threshold: 0.3    # Long signal threshold (0.0 to 1.0)
+      negative_threshold: -0.3   # Short signal threshold (-1.0 to 0.0)
+
+      # Order book analysis parameters
+      depth_levels: 5            # Number of order book levels to analyze
+      depth_weight_decay: 0.8    # Weight decay for deeper levels
+      smoothing_window: 5        # Window size for imbalance smoothing
+
+      # Position management
+      position_size: 1           # Fixed position size
+      max_holding_seconds: 300   # Maximum position holding time
+
+      # Filters
+      min_spread_ticks: 1        # Minimum spread to allow trading
+      volatility_filter: true    # Enable volatility-based filtering
+
+    risk_management:
+      max_position_size: 10
+      stop_loss_pct: 0.5
+      max_drawdown_pct: 5.0
+      position_sizing_method: "fixed"
+      risk_per_trade_pct: 1.0

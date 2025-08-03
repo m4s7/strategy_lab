@@ -1,0 +1,48 @@
+# Order Book Imbalance Strategy Configuration
+strategy:
+  name: "order_book_imbalance"
+  module: "strategy_lab.strategies.implementations.order_book_imbalance"
+  parameters:
+    # Imbalance thresholds
+    positive_threshold: 0.3      # Threshold for long signals (0.0-1.0)
+    negative_threshold: -0.3     # Threshold for short signals (-1.0-0.0)
+
+    # Smoothing parameters
+    smoothing_window: 5          # Window size for imbalance smoothing
+    depth_levels: 5              # Number of order book levels to analyze
+    depth_weight_decay: 0.8      # Decay factor for deeper levels (0.0-1.0)
+
+    # Position management
+    position_size: 1             # Fixed position size in contracts
+    stop_loss_pct: 0.5          # Stop loss percentage
+    max_holding_seconds: 300     # Maximum position holding time (5 minutes)
+
+    # Market filters
+    min_spread_ticks: 1         # Minimum spread in ticks to trade
+    volatility_filter: true     # Enable volatility filtering
+
+# Data requirements
+data:
+  symbol: "MNQ"
+  required_fields:
+    - "level2"  # Order book depth data
+    - "trades"  # Trade data
+
+# Execution settings
+execution:
+  initial_capital: 100000
+  commission: 2.00              # Per contract
+  slippage: 0.25               # Per contract
+
+# Logging settings
+logging:
+  level: "INFO"
+  log_signals: true
+  log_imbalance: true
+  log_decisions: true
+
+# Performance monitoring
+monitoring:
+  track_imbalance_history: true
+  track_signal_accuracy: true
+  report_interval: 1000        # Ticks

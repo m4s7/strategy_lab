@@ -1,0 +1,79 @@
+# Bid-Ask Bounce Strategy Configuration
+# This strategy detects and trades bounces off bid/ask levels using Level 1 data
+
+strategy:
+  name: "bid_ask_bounce"
+  version: "1.0.0"
+
+  # Bounce detection parameters
+  parameters:
+    # Sensitivity for detecting bounces (0.1-1.0)
+    # Lower values = more sensitive, more signals
+    # Higher values = less sensitive, fewer but stronger signals
+    bounce_sensitivity: 0.7
+
+    # Minimum bounce strength in ticks
+    # Price must move at least this many ticks from touch point
+    min_bounce_strength: 0.5
+
+    # Profit target in ticks
+    # Position will be closed when this profit is reached
+    profit_target_ticks: 2
+
+    # Stop loss in ticks
+    # Position will be closed if loss reaches this level
+    stop_loss_ticks: 1
+
+    # Maximum spread in ticks to allow trading
+    # Wider spreads increase trading costs
+    max_spread_ticks: 2
+
+    # Minimum volume for signal validity
+    # Helps filter out low-liquidity bounces
+    min_volume: 10
+
+    # Maximum position holding time in seconds
+    # Prevents overnight risk and stale positions
+    max_holding_seconds: 120
+
+    # Number of ticks needed to confirm bounce
+    # More ticks = stronger confirmation but later entry
+    confirmation_ticks: 2
+
+    # Lookback period for volatility calculation
+    volatility_lookback: 20
+
+# Different parameter sets for various market conditions
+parameter_sets:
+  # Conservative settings for normal markets
+  conservative:
+    bounce_sensitivity: 0.5
+    min_bounce_strength: 0.75
+    profit_target_ticks: 3
+    stop_loss_ticks: 1
+    max_spread_ticks: 1
+    min_volume: 20
+    max_holding_seconds: 180
+    confirmation_ticks: 3
+
+  # Aggressive settings for active markets
+  aggressive:
+    bounce_sensitivity: 0.8
+    min_bounce_strength: 0.3
+    profit_target_ticks: 1
+    stop_loss_ticks: 1
+    max_spread_ticks: 3
+    min_volume: 5
+    max_holding_seconds: 60
+    confirmation_ticks: 1
+
+  # Balanced settings for most conditions
+  balanced:
+    bounce_sensitivity: 0.7
+    min_bounce_strength: 0.5
+    profit_target_ticks: 2
+    stop_loss_ticks: 1
+    max_spread_ticks: 2
+    min_volume: 10
+    max_holding_seconds: 120
+    confirmation_ticks: 2

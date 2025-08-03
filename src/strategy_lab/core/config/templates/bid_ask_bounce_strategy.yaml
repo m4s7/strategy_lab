@@ -1,0 +1,29 @@
+# Bid-Ask Bounce Strategy Configuration Template
+
+strategies:
+  bid_ask_bounce:
+    name: "bid_ask_bounce"
+    enabled: true
+
+    parameters:
+      # Bounce detection parameters
+      bounce_sensitivity: 0.7       # Sensitivity for detecting bounces (0.1-1.0)
+      min_bounce_strength: 0.5      # Minimum bounce strength in ticks
+      confirmation_ticks: 2         # Ticks needed to confirm bounce
+
+      # Entry/Exit parameters
+      profit_target_ticks: 2        # Profit target in ticks
+      stop_loss_ticks: 1           # Stop loss in ticks
+      max_holding_seconds: 120     # Maximum position holding time
+
+      # Market condition filters
+      max_spread_ticks: 2          # Maximum spread in ticks
+      min_volume: 10               # Minimum volume for signal validity
+      volatility_lookback: 20      # Lookback period for volatility
+
+    risk_management:
+      max_position_size: 10
+      stop_loss_pct: 1.0
+      max_drawdown_pct: 5.0
+      position_sizing_method: "fixed"
+      risk_per_trade_pct: 1.0

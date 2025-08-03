@@ -1,0 +1,46 @@
+# Production System Configuration Template
+# Optimized settings for production environment
+
+system:
+  version: "1.0.0"
+  environment: "production"
+
+  logging:
+    level: "WARNING"  # Less verbose in production
+    file: "/var/log/strategy_lab/production.log"
+    console: false    # Disable console logging
+    format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
+  performance:
+    max_memory_gb: 32.0      # More memory for production
+    parallel_workers: 8      # More workers for performance
+    chunk_size: 50000        # Larger chunks for efficiency
+    enable_profiling: false  # Disable profiling in production
+
+  data:
+    data_path: "/data/market/MNQ"
+    cache_enabled: true
+    cache_path: "/data/cache/strategy_lab"
+    preload_data: true       # Preload for better performance
+
+# Production backtesting defaults
+backtesting:
+  start_date: "2023-01-01T00:00:00"
+  end_date: "2024-12-31T23:59:59"
+  initial_capital: 1000000   # Larger capital for production
+
+  engine:
+    commission_rate: 0.00025  # More accurate commission
+    slippage_model: "market_impact"
+    slippage_factor: 0.00005
+    enable_shorting: true
+    margin_requirement: 0.3   # Lower margin for efficiency
+
+# Production optimization settings
+optimization:
+  method: "bayesian"          # More sophisticated optimization
+  metric: "calmar_ratio"      # Focus on risk-adjusted returns
+  direction: "maximize"
+  max_iterations: 5000        # More iterations
+  parallel: true
+  random_seed: null           # No fixed seed in production
