@@ -45,7 +45,9 @@ def test_development_tools():
     dev_tools = ["black", "ruff", "mypy", "pytest"]
 
     for tool in dev_tools:
-        result = subprocess.run([tool, "--version"], capture_output=True, text=True)
+        result = subprocess.run(
+            [tool, "--version"], check=False, capture_output=True, text=True
+        )
         assert result.returncode == 0, f"Dev tool '{tool}' not properly installed"
 
 

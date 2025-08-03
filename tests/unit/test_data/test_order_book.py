@@ -1,19 +1,18 @@
 """Tests for order book reconstruction engine."""
 
-from decimal import Decimal
-from unittest.mock import patch
 import tempfile
+from decimal import Decimal
 from pathlib import Path
+from unittest.mock import patch
 
 import pandas as pd
-import pytest
 
 from strategy_lab.data.processing.order_book import (
     OrderBook,
-    OrderBookLevel,
-    OrderBookSnapshot,
     OrderBookAnalytics,
+    OrderBookLevel,
     OrderBookReconstructor,
+    OrderBookSnapshot,
 )
 
 

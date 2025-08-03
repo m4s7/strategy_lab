@@ -307,9 +307,7 @@ class HftEventProcessor:
         if order.order_type in [OrderType.LIMIT, OrderType.STOP_LIMIT] and (
             order.price is None or order.price <= 0
         ):
-            logger.warning(
-                "Invalid price for %s: %s", order.order_type, order.price
-            )
+            logger.warning("Invalid price for %s: %s", order.order_type, order.price)
             return False
 
         # Check stop price for stop orders
@@ -397,9 +395,7 @@ class HftEventProcessor:
         if self.on_order_filled:
             self.on_order_filled(fill)
 
-        logger.debug(
-            "Fill: Order %d, %d @ %.2f", order_id, fill_quantity, fill_price
-        )
+        logger.debug("Fill: Order %d, %d @ %.2f", order_id, fill_quantity, fill_price)
         return fill
 
     def _calculate_commission(self, price: float, quantity: int) -> float:

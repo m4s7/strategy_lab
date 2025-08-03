@@ -16,6 +16,7 @@ repos:
       - id: mypy
         additional_dependencies: [types-PyYAML]
         exclude: ^tests/
+        args: [--config-file=pyproject.toml, --explicit-package-bases]
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.4.0

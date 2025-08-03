@@ -250,7 +250,6 @@ class HftDataFeed:
 
         try:
             for chunk_count, chunk in enumerate(data_chunks, 1):
-
                 # Process chunk and stream ticks
                 for tick in self.create_data_stream(chunk):
                     # Apply price rounding
@@ -285,9 +284,7 @@ class HftDataFeed:
         logger.info("  Ticks processed: %s", f"{self.stats.ticks_processed:,}")
         logger.info("  L1 ticks: %s", f"{self.stats.l1_ticks:,}")
         logger.info("  L2 ticks: %s", f"{self.stats.l2_ticks:,}")
-        logger.info(
-            "  Processing rate: %.0f ticks/second", self.stats.ticks_per_second
-        )
+        logger.info("  Processing rate: %.0f ticks/second", self.stats.ticks_per_second)
         logger.info("  Data throughput: %.2f MB/second", self.stats.mb_per_second)
         logger.info("  Errors: %d", self.stats.processing_errors)
 
