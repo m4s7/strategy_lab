@@ -19,7 +19,7 @@ class DataLoader:
     ):
         """
         Initialize the data loader.
-        
+
         Args:
             cache_size_mb: Maximum cache size in MB
             chunk_size: Default chunk size for batch operations
@@ -38,13 +38,13 @@ class DataLoader:
     ) -> pd.DataFrame:
         """
         Load a single Parquet file into memory.
-        
+
         Args:
             file_path: Path to the Parquet file
             columns: Specific columns to load (None for all)
             filters: List of (column, operator, value) tuples for filtering
             use_cache: Whether to use caching
-            
+
         Returns:
             DataFrame with loaded data
         """
@@ -85,12 +85,12 @@ class DataLoader:
     ) -> Iterator[pd.DataFrame]:
         """
         Stream a Parquet file in chunks.
-        
+
         Args:
             file_path: Path to the Parquet file
             columns: Specific columns to load
             chunk_size: Size of each chunk (uses default if None)
-            
+
         Yields:
             DataFrame chunks
         """
@@ -113,13 +113,13 @@ class DataLoader:
     ) -> pd.DataFrame:
         """
         Load data within a specific time range from multiple files.
-        
+
         Args:
             file_paths: List of file paths to load from
             start_time: Start of time range
             end_time: End of time range
             columns: Specific columns to load
-            
+
         Returns:
             Combined DataFrame with data in time range
         """
@@ -160,14 +160,14 @@ class DataLoader:
     ) -> Iterator[pd.DataFrame]:
         """
         Stream data within a time range from multiple files.
-        
+
         Args:
             file_paths: List of file paths to stream from
             start_time: Start of time range
             end_time: End of time range
             columns: Specific columns to load
             chunk_size: Size of each chunk
-            
+
         Yields:
             DataFrame chunks in chronological order
         """
@@ -180,7 +180,9 @@ class DataLoader:
             for chunk in self.stream_file(file_path, columns, chunk_size):
                 # Filter chunk by time range
                 if "timestamp" in chunk.columns:
-                    mask = (chunk["timestamp"] >= start_ns) & (chunk["timestamp"] <= end_ns)
+                    mask = (chunk["timestamp"] >= start_ns) & (
+                        chunk["timestamp"] <= end_ns
+                    )
                     filtered_chunk = chunk[mask]
 
                     if not filtered_chunk.empty:
@@ -194,12 +196,12 @@ class DataLoader:
     ) -> dict[int, pd.DataFrame]:
         """
         Load data grouped by MDT (Market Data Type).
-        
+
         Args:
             file_paths: List of file paths to load from
             mdt_types: List of MDT values to load
             columns: Specific columns to load
-            
+
         Returns:
             Dictionary mapping MDT values to DataFrames
         """
@@ -231,12 +233,12 @@ class DataLoader:
     ) -> tuple[pd.DataFrame, pd.DataFrame]:
         """
         Load Level 2 order book data at a specific timestamp.
-        
+
         Args:
             file_path: Path to Level 2 data file
             timestamp: Specific timestamp to reconstruct book at
             max_depth: Maximum book depth to return
-            
+
         Returns:
             Tuple of (bid_book, ask_book) DataFrames
         """
@@ -271,13 +273,13 @@ class DataLoader:
     ) -> pd.DataFrame:
         """
         Aggregate tick data into bars (OHLCV).
-        
+
         Args:
             file_paths: List of file paths to load from
             bar_type: Type of bars ("time", "tick", "volume")
             bar_size: Size of each bar
             columns: Specific columns to load
-            
+
         Returns:
             DataFrame with aggregated bars
         """
@@ -298,7 +300,9 @@ class DataLoader:
                 all_trades.append(df)
 
         if not all_trades:
-            return pd.DataFrame(columns=["timestamp", "open", "high", "low", "close", "volume"])
+            return pd.DataFrame(
+                columns=["timestamp", "open", "high", "low", "close", "volume"]
+            )
 
         trades = pd.concat(all_trades, ignore_index=True).sort_values("timestamp")
 
@@ -377,9 +381,7 @@ class DataLoader:
         if not book_state:
             return pd.DataFrame(columns=["price", "volume", "depth"])
 
-        book_df = pd.DataFrame.from_dict(
-            book_state, orient="index"
-        ).reset_index()
+        book_df = pd.DataFrame.from_dict(book_state, orient="index").reset_index()
         book_df.columns = ["price", "volume", "depth"]
 
         # Sort and limit depth

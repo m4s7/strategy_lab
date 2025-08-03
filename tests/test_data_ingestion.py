@@ -18,22 +18,24 @@ from strategy_lab.data.ingestion import (
 @pytest.fixture
 def sample_tick_data():
     """Create sample tick data for testing."""
-    return pd.DataFrame({
-        "level": ["1", "1", "2", "2", "1"],
-        "mdt": [0, 1, 0, 1, 2],  # Ask, Bid, Ask (L2), Bid (L2), Last
-        "timestamp": [
-            1609459200000000000,  # 2021-01-01 00:00:00
-            1609459200100000000,
-            1609459200200000000,
-            1609459200300000000,
-            1609459200400000000,
-        ],
-        "price": [100.50, 100.25, 100.75, 100.00, 100.30],
-        "volume": [10, 15, 20, 25, 5],
-        "operation": [pd.NA, pd.NA, 0, 0, pd.NA],  # Add operations for L2 only
-        "depth": [pd.NA, pd.NA, 1, 1, pd.NA],
-        "market_maker": [None, None, "MM1", "MM2", None],
-    })
+    return pd.DataFrame(
+        {
+            "level": ["1", "1", "2", "2", "1"],
+            "mdt": [0, 1, 0, 1, 2],  # Ask, Bid, Ask (L2), Bid (L2), Last
+            "timestamp": [
+                1609459200000000000,  # 2021-01-01 00:00:00
+                1609459200100000000,
+                1609459200200000000,
+                1609459200300000000,
+                1609459200400000000,
+            ],
+            "price": [100.50, 100.25, 100.75, 100.00, 100.30],
+            "volume": [10, 15, 20, 25, 5],
+            "operation": [pd.NA, pd.NA, 0, 0, pd.NA],  # Add operations for L2 only
+            "depth": [pd.NA, pd.NA, 1, 1, pd.NA],
+            "market_maker": [None, None, "MM1", "MM2", None],
+        }
+    )
 
 
 @pytest.fixture
@@ -129,13 +131,15 @@ class TestParquetFileDiscovery:
         assert mock_dump.called
 
         # Test load cache
-        mock_load.return_value = [{
-            "path": str(tmp_path / "test.parquet"),
-            "contract_month": "03-20",
-            "date": "2020-01-15T00:00:00",
-            "size_mb": 10.5,
-            "row_count": 1000000,
-        }]
+        mock_load.return_value = [
+            {
+                "path": str(tmp_path / "test.parquet"),
+                "contract_month": "03-20",
+                "date": "2020-01-15T00:00:00",
+                "size_mb": 10.5,
+                "row_count": 1000000,
+            }
+        ]
 
         loaded_files = discovery.load_cache()
         assert len(loaded_files) == 1
@@ -333,9 +337,7 @@ class TestDataLoader:
 
         result = loader.load_time_range([file1, file2], start_time, end_time)
         assert len(result) > 0
-        assert all(
-            result["timestamp"] <= int(end_time.timestamp() * 1e9)
-        )
+        assert all(result["timestamp"] <= int(end_time.timestamp() * 1e9))
 
     def test_load_by_mdt(self, tmp_path, sample_tick_data):
         """Test loading data grouped by MDT."""
@@ -353,16 +355,18 @@ class TestDataLoader:
     def test_aggregate_bars(self, tmp_path):
         """Test bar aggregation."""
         # Create trade data
-        trades = pd.DataFrame({
-            "timestamp": [
-                1609459200000000000 + i * 1000000000  # 1 second intervals
-                for i in range(10)
-            ],
-            "price": [100 + i * 0.1 for i in range(10)],
-            "volume": [10] * 10,
-            "mdt": [2] * 10,  # All trades
-            "level": ["1"] * 10,
-        })
+        trades = pd.DataFrame(
+            {
+                "timestamp": [
+                    1609459200000000000 + i * 1000000000  # 1 second intervals
+                    for i in range(10)
+                ],
+                "price": [100 + i * 0.1 for i in range(10)],
+                "volume": [10] * 10,
+                "mdt": [2] * 10,  # All trades
+                "level": ["1"] * 10,
+            }
+        )
 
         file_path = tmp_path / "trades.parquet"
         trades.to_parquet(file_path)
@@ -376,7 +380,9 @@ class TestDataLoader:
             bar_size=pd.Timedelta(seconds=5),
         )
         assert len(bars) == 2  # 10 seconds / 5 second bars
-        assert all(col in bars.columns for col in ["open", "high", "low", "close", "volume"])
+        assert all(
+            col in bars.columns for col in ["open", "high", "low", "close", "volume"]
+        )
 
     def test_clear_cache(self):
         """Test cache clearing."""

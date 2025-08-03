@@ -25,13 +25,9 @@ class DataValidator:
     """Validates MNQ tick data files for integrity and consistency."""
 
     # Expected schema columns
-    REQUIRED_COLUMNS = {
-        "level", "mdt", "timestamp", "price", "volume"
-    }
+    REQUIRED_COLUMNS = {"level", "mdt", "timestamp", "price", "volume"}
 
-    LEVEL2_COLUMNS = {
-        "operation", "depth", "market_maker"
-    }
+    LEVEL2_COLUMNS = {"operation", "depth", "market_maker"}
 
     # Valid MDT values
     VALID_MDT_VALUES = {
@@ -64,14 +60,14 @@ class DataValidator:
     ) -> ValidationResult:
         """
         Validate a single Parquet file.
-        
+
         Args:
             file_path: Path to the Parquet file
             check_data_integrity: Whether to check data integrity
             check_timestamps: Whether to validate timestamps
             check_prices: Whether to validate price data
             cache_results: Whether to cache validation results
-            
+
         Returns:
             ValidationResult with validation details
         """
@@ -119,7 +115,9 @@ class DataValidator:
                 stats.update(price_stats)
 
             # Collect general statistics
-            stats["unique_levels"] = df["level"].nunique() if "level" in df.columns else 0
+            stats["unique_levels"] = (
+                df["level"].nunique() if "level" in df.columns else 0
+            )
             stats["unique_mdts"] = df["mdt"].nunique() if "mdt" in df.columns else 0
 
         except Exception as e:
@@ -155,7 +153,9 @@ class DataValidator:
                 errors.append(f"Missing Level 2 columns: {missing_level2}")
 
         # Check data types
-        if "timestamp" in df.columns and not pd.api.types.is_integer_dtype(df["timestamp"]):
+        if "timestamp" in df.columns and not pd.api.types.is_integer_dtype(
+            df["timestamp"]
+        ):
             errors.append("Timestamp column must be integer type (nanoseconds)")
 
         if "price" in df.columns and not pd.api.types.is_numeric_dtype(df["price"]):
@@ -166,9 +166,7 @@ class DataValidator:
 
         return errors
 
-    def _validate_data_integrity(
-        self, df: pd.DataFrame
-    ) -> tuple[list[str], list[str]]:
+    def _validate_data_integrity(self, df: pd.DataFrame) -> tuple[list[str], list[str]]:
         """Validate data integrity and consistency."""
         errors = []
         warnings = []
@@ -179,7 +177,9 @@ class DataValidator:
         if not critical_nulls.empty:
             for col, count in critical_nulls.items():
                 if col in self.REQUIRED_COLUMNS:
-                    errors.append(f"Found {count} null values in required column '{col}'")
+                    errors.append(
+                        f"Found {count} null values in required column '{col}'"
+                    )
                 else:
                     warnings.append(f"Found {count} null values in column '{col}'")
 
@@ -214,7 +214,9 @@ class DataValidator:
 
         return errors, warnings
 
-    def _validate_timestamps(self, df: pd.DataFrame) -> tuple[list[str], dict[str, Any]]:
+    def _validate_timestamps(
+        self, df: pd.DataFrame
+    ) -> tuple[list[str], dict[str, Any]]:
         """Validate timestamp data."""
         errors: list[str] = []
         stats: dict[str, Any] = {}
@@ -253,14 +255,18 @@ class DataValidator:
             # Count out-of-order timestamps
             diffs = df["timestamp"].diff()
             out_of_order = (diffs < 0).sum()
-            errors.append(f"Timestamps are not monotonically increasing ({out_of_order} reversals)")
+            errors.append(
+                f"Timestamps are not monotonically increasing ({out_of_order} reversals)"
+            )
 
         # Calculate timestamp statistics
         if len(df) > 1:
             time_diffs = df["timestamp"].diff().dropna()
             stats["avg_time_diff_ns"] = time_diffs.mean()
             stats["max_time_gap_ns"] = time_diffs.max()
-            stats["min_time_gap_ns"] = time_diffs[time_diffs > 0].min() if (time_diffs > 0).any() else 0
+            stats["min_time_gap_ns"] = (
+                time_diffs[time_diffs > 0].min() if (time_diffs > 0).any() else 0
+            )
 
         return errors, stats
 
@@ -302,24 +308,23 @@ class DataValidator:
                 extreme_outliers = z_scores > 10
                 if extreme_outliers.any():
                     count = extreme_outliers.sum()
-                    errors.append(f"Found {count} extreme price outliers (>10 std devs)")
+                    errors.append(
+                        f"Found {count} extreme price outliers (>10 std devs)"
+                    )
 
         return errors, stats
 
     def validate_batch(
-        self,
-        file_paths: list[Path],
-        parallel: bool = True,
-        **kwargs: Any
+        self, file_paths: list[Path], parallel: bool = True, **kwargs: Any
     ) -> dict[Path, ValidationResult]:
         """
         Validate multiple files.
-        
+
         Args:
             file_paths: List of file paths to validate
             parallel: Whether to process files in parallel
             **kwargs: Additional arguments for validate_file
-            
+
         Returns:
             Dictionary mapping file paths to validation results
         """
@@ -336,15 +341,13 @@ class DataValidator:
 
         return results
 
-    def generate_validation_report(
-        self, results: dict[Path, ValidationResult]
-    ) -> str:
+    def generate_validation_report(self, results: dict[Path, ValidationResult]) -> str:
         """
         Generate a summary report from validation results.
-        
+
         Args:
             results: Dictionary of validation results
-            
+
         Returns:
             Formatted report string
         """

@@ -254,15 +254,14 @@ class ParquetFileDiscovery:
             import re
 
             # Match pattern: MNQ_XX-XX_YYYY-MM-DD.parquet
-            match = re.match(r"MNQ_(\d{2}-\d{2})_(\d{4}-\d{2}-\d{2})\.parquet", filename)
+            match = re.match(
+                r"MNQ_(\d{2}-\d{2})_(\d{4}-\d{2}-\d{2})\.parquet", filename
+            )
             if match:
                 contract_month = match.group(1)
                 date_str = match.group(2)
                 date = datetime.strptime(date_str, "%Y-%m-%d")
-                return {
-                    "contract_month": contract_month,
-                    "date": date
-                }
+                return {"contract_month": contract_month, "date": date}
             return None
         except Exception:
             return None
@@ -271,13 +270,15 @@ class ParquetFileDiscovery:
         """Save file information to cache."""
         cache_data = []
         for file_info in files:
-            cache_data.append({
-                "path": str(file_info.path),
-                "contract_month": file_info.contract_month,
-                "date": file_info.date.isoformat(),
-                "size_mb": file_info.size_mb,
-                "row_count": getattr(file_info, "row_count", None)
-            })
+            cache_data.append(
+                {
+                    "path": str(file_info.path),
+                    "contract_month": file_info.contract_month,
+                    "date": file_info.date.isoformat(),
+                    "size_mb": file_info.size_mb,
+                    "row_count": getattr(file_info, "row_count", None),
+                }
+            )
 
         with open(self.cache_file, "w") as f:
             json.dump(cache_data, f, indent=2)
@@ -293,14 +294,16 @@ class ParquetFileDiscovery:
         files = []
         for item in cache_data:
             # Handle the fact that ParquetFileInfo uses size_bytes not size_mb
-            size_bytes = int(item.get("size_mb", 0) * 1024 * 1024) if "size_mb" in item else 0
+            size_bytes = (
+                int(item.get("size_mb", 0) * 1024 * 1024) if "size_mb" in item else 0
+            )
 
             file_info = ParquetFileInfo(
                 path=Path(item["path"]),
                 contract_month=item["contract_month"],
                 date=datetime.fromisoformat(item["date"]),
                 size_bytes=size_bytes,
-                file_name=Path(item["path"]).name
+                file_name=Path(item["path"]).name,
             )
             # Add row_count as an attribute if present
             if "row_count" in item and item["row_count"] is not None:
