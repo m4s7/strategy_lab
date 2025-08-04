@@ -5,7 +5,7 @@ import logging
 from dataclasses import asdict, dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -24,11 +24,11 @@ class WalkForwardResult:
     out_of_sample_end: datetime
 
     # Optimal parameters from in-sample optimization
-    optimal_parameters: Dict[str, Any]
+    optimal_parameters: dict[str, Any]
 
     # Performance metrics
-    in_sample_metrics: Dict[str, float]
-    out_of_sample_metrics: Dict[str, float]
+    in_sample_metrics: dict[str, float]
+    out_of_sample_metrics: dict[str, float]
 
     # Optimization details
     optimization_time: float
@@ -36,25 +36,25 @@ class WalkForwardResult:
     n_parameter_combinations: int
 
     # Parameter stability (optional)
-    parameter_changes: Optional[Dict[str, float]] = None
-    parameter_stability_score: Optional[float] = None
+    parameter_changes: dict[str, float] | None = None
+    parameter_stability_score: float | None = None
 
     # Statistical validation (optional)
-    statistical_tests: Optional[Dict[str, float]] = None
-    is_significant: Optional[bool] = None
+    statistical_tests: dict[str, float] | None = None
+    is_significant: bool | None = None
 
     @property
-    def in_sample_period(self) -> Tuple[datetime, datetime]:
+    def in_sample_period(self) -> tuple[datetime, datetime]:
         """Get in-sample period tuple."""
         return (self.in_sample_start, self.in_sample_end)
 
     @property
-    def out_of_sample_period(self) -> Tuple[datetime, datetime]:
+    def out_of_sample_period(self) -> tuple[datetime, datetime]:
         """Get out-of-sample period tuple."""
         return (self.out_of_sample_start, self.out_of_sample_end)
 
     @property
-    def performance_ratio(self) -> Dict[str, float]:
+    def performance_ratio(self) -> dict[str, float]:
         """Calculate out-of-sample / in-sample performance ratios."""
         ratios = {}
 
@@ -83,7 +83,7 @@ class WalkForwardResult:
 
         return self.performance_ratio[primary_metric]
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         data = asdict(self)
         # Convert datetime objects to ISO format
@@ -99,15 +99,15 @@ class WalkForwardResultSet:
 
     def __init__(self):
         """Initialize result set."""
-        self.results: List[WalkForwardResult] = []
-        self._df_cache: Optional[pd.DataFrame] = None
+        self.results: list[WalkForwardResult] = []
+        self._df_cache: pd.DataFrame | None = None
 
     def add_result(self, result: WalkForwardResult) -> None:
         """Add a walk-forward result."""
         self.results.append(result)
         self._df_cache = None  # Invalidate cache
 
-    def get_result(self, window_id: int) -> Optional[WalkForwardResult]:
+    def get_result(self, window_id: int) -> WalkForwardResult | None:
         """Get result by window ID."""
         for result in self.results:
             if result.window_id == window_id:
@@ -201,7 +201,7 @@ class WalkForwardResultSet:
         df.set_index("out_of_sample_start", inplace=True)
         return df
 
-    def calculate_aggregate_metrics(self) -> Dict[str, Any]:
+    def calculate_aggregate_metrics(self) -> dict[str, Any]:
         """Calculate aggregate performance metrics."""
         if not self.results:
             return {}
@@ -265,7 +265,7 @@ class WalkForwardResultSet:
 
     def identify_breakdown_periods(
         self, metric: str = "sharpe_ratio", threshold: float = 0.5
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Identify periods where strategy breaks down.
 
         Args:
@@ -309,7 +309,7 @@ class WalkForwardResultSet:
     @classmethod
     def load(cls, filepath: Path) -> "WalkForwardResultSet":
         """Load results from file."""
-        with open(filepath, "r") as f:
+        with open(filepath) as f:
             data = json.load(f)
 
         result_set = cls()

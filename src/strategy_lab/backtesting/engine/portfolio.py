@@ -32,6 +32,10 @@ class Position:
     commission: Decimal = Decimal("0")
     slippage: Decimal = Decimal("0")
 
+    # Stop loss and take profit levels
+    stop_loss_price: Decimal | None = None
+    take_profit_price: Decimal | None = None
+
     # Calculated fields
     current_price: Decimal = Decimal("0")
     unrealized_pnl: Decimal = Decimal("0")
@@ -70,6 +74,36 @@ class Position:
 
             # Subtract commission from unrealized P&L
             self.unrealized_pnl -= self.commission
+
+    def should_trigger_stop_loss(self) -> bool:
+        """Check if current price should trigger stop loss.
+
+        Returns:
+            True if stop loss should be triggered
+        """
+        if not self.is_open or self.stop_loss_price is None:
+            return False
+
+        if self.side == PositionSide.LONG:
+            return self.current_price <= self.stop_loss_price
+        elif self.side == PositionSide.SHORT:
+            return self.current_price >= self.stop_loss_price
+        return False
+
+    def should_trigger_take_profit(self) -> bool:
+        """Check if current price should trigger take profit.
+
+        Returns:
+            True if take profit should be triggered
+        """
+        if not self.is_open or self.take_profit_price is None:
+            return False
+
+        if self.side == PositionSide.LONG:
+            return self.current_price >= self.take_profit_price
+        elif self.side == PositionSide.SHORT:
+            return self.current_price <= self.take_profit_price
+        return False
 
     def close(self, exit_price: Decimal, exit_time: pd.Timestamp) -> Decimal:
         """Close the position.
@@ -122,10 +156,16 @@ class Portfolio:
     # Current values
     current_timestamp: pd.Timestamp | None = None
 
+    # Drawdown tracking
+    peak_equity: Decimal = field(init=False)
+    current_drawdown: Decimal = field(init=False, default=Decimal("0"))
+    max_drawdown: Decimal = field(init=False, default=Decimal("0"))
+
     def __post_init__(self):
         """Initialize portfolio state."""
         self.cash = self.initial_capital
         self.equity_curve.append(self.initial_capital)
+        self.peak_equity = self.initial_capital
 
     @property
     def equity(self) -> Decimal:
@@ -181,6 +221,43 @@ class Portfolio:
         """
         return self.get_position(symbol) is not None
 
+    @property
+    def current_drawdown_percent(self) -> Decimal:
+        """Get current drawdown as percentage.
+
+        Returns:
+            Current drawdown percentage (negative value)
+        """
+        if self.peak_equity == 0:
+            return Decimal("0")
+        return (self.current_drawdown / self.peak_equity) * Decimal("100")
+
+    @property
+    def max_drawdown_percent(self) -> Decimal:
+        """Get maximum drawdown as percentage.
+
+        Returns:
+            Maximum drawdown percentage (negative value)
+        """
+        if self.peak_equity == 0:
+            return Decimal("0")
+        return (self.max_drawdown / self.peak_equity) * Decimal("100")
+
+    def _update_drawdown(self) -> None:
+        """Update drawdown calculations."""
+        current_equity = self.equity
+
+        # Update peak equity
+        if current_equity > self.peak_equity:
+            self.peak_equity = current_equity
+            self.current_drawdown = Decimal("0")
+        else:
+            # Calculate current drawdown
+            self.current_drawdown = self.peak_equity - current_equity
+            # Update max drawdown
+            if self.current_drawdown > self.max_drawdown:
+                self.max_drawdown = self.current_drawdown
+
     def open_position(
         self,
         symbol: str,
@@ -188,6 +265,8 @@ class Portfolio:
         quantity: int,
         price: Decimal,
         timestamp: pd.Timestamp,
+        stop_loss_price: Decimal | None = None,
+        take_profit_price: Decimal | None = None,
     ) -> Position:
         """Open a new position.
 
@@ -197,6 +276,8 @@ class Portfolio:
             quantity: Position quantity
             price: Entry price
             timestamp: Entry timestamp
+            stop_loss_price: Optional stop loss trigger price
+            take_profit_price: Optional take profit trigger price
 
         Returns:
             Created Position
@@ -223,6 +304,8 @@ class Portfolio:
             commission=commission,
             slippage=slippage,
             current_price=price,
+            stop_loss_price=stop_loss_price,
+            take_profit_price=take_profit_price,
         )
 
         # Update portfolio
@@ -293,6 +376,64 @@ class Portfolio:
         self.equity_curve.append(current_equity)
         self.timestamps.append(timestamp)
 
+        # Update drawdown tracking
+        self._update_drawdown()
+
+    def check_stop_loss_take_profit_triggers(
+        self, timestamp: pd.Timestamp
+    ) -> list[tuple[Position, str]]:
+        """Check all positions for stop-loss and take-profit triggers.
+
+        Args:
+            timestamp: Current timestamp
+
+        Returns:
+            List of (position, trigger_type) tuples where trigger_type is 'stop_loss' or 'take_profit'
+        """
+        triggers = []
+
+        for symbol_positions in self.positions.values():
+            for position in symbol_positions:
+                if position.is_open:
+                    if position.should_trigger_stop_loss():
+                        triggers.append((position, "stop_loss"))
+                    elif position.should_trigger_take_profit():
+                        triggers.append((position, "take_profit"))
+
+        return triggers
+
+    def set_stop_loss(self, symbol: str, stop_loss_price: Decimal) -> bool:
+        """Set stop loss price for a position.
+
+        Args:
+            symbol: Trading symbol
+            stop_loss_price: Stop loss trigger price
+
+        Returns:
+            True if stop loss was set successfully
+        """
+        position = self.get_position(symbol)
+        if position and position.is_open:
+            position.stop_loss_price = stop_loss_price
+            return True
+        return False
+
+    def set_take_profit(self, symbol: str, take_profit_price: Decimal) -> bool:
+        """Set take profit price for a position.
+
+        Args:
+            symbol: Trading symbol
+            take_profit_price: Take profit trigger price
+
+        Returns:
+            True if take profit was set successfully
+        """
+        position = self.get_position(symbol)
+        if position and position.is_open:
+            position.take_profit_price = take_profit_price
+            return True
+        return False
+
     def get_portfolio_metrics(self) -> dict[str, Any]:
         """Get current portfolio metrics.
 
@@ -316,6 +457,12 @@ class Portfolio:
             "open_positions": len(open_positions),
             "closed_positions": len(self.closed_positions),
             "total_trades": len(open_positions) + len(self.closed_positions),
+            # Drawdown metrics
+            "peak_equity": float(self.peak_equity),
+            "current_drawdown": float(self.current_drawdown),
+            "max_drawdown": float(self.max_drawdown),
+            "current_drawdown_percent": float(self.current_drawdown_percent),
+            "max_drawdown_percent": float(self.max_drawdown_percent),
         }
 
     def reset(self) -> None:

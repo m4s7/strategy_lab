@@ -4,9 +4,11 @@ import logging
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
+from typing import Any
 
 from .config import BacktestConfig, ConfigTemplate
 from .execution import BacktestExecutor, execute_backtest_parallel
+from .execution_enhanced import EnhancedBacktestExecutor
 from .results import BacktestResult, query_results, save_results
 
 logger = logging.getLogger(__name__)
@@ -70,6 +72,11 @@ class BacktestEngine:
             errors = config.validate()
             if errors:
                 raise ValueError(f"Invalid configuration: {', '.join(errors)}")
+
+            # Validate data availability
+            data_errors = self._validate_data_availability(config)
+            if data_errors:
+                raise ValueError(f"Data validation failed: {', '.join(data_errors)}")
 
         # Create job
         self._job_counter += 1
@@ -330,3 +337,143 @@ class BacktestEngine:
                 best_result = job.result
 
         return best_result
+
+    def _validate_data_availability(self, config: BacktestConfig) -> list[str]:
+        """Validate that data is available for the given configuration.
+
+        Args:
+            config: Backtest configuration to validate
+
+        Returns:
+            List of validation errors (empty if valid)
+        """
+        errors = []
+
+        try:
+            from ..data_integration import BacktestDataProvider
+
+            data_provider = BacktestDataProvider(config)
+
+            # Validate date range
+            date_valid, date_msg = data_provider.validate_date_range()
+            if not date_valid:
+                errors.append(date_msg)
+
+            # Validate contracts
+            contracts_valid, contracts_msg = data_provider.validate_contracts()
+            if not contracts_valid:
+                errors.append(contracts_msg)
+
+            # Try to discover files to ensure data exists
+            try:
+                data_provider.initialize()
+            except Exception as e:
+                errors.append(f"Data initialization failed: {e}")
+
+        except Exception as e:
+            errors.append(f"Data validation error: {e}")
+
+        return errors
+
+    def get_data_info(self, config: BacktestConfig) -> dict[str, Any]:
+        """Get information about available data for a configuration.
+
+        Args:
+            config: Backtest configuration
+
+        Returns:
+            Dictionary with data information
+        """
+        try:
+            from ..data_integration import BacktestDataProvider
+
+            data_provider = BacktestDataProvider(config)
+            return data_provider.get_data_info()
+        except Exception as e:
+            logger.error(f"Failed to get data info: {e}")
+            return {"error": str(e)}
+
+    def create_backtest_with_data_stream(
+        self, config: BacktestConfig
+    ) -> tuple[str, Any]:
+        """Create backtest with initialized data stream.
+
+        Args:
+            config: Backtest configuration
+
+        Returns:
+            Tuple of (job_id, data_provider)
+        """
+        from ..data_integration import BacktestDataProvider
+
+        # Create the backtest job
+        job_id = self.create_backtest(config, validate=True)
+
+        # Initialize data provider
+        data_provider = BacktestDataProvider(config)
+        data_provider.initialize()
+
+        return job_id, data_provider
+
+    def run_enhanced_backtest(self, job_id: str) -> BacktestResult:
+        """Run a backtest using the enhanced executor with data pipeline integration.
+
+        Args:
+            job_id: Job ID to run
+
+        Returns:
+            BacktestResult from enhanced execution
+        """
+        if job_id not in self.jobs:
+            raise ValueError(f"Job {job_id} not found")
+
+        job = self.jobs[job_id]
+
+        if job.status != BacktestStatus.PENDING:
+            raise ValueError(f"Job {job_id} is not pending (status: {job.status})")
+
+        # Update status
+        job.status = BacktestStatus.RUNNING
+        logger.info(f"Running enhanced backtest job {job_id}")
+
+        try:
+            # Execute backtest with enhanced executor
+            enhanced_executor = EnhancedBacktestExecutor(job.config)
+            result = enhanced_executor.execute()
+
+            # Save results
+            if job.config.output_dir:
+                save_results(result, job.config.output_dir)
+
+            # Update job
+            job.status = BacktestStatus.COMPLETED
+            job.result = result
+
+            logger.info(f"Completed enhanced backtest job {job_id}")
+            return result
+
+        except Exception as e:
+            # Handle failure
+            job.status = BacktestStatus.FAILED
+            job.error = str(e)
+            logger.error(f"Failed enhanced backtest job {job_id}: {e}")
+            raise
+
+    def run_backtest_with_data_pipeline(
+        self, config: BacktestConfig, use_enhanced: bool = True
+    ) -> BacktestResult:
+        """Convenience method to run backtest with data pipeline integration.
+
+        Args:
+            config: Backtest configuration
+            use_enhanced: Whether to use enhanced executor (default: True)
+
+        Returns:
+            BacktestResult
+        """
+        # Create and run job
+        job_id = self.create_backtest(config, validate=True)
+
+        if use_enhanced:
+            return self.run_enhanced_backtest(job_id)
+        return self.run_backtest(job_id)

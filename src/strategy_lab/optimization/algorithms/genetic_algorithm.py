@@ -3,8 +3,9 @@
 import logging
 import random
 import time
-from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from collections.abc import Callable
+from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
 
@@ -34,9 +35,9 @@ class GeneticAlgorithmConfig:
     selection_method: str = "tournament"  # tournament, roulette, rank
     tournament_size: int = 3
     elite_size: int = 5  # Number of best individuals to preserve
-    random_seed: Optional[int] = None
+    random_seed: int | None = None
     parallel: bool = True
-    n_workers: Optional[int] = None
+    n_workers: int | None = None
     verbose: bool = True
 
     # Multi-objective settings
@@ -53,9 +54,9 @@ class GeneticAlgorithmConfig:
 class Individual:
     """Represents an individual in the population."""
 
-    genes: List[float]  # Encoded parameters
-    fitness: Optional[Union[float, Tuple[float, ...]]] = None
-    parameters: Optional[Dict[str, Any]] = None
+    genes: list[float]  # Encoded parameters
+    fitness: float | tuple[float, ...] | None = None
+    parameters: dict[str, Any] | None = None
     generation: int = 0
 
     def __lt__(self, other):
@@ -73,9 +74,9 @@ class PopulationStats:
     """Statistics for a population."""
 
     generation: int
-    best_fitness: Union[float, Tuple[float, ...]]
-    average_fitness: Union[float, Tuple[float, ...]]
-    worst_fitness: Union[float, Tuple[float, ...]]
+    best_fitness: float | tuple[float, ...]
+    average_fitness: float | tuple[float, ...]
+    worst_fitness: float | tuple[float, ...]
     diversity: float
     convergence_rate: float = 0.0
 
@@ -129,7 +130,7 @@ class GeneticEncoder:
                     }
                 )
 
-    def encode(self, parameters: Dict[str, Any]) -> List[float]:
+    def encode(self, parameters: dict[str, Any]) -> list[float]:
         """Encode parameters to genes.
 
         Args:
@@ -143,12 +144,7 @@ class GeneticEncoder:
         for encoding in self.encodings:
             value = parameters[encoding["name"]]
 
-            if encoding["type"] == "continuous":
-                # Normalize to [0, 1]
-                gene = (value - encoding["min"]) / (encoding["max"] - encoding["min"])
-                genes.append(gene)
-
-            elif encoding["type"] == "discrete":
+            if encoding["type"] == "continuous" or encoding["type"] == "discrete":
                 # Normalize to [0, 1]
                 gene = (value - encoding["min"]) / (encoding["max"] - encoding["min"])
                 genes.append(gene)
@@ -165,7 +161,7 @@ class GeneticEncoder:
 
         return genes
 
-    def decode(self, genes: List[float]) -> Dict[str, Any]:
+    def decode(self, genes: list[float]) -> dict[str, Any]:
         """Decode genes to parameters.
 
         Args:
@@ -213,7 +209,7 @@ class GeneticEncoder:
 class GeneticAlgorithmOptimizer:
     """Genetic algorithm optimization."""
 
-    def __init__(self, config: Optional[GeneticAlgorithmConfig] = None):
+    def __init__(self, config: GeneticAlgorithmConfig | None = None):
         """Initialize optimizer.
 
         Args:
@@ -227,16 +223,14 @@ class GeneticAlgorithmOptimizer:
             np.random.seed(self.config.random_seed)
 
         # Statistics tracking
-        self.population_stats: List[PopulationStats] = []
-        self.best_individual: Optional[Individual] = None
+        self.population_stats: list[PopulationStats] = []
+        self.best_individual: Individual | None = None
 
     def optimize(
         self,
-        objective_func: Callable[
-            ..., Union[float, Dict[str, float], Tuple[float, ...]]
-        ],
+        objective_func: Callable[..., float | dict[str, float] | tuple[float, ...]],
         parameter_space: ParameterSpace,
-        objectives: Optional[List[Dict[str, Any]]] = None,
+        objectives: list[dict[str, Any]] | None = None,
     ) -> OptimizationResultSet:
         """Run genetic algorithm optimization.
 
@@ -316,7 +310,7 @@ class GeneticAlgorithmOptimizer:
 
         return results
 
-    def _initialize_population(self, encoder: GeneticEncoder) -> List[Individual]:
+    def _initialize_population(self, encoder: GeneticEncoder) -> list[Individual]:
         """Initialize random population."""
         population = []
 
@@ -330,7 +324,7 @@ class GeneticAlgorithmOptimizer:
 
     def _evaluate_population(
         self,
-        population: List[Individual],
+        population: list[Individual],
         objective_func: Callable,
         encoder: GeneticEncoder,
         results: OptimizationResultSet,
@@ -380,24 +374,21 @@ class GeneticAlgorithmOptimizer:
                 logger.error(f"Error evaluating {parameters}: {e}")
                 individual.fitness = float("-inf")  # Worst possible fitness
 
-    def _select_parents(self, population: List[Individual]) -> List[Individual]:
+    def _select_parents(self, population: list[Individual]) -> list[Individual]:
         """Select parents for reproduction."""
         n_parents = self.config.population_size
 
         if self.config.selection_method == "tournament":
             return self._tournament_selection(population, n_parents)
-        elif self.config.selection_method == "roulette":
+        if self.config.selection_method == "roulette":
             return self._roulette_selection(population, n_parents)
-        elif self.config.selection_method == "rank":
+        if self.config.selection_method == "rank":
             return self._rank_selection(population, n_parents)
-        else:
-            raise ValueError(
-                f"Unknown selection method: {self.config.selection_method}"
-            )
+        raise ValueError(f"Unknown selection method: {self.config.selection_method}")
 
     def _tournament_selection(
-        self, population: List[Individual], n_select: int
-    ) -> List[Individual]:
+        self, population: list[Individual], n_select: int
+    ) -> list[Individual]:
         """Tournament selection."""
         selected = []
 
@@ -414,8 +405,8 @@ class GeneticAlgorithmOptimizer:
         return selected
 
     def _roulette_selection(
-        self, population: List[Individual], n_select: int
-    ) -> List[Individual]:
+        self, population: list[Individual], n_select: int
+    ) -> list[Individual]:
         """Roulette wheel selection."""
         # Get fitness values
         fitness_values = []
@@ -453,8 +444,8 @@ class GeneticAlgorithmOptimizer:
         return selected
 
     def _rank_selection(
-        self, population: List[Individual], n_select: int
-    ) -> List[Individual]:
+        self, population: list[Individual], n_select: int
+    ) -> list[Individual]:
         """Rank-based selection."""
         # Sort by fitness
         sorted_pop = sorted(
@@ -480,8 +471,8 @@ class GeneticAlgorithmOptimizer:
         return selected
 
     def _create_offspring(
-        self, parents: List[Individual], encoder: GeneticEncoder
-    ) -> List[Individual]:
+        self, parents: list[Individual], encoder: GeneticEncoder
+    ) -> list[Individual]:
         """Create offspring through crossover and mutation."""
         offspring = []
 
@@ -512,8 +503,8 @@ class GeneticAlgorithmOptimizer:
         return offspring[: self.config.population_size]  # Ensure correct size
 
     def _crossover(
-        self, genes1: List[float], genes2: List[float]
-    ) -> Tuple[List[float], List[float]]:
+        self, genes1: list[float], genes2: list[float]
+    ) -> tuple[list[float], list[float]]:
         """Uniform crossover."""
         child1_genes = []
         child2_genes = []
@@ -528,7 +519,7 @@ class GeneticAlgorithmOptimizer:
 
         return child1_genes, child2_genes
 
-    def _mutate(self, genes: List[float]) -> List[float]:
+    def _mutate(self, genes: list[float]) -> list[float]:
         """Gaussian mutation."""
         mutated = []
 
@@ -546,8 +537,8 @@ class GeneticAlgorithmOptimizer:
         return mutated
 
     def _create_next_generation(
-        self, population: List[Individual], offspring: List[Individual]
-    ) -> List[Individual]:
+        self, population: list[Individual], offspring: list[Individual]
+    ) -> list[Individual]:
         """Create next generation with elitism."""
         # Combine population and offspring
         all_individuals = population + offspring
@@ -568,7 +559,7 @@ class GeneticAlgorithmOptimizer:
         return next_generation
 
     def _calculate_stats(
-        self, population: List[Individual], generation: int
+        self, population: list[Individual], generation: int
     ) -> PopulationStats:
         """Calculate population statistics."""
         fitness_values = []
@@ -594,7 +585,7 @@ class GeneticAlgorithmOptimizer:
             diversity=diversity,
         )
 
-    def _get_best_fitness(self, population: List[Individual]) -> float:
+    def _get_best_fitness(self, population: list[Individual]) -> float:
         """Get best fitness value."""
         fitness_values = []
         for ind in population:
@@ -610,7 +601,7 @@ class GeneticAlgorithmOptimizer:
         """Check if converged."""
         return abs(new_best - old_best) < self.config.fitness_tolerance
 
-    def _update_best_individual(self, population: List[Individual]) -> None:
+    def _update_best_individual(self, population: list[Individual]) -> None:
         """Update best individual seen so far."""
         current_best = max(
             population,

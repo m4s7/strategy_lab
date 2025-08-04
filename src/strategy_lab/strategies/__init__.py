@@ -8,13 +8,13 @@ from .base.pluggable_strategy import PluggableStrategy
 from .base.position_manager import PositionManager
 from .base.signal_generator import SignalGenerator
 from .base.strategy import StrategyBase
-from .factory import factory
-from .protocol import StrategyMetadata, StrategyProtocol
-from .registry import register_strategy, registry
+from .examples.moving_average_crossover import MovingAverageCrossoverStrategy
 
 # Import example strategies to trigger registration
 from .examples.simple_ma_strategy import SimpleMAStrategy
-from .examples.moving_average_crossover import MovingAverageCrossoverStrategy
+from .factory import factory
+from .protocol import StrategyMetadata, StrategyProtocol
+from .registry import register_strategy, registry
 
 # Import implementation strategies
 try:

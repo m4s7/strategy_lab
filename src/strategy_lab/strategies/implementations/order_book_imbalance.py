@@ -8,8 +8,7 @@ significant imbalances.
 import logging
 from collections import deque
 from dataclasses import dataclass, field
-from decimal import Decimal
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -39,8 +38,8 @@ class ImbalanceState:
     imbalance_history: deque = field(default_factory=lambda: deque(maxlen=100))
     signal_history: deque = field(default_factory=lambda: deque(maxlen=100))
     last_signal: int = 0
-    position_entry_time: Optional[pd.Timestamp] = None
-    position_entry_price: Optional[float] = None
+    position_entry_time: pd.Timestamp | None = None
+    position_entry_price: float | None = None
     consecutive_signals: int = 0
 
 
@@ -120,7 +119,7 @@ class OrderBookImbalanceStrategy(PluggableStrategy):
 
         # Initialize state
         self.state = ImbalanceState()
-        self._metrics_buffer: List[ImbalanceMetrics] = []
+        self._metrics_buffer: list[ImbalanceMetrics] = []
 
         # Initialize position manager with config
         config = type(
@@ -151,7 +150,7 @@ class OrderBookImbalanceStrategy(PluggableStrategy):
         )
 
     def calculate_imbalance(
-        self, bid_levels: List[Tuple[float, int]], ask_levels: List[Tuple[float, int]]
+        self, bid_levels: list[tuple[float, int]], ask_levels: list[tuple[float, int]]
     ) -> ImbalanceMetrics:
         """Calculate order book imbalance with depth weighting.
 
@@ -220,7 +219,7 @@ class OrderBookImbalanceStrategy(PluggableStrategy):
         spread_ticks = (best_ask - best_bid) / tick_size
         return spread_ticks >= self.min_spread_ticks
 
-    def check_volatility_filter(self, price_history: List[float]) -> bool:
+    def check_volatility_filter(self, price_history: list[float]) -> bool:
         """Check if volatility conditions are favorable.
 
         Args:

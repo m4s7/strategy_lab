@@ -1,12 +1,9 @@
 """Tests for optimization results."""
 
-import json
 import tempfile
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
 
-import numpy as np
-import pandas as pd
 import pytest
 
 from strategy_lab.optimization.core.results import (

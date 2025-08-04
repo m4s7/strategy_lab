@@ -1,14 +1,14 @@
 """Tests for Order Book Imbalance Strategy."""
 
+from unittest.mock import MagicMock
+
 import numpy as np
 import pandas as pd
 import pytest
-from unittest.mock import MagicMock
 
 from strategy_lab.strategies.implementations.order_book_imbalance import (
-    OrderBookImbalanceStrategy,
     ImbalanceMetrics,
-    ImbalanceState,
+    OrderBookImbalanceStrategy,
 )
 
 
@@ -404,7 +404,7 @@ class TestOrderBookImbalanceStrategy:
         # Check for any logging - logger was mocked after initialization
         # so we need to check if process_tick triggered any logs
         # In this case, no signal was generated, so no logging expected
-        pass  # The test is about ensuring no errors occur
+        # The test is about ensuring no errors occur
 
     def test_real_scenario(self, strategy):
         """Test realistic trading scenario."""

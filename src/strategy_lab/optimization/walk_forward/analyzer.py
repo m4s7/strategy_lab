@@ -2,15 +2,14 @@
 
 import logging
 import time
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any
 
 import pandas as pd
 
-from ..algorithms.grid_search import GridSearchOptimizer
-from ..algorithms.genetic_algorithm import GeneticAlgorithmOptimizer
 from ..core.parameter_space import ParameterSpace
 from .results import WalkForwardResult, WalkForwardResultSet
 from .scheduler import WalkForwardScheduler, WindowDefinition
@@ -32,7 +31,7 @@ class WalkForwardConfig:
 
     # Optimization configuration
     optimization_method: str = "grid_search"  # or "genetic_algorithm"
-    optimization_config: Optional[Dict[str, Any]] = None
+    optimization_config: dict[str, Any] | None = None
 
     # Validation configuration
     primary_metric: str = "sharpe_ratio"
@@ -49,15 +48,15 @@ class WalkForwardConfig:
     stability_lookback_windows: int = 3
 
     # Performance thresholds
-    min_in_sample_performance: Optional[float] = None
+    min_in_sample_performance: float | None = None
     max_acceptable_degradation: float = 0.5
 
     # Execution
     parallel: bool = True
-    n_workers: Optional[int] = None
+    n_workers: int | None = None
     verbose: bool = True
     save_intermediate: bool = True
-    results_dir: Optional[Path] = None
+    results_dir: Path | None = None
 
 
 class WalkForwardAnalyzer:
@@ -80,15 +79,15 @@ class WalkForwardAnalyzer:
             config.results_dir.mkdir(parents=True, exist_ok=True)
 
         # Track previous parameters for stability analysis
-        self.parameter_history: List[Dict[str, Any]] = []
+        self.parameter_history: list[dict[str, Any]] = []
 
     def analyze(
         self,
-        objective_func: Callable[..., Union[float, Dict[str, float]]],
+        objective_func: Callable[..., float | dict[str, float]],
         parameter_space: ParameterSpace,
         start_date: datetime,
         end_date: datetime,
-        data_getter: Optional[Callable[[datetime, datetime], pd.DataFrame]] = None,
+        data_getter: Callable[[datetime, datetime], pd.DataFrame] | None = None,
     ) -> WalkForwardResultSet:
         """Run walk-forward analysis.
 
@@ -156,7 +155,7 @@ class WalkForwardAnalyzer:
         window: WindowDefinition,
         objective_func: Callable,
         parameter_space: ParameterSpace,
-        data_getter: Optional[Callable] = None,
+        data_getter: Callable | None = None,
     ) -> WalkForwardResult:
         """Process a single walk-forward window."""
         start_time = time.time()
@@ -284,7 +283,7 @@ class WalkForwardAnalyzer:
 
     def _optimize_parameters(
         self, objective_func: Callable, parameter_space: ParameterSpace
-    ) -> tuple[Dict[str, Any], Dict[str, float], int]:
+    ) -> tuple[dict[str, Any], dict[str, float], int]:
         """Run parameter optimization."""
         if self.config.optimization_method == "grid_search":
             from ..algorithms.grid_search import GridSearchConfig, GridSearchOptimizer
@@ -335,8 +334,8 @@ class WalkForwardAnalyzer:
         return (best_result.parameters, best_result.metrics, result_set.size)
 
     def _calculate_parameter_changes(
-        self, current_params: Dict[str, Any]
-    ) -> Dict[str, float]:
+        self, current_params: dict[str, Any]
+    ) -> dict[str, float]:
         """Calculate parameter changes from previous window."""
         if not self.parameter_history:
             return {}
@@ -389,10 +388,9 @@ class WalkForwardAnalyzer:
         # Return average stability
         if stability_scores:
             return sum(stability_scores.values()) / len(stability_scores)
-        else:
-            return 1.0
+        return 1.0
 
-    def _run_statistical_tests(self, window_id: int) -> tuple[Dict[str, float], bool]:
+    def _run_statistical_tests(self, window_id: int) -> tuple[dict[str, float], bool]:
         """Run statistical tests on accumulated results."""
         # This would need access to previous results
         # For now, return placeholder

@@ -1,9 +1,9 @@
 """Walk-forward analysis scheduler for time window management."""
 
 import logging
+from collections.abc import Iterator
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Iterator, List, Optional, Tuple
 
 import pandas as pd
 
@@ -21,12 +21,12 @@ class WindowDefinition:
     window_id: int
 
     @property
-    def in_sample_period(self) -> Tuple[datetime, datetime]:
+    def in_sample_period(self) -> tuple[datetime, datetime]:
         """Get in-sample period tuple."""
         return (self.in_sample_start, self.in_sample_end)
 
     @property
-    def out_of_sample_period(self) -> Tuple[datetime, datetime]:
+    def out_of_sample_period(self) -> tuple[datetime, datetime]:
         """Get out-of-sample period tuple."""
         return (self.out_of_sample_start, self.out_of_sample_end)
 
@@ -44,10 +44,9 @@ class WindowDefinition:
         """Check if date is in window and return period type."""
         if self.in_sample_start <= date <= self.in_sample_end:
             return "in_sample"
-        elif self.out_of_sample_start <= date <= self.out_of_sample_end:
+        if self.out_of_sample_start <= date <= self.out_of_sample_end:
             return "out_of_sample"
-        else:
-            return "none"
+        return "none"
 
 
 class WalkForwardScheduler:
@@ -160,7 +159,7 @@ class WalkForwardScheduler:
 
     def get_windows_for_date(
         self, date: datetime
-    ) -> List[Tuple[WindowDefinition, str]]:
+    ) -> list[tuple[WindowDefinition, str]]:
         """Get all windows containing a specific date.
 
         Returns:

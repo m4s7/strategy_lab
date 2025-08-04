@@ -12,7 +12,6 @@ from typing import Any
 import numpy as np
 
 from ...data.adapters.hftbacktest import DataPipeline
-
 from .config import MNQConfig
 from .data_feed import HftDataFeed, TickData
 from .event_processor import Fill, HftEventProcessor, OrderSide, OrderType

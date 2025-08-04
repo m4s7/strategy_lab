@@ -3,10 +3,11 @@
 import logging
 import multiprocessing as mp
 import time
+from collections.abc import Callable
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any
 
 try:
     from tqdm import tqdm
@@ -45,13 +46,13 @@ class GridSearchConfig:
     """Configuration for grid search optimization."""
 
     parallel: bool = True  # Whether to use parallel execution
-    n_workers: Optional[int] = None  # None means use all available cores
+    n_workers: int | None = None  # None means use all available cores
     batch_size: int = 1  # Number of combinations per batch
     show_progress: bool = True
     verbose: bool = True  # Whether to print verbose output
     save_intermediate: bool = True
     save_interval: int = 100  # Save results every N evaluations
-    timeout_per_eval: Optional[float] = None  # Timeout in seconds per evaluation
+    timeout_per_eval: float | None = None  # Timeout in seconds per evaluation
     retry_failed: bool = True
     max_retries: int = 3
 
@@ -112,7 +113,7 @@ class ProgressTracker:
         if self.pbar:
             self.pbar.close()
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get current statistics."""
         elapsed = time.time() - self.start_time
         rate = self.completed / elapsed if elapsed > 0 else 0
@@ -133,10 +134,10 @@ class ProgressTracker:
 
 
 def _evaluate_combination(
-    combination: Dict[str, Any],
+    combination: dict[str, Any],
     objective_func: Callable,
-    timeout: Optional[float] = None,
-) -> Tuple[Dict[str, Any], Optional[Dict[str, float]], float, Optional[str]]:
+    timeout: float | None = None,
+) -> tuple[dict[str, Any], dict[str, float] | None, float, str | None]:
     """Evaluate a single parameter combination.
 
     Args:
@@ -175,7 +176,7 @@ def _evaluate_combination(
 class GridSearchOptimizer:
     """Grid search optimization algorithm."""
 
-    def __init__(self, config: Optional[GridSearchConfig] = None):
+    def __init__(self, config: GridSearchConfig | None = None):
         """Initialize grid search optimizer.
 
         Args:
@@ -191,9 +192,9 @@ class GridSearchOptimizer:
 
     def optimize(
         self,
-        objective_func: Callable[..., Dict[str, float]],
+        objective_func: Callable[..., dict[str, float]],
         parameter_space: ParameterSpace,
-        resume_from: Optional[OptimizationResultSet] = None,
+        resume_from: OptimizationResultSet | None = None,
     ) -> OptimizationResultSet:
         """Run grid search optimization.
 
@@ -269,7 +270,7 @@ class GridSearchOptimizer:
     def _run_serial(
         self,
         objective_func: Callable,
-        combinations: List[Dict[str, Any]],
+        combinations: list[dict[str, Any]],
         results: OptimizationResultSet,
         tracker: ProgressTracker,
     ) -> None:
@@ -320,7 +321,7 @@ class GridSearchOptimizer:
     def _run_parallel(
         self,
         objective_func: Callable,
-        combinations: List[Dict[str, Any]],
+        combinations: list[dict[str, Any]],
         results: OptimizationResultSet,
         tracker: ProgressTracker,
     ) -> None:

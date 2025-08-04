@@ -4,7 +4,7 @@ from datetime import datetime
 from decimal import Decimal
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -41,7 +41,7 @@ class LoggingConfig(BaseModel):
     """Logging configuration."""
 
     level: LogLevel = Field(default=LogLevel.INFO, description="Logging level")
-    file: Optional[Path] = Field(default=None, description="Log file path")
+    file: Path | None = Field(default=None, description="Log file path")
     console: bool = Field(default=True, description="Enable console logging")
     format: str = Field(
         default="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -71,7 +71,7 @@ class DataConfig(BaseModel):
 
     data_path: Path = Field(description="Path to market data")
     cache_enabled: bool = Field(default=True, description="Enable data caching")
-    cache_path: Optional[Path] = Field(default=None, description="Cache directory")
+    cache_path: Path | None = Field(default=None, description="Cache directory")
     preload_data: bool = Field(
         default=False, description="Preload all data into memory"
     )
@@ -103,8 +103,8 @@ class StrategyParameterConfig(BaseModel):
     model_config = {"extra": "allow"}  # Allow additional fields for flexibility
 
     # Common parameters that all strategies might have
-    lookback_period: Optional[int] = Field(default=None, ge=1)
-    position_size: Optional[int] = Field(default=1, ge=1)
+    lookback_period: int | None = Field(default=None, ge=1)
+    position_size: int | None = Field(default=1, ge=1)
 
     @field_validator("*", mode="before")
     @classmethod
@@ -128,7 +128,7 @@ class StrategyConfig(BaseModel):
 
     name: str = Field(description="Strategy name")
     enabled: bool = Field(default=True, description="Whether strategy is enabled")
-    parameters: Dict[str, Any] = Field(
+    parameters: dict[str, Any] = Field(
         default_factory=dict, description="Strategy-specific parameters"
     )
     risk_management: RiskConfig = Field(
@@ -194,7 +194,7 @@ class OptimizationConfig(BaseModel):
     )
     max_iterations: int = Field(default=1000, ge=1, description="Maximum iterations")
     parallel: bool = Field(default=True, description="Enable parallel optimization")
-    random_seed: Optional[int] = Field(
+    random_seed: int | None = Field(
         default=None, description="Random seed for reproducibility"
     )
 
@@ -221,13 +221,13 @@ class ConfigurationSet(BaseModel):
     """Complete configuration set."""
 
     system: SystemConfig = Field(description="System configuration")
-    strategies: Dict[str, StrategyConfig] = Field(
+    strategies: dict[str, StrategyConfig] = Field(
         default_factory=dict, description="Strategy configurations"
     )
-    backtesting: Optional[BacktestConfig] = Field(
+    backtesting: BacktestConfig | None = Field(
         default=None, description="Backtesting configuration"
     )
-    optimization: Optional[OptimizationConfig] = Field(
+    optimization: OptimizationConfig | None = Field(
         default=None, description="Optimization configuration"
     )
 

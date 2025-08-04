@@ -306,7 +306,7 @@ class TestConfigManager:
         assert manager._observer is None
 
         # Modify file
-        with open(config_file, "r") as f:
+        with open(config_file) as f:
             config = yaml.safe_load(f)
         config["system"]["logging"]["level"] = "DEBUG"
         with open(config_file, "w") as f:

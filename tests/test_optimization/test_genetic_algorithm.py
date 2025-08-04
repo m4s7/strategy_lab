@@ -8,7 +8,6 @@ from strategy_lab.optimization.algorithms.genetic_algorithm import (
     GeneticAlgorithmOptimizer,
     GeneticEncoder,
     Individual,
-    PopulationStats,
 )
 from strategy_lab.optimization.core.parameter_space import (
     CategoricalParameter,

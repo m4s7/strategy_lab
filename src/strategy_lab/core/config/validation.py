@@ -1,7 +1,6 @@
 """Configuration validation utilities."""
 
-import re
-from typing import Any, Dict, List, Set, Tuple
+from typing import Any
 
 from pydantic import ValidationError
 
@@ -12,9 +11,9 @@ class ValidationResult:
     """Container for validation results."""
 
     def __init__(self):
-        self.errors: List[str] = []
-        self.warnings: List[str] = []
-        self.info: List[str] = []
+        self.errors: list[str] = []
+        self.warnings: list[str] = []
+        self.info: list[str] = []
 
     @property
     def is_valid(self) -> bool:
@@ -79,7 +78,7 @@ class ConfigValidator:
         ],
     }
 
-    def validate(self, config: Dict[str, Any]) -> ValidationResult:
+    def validate(self, config: dict[str, Any]) -> ValidationResult:
         """Validate a configuration dictionary.
 
         Args:
@@ -230,7 +229,7 @@ class ConfigValidator:
                 )
 
     def validate_parameter_update(
-        self, current: Dict[str, Any], update: Dict[str, Any]
+        self, current: dict[str, Any], update: dict[str, Any]
     ) -> ValidationResult:
         """Validate a parameter update against current configuration.
 
@@ -257,8 +256,8 @@ class ConfigValidator:
         return result
 
     def _deep_merge(
-        self, base: Dict[str, Any], update: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, base: dict[str, Any], update: dict[str, Any]
+    ) -> dict[str, Any]:
         """Deep merge two dictionaries."""
         for key, value in update.items():
             if key in base and isinstance(base[key], dict) and isinstance(value, dict):
@@ -268,7 +267,7 @@ class ConfigValidator:
         return base
 
     def _check_breaking_changes(
-        self, current: Dict[str, Any], update: Dict[str, Any], result: ValidationResult
+        self, current: dict[str, Any], update: dict[str, Any], result: ValidationResult
     ) -> None:
         """Check for potentially breaking configuration changes."""
         # Check for strategy removals

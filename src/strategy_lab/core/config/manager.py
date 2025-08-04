@@ -1,14 +1,14 @@
 """Configuration management with hot-reloading and versioning."""
 
-import asyncio
 import hashlib
 import json
 import threading
 import time
 from collections import deque
+from collections.abc import Callable
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Set
+from typing import Any
 
 try:
     from watchdog.events import FileSystemEventHandler
@@ -28,7 +28,7 @@ from .validation import ConfigValidator, ValidationResult
 class ConfigSnapshot:
     """Represents a configuration snapshot."""
 
-    def __init__(self, config: Dict[str, Any], timestamp: datetime, version: str):
+    def __init__(self, config: dict[str, Any], timestamp: datetime, version: str):
         """Initialize configuration snapshot.
 
         Args:
@@ -41,7 +41,7 @@ class ConfigSnapshot:
         self.version = version
         self.hash = self._calculate_hash(config)
 
-    def _calculate_hash(self, config: Dict[str, Any]) -> str:
+    def _calculate_hash(self, config: dict[str, Any]) -> str:
         """Calculate hash of configuration."""
         config_str = json.dumps(config, sort_keys=True)
         return hashlib.sha256(config_str.encode()).hexdigest()[:16]
@@ -105,8 +105,8 @@ class ConfigManager:
         self.validator = ConfigValidator()
 
         # Current configuration
-        self._config: Optional[ConfigurationSet] = None
-        self._config_dict: Dict[str, Any] = {}
+        self._config: ConfigurationSet | None = None
+        self._config_dict: dict[str, Any] = {}
         self._lock = threading.RLock()
 
         # History and versioning
@@ -114,11 +114,11 @@ class ConfigManager:
         self._version_counter = 0
 
         # Change callbacks
-        self._callbacks: List[Callable[[ConfigurationSet], None]] = []
+        self._callbacks: list[Callable[[ConfigurationSet], None]] = []
 
         # File watching
-        self._observer: Optional[Observer] = None
-        self._watched_files: Set[Path] = set()
+        self._observer: Observer | None = None
+        self._watched_files: set[Path] = set()
 
         # Load initial configuration
         self.reload()
@@ -138,7 +138,7 @@ class ConfigManager:
             return self._config
 
     @property
-    def config_dict(self) -> Dict[str, Any]:
+    def config_dict(self) -> dict[str, Any]:
         """Get current configuration as dictionary."""
         with self._lock:
             return self._config_dict.copy()
@@ -192,7 +192,7 @@ class ConfigManager:
         return result
 
     def update(
-        self, updates: Dict[str, Any], validate: bool = True
+        self, updates: dict[str, Any], validate: bool = True
     ) -> ValidationResult:
         """Update configuration with partial updates.
 
@@ -243,7 +243,7 @@ class ConfigManager:
 
         return result
 
-    def rollback(self, version: Optional[str] = None) -> ValidationResult:
+    def rollback(self, version: str | None = None) -> ValidationResult:
         """Rollback to a previous configuration version.
 
         Args:
@@ -305,7 +305,7 @@ class ConfigManager:
 
         return result
 
-    def get_history(self) -> List[Dict[str, Any]]:
+    def get_history(self) -> list[dict[str, Any]]:
         """Get configuration history.
 
         Returns:
@@ -321,7 +321,7 @@ class ConfigManager:
                 for snapshot in self._history
             ]
 
-    def get_version(self, version: str) -> Optional[Dict[str, Any]]:
+    def get_version(self, version: str) -> dict[str, Any] | None:
         """Get configuration for a specific version.
 
         Args:

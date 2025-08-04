@@ -4,7 +4,7 @@ import json
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -14,24 +14,24 @@ import pandas as pd
 class OptimizationResult:
     """Single optimization result."""
 
-    parameters: Dict[str, Any]
-    metrics: Dict[str, float]
+    parameters: dict[str, Any]
+    metrics: dict[str, float]
     execution_time: float
     timestamp: datetime = field(default_factory=datetime.now)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     @property
-    def primary_metric(self) -> Optional[float]:
+    def primary_metric(self) -> float | None:
         """Get primary metric value (first metric)."""
         if not self.metrics:
             return None
         return next(iter(self.metrics.values()))
 
-    def get_metric(self, name: str) -> Optional[float]:
+    def get_metric(self, name: str) -> float | None:
         """Get specific metric value."""
         return self.metrics.get(name)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "parameters": self.parameters,
@@ -42,7 +42,7 @@ class OptimizationResult:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "OptimizationResult":
+    def from_dict(cls, data: dict[str, Any]) -> "OptimizationResult":
         """Create from dictionary."""
         return cls(
             parameters=data["parameters"],
@@ -56,21 +56,21 @@ class OptimizationResult:
 class OptimizationResultSet:
     """Collection of optimization results with analysis capabilities."""
 
-    def __init__(self, results: Optional[List[OptimizationResult]] = None):
+    def __init__(self, results: list[OptimizationResult] | None = None):
         """Initialize result set.
 
         Args:
             results: Initial list of results
         """
         self.results = results or []
-        self._df_cache: Optional[pd.DataFrame] = None
+        self._df_cache: pd.DataFrame | None = None
 
     def add_result(self, result: OptimizationResult) -> None:
         """Add a result to the set."""
         self.results.append(result)
         self._df_cache = None  # Invalidate cache
 
-    def add_results(self, results: List[OptimizationResult]) -> None:
+    def add_results(self, results: list[OptimizationResult]) -> None:
         """Add multiple results."""
         self.results.extend(results)
         self._df_cache = None  # Invalidate cache
@@ -104,7 +104,7 @@ class OptimizationResultSet:
 
     def get_best_results(
         self, metric: str, n: int = 10, minimize: bool = False
-    ) -> List[OptimizationResult]:
+    ) -> list[OptimizationResult]:
         """Get best results by metric.
 
         Args:
@@ -125,8 +125,8 @@ class OptimizationResultSet:
         return sorted_results[:n]
 
     def get_pareto_frontier(
-        self, metrics: List[str], minimize: Optional[List[bool]] = None
-    ) -> List[OptimizationResult]:
+        self, metrics: list[str], minimize: list[bool] | None = None
+    ) -> list[OptimizationResult]:
         """Get Pareto optimal results for multi-objective optimization.
 
         Args:
@@ -232,7 +232,7 @@ class OptimizationResultSet:
         return sensitivity
 
     def filter_by_parameters(
-        self, constraints: Dict[str, Any]
+        self, constraints: dict[str, Any]
     ) -> "OptimizationResultSet":
         """Filter results by parameter constraints.
 
@@ -305,12 +305,12 @@ class OptimizationResultSet:
         filepath = Path(filepath)
 
         if filepath.suffix == ".json":
-            with open(filepath, "r") as f:
+            with open(filepath) as f:
                 data = json.load(f)
             results = [OptimizationResult.from_dict(d) for d in data]
             return cls(results)
 
-        elif filepath.suffix == ".csv":
+        if filepath.suffix == ".csv":
             df = pd.read_csv(filepath)
             results = []
 
@@ -332,10 +332,9 @@ class OptimizationResultSet:
 
             return cls(results)
 
-        else:
-            raise ValueError(f"Unsupported file type: {filepath.suffix}")
+        raise ValueError(f"Unsupported file type: {filepath.suffix}")
 
-    def get_summary_statistics(self) -> Dict[str, Any]:
+    def get_summary_statistics(self) -> dict[str, Any]:
         """Get summary statistics for the result set."""
         if not self.results:
             return {}

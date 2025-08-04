@@ -1,13 +1,14 @@
 """Comprehensive tests for the enhanced performance analysis module."""
 
-import pytest
-import numpy as np
-import pandas as pd
 from datetime import datetime, timedelta
 
+import numpy as np
+import pandas as pd
+import pytest
+
+from strategy_lab.analysis.performance.comparison import StrategyComparator
 from strategy_lab.analysis.performance.metrics import MetricsCalculator
 from strategy_lab.analysis.performance.time_series import TimeSeriesAnalyzer
-from strategy_lab.analysis.performance.comparison import StrategyComparator
 from strategy_lab.analysis.trade.analyzer import TradeAnalyzer
 
 
@@ -461,7 +462,7 @@ class TestStrategyComparison:
         assert "is_efficient" in frontier_df.columns
 
         # Check weight columns
-        for name in equity_curves.keys():
+        for name in equity_curves:
             assert f"weight_{name}" in frontier_df.columns
 
         # Weights should sum to 1

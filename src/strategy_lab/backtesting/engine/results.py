@@ -56,16 +56,28 @@ class BacktestResult:
 
     # Performance metrics
     total_pnl: float = 0.0
+    total_return: float = 0.0
+    annualized_return: float = 0.0
+    excess_return: float = 0.0
     total_trades: int = 0
     winning_trades: int = 0
     losing_trades: int = 0
     win_rate: float = 0.0
     profit_factor: float = 0.0
+    expectancy: float = 0.0
+    avg_win: float = 0.0
+    avg_loss: float = 0.0
+    largest_win: float = 0.0
+    largest_loss: float = 0.0
 
     # Risk metrics
     max_drawdown: float = 0.0
     sharpe_ratio: float = 0.0
+    sortino_ratio: float = 0.0
+    calmar_ratio: float = 0.0
     volatility: float = 0.0
+    var_95: float = 0.0
+    cvar_95: float = 0.0
 
     # Execution metrics
     total_ticks: int = 0
@@ -105,16 +117,28 @@ class BacktestResult:
             },
             "performance": {
                 "total_pnl": self.total_pnl,
+                "total_return": self.total_return,
+                "annualized_return": self.annualized_return,
+                "excess_return": self.excess_return,
                 "total_trades": self.total_trades,
                 "winning_trades": self.winning_trades,
                 "losing_trades": self.losing_trades,
                 "win_rate": self.win_rate,
                 "profit_factor": self.profit_factor,
+                "expectancy": self.expectancy,
+                "avg_win": self.avg_win,
+                "avg_loss": self.avg_loss,
+                "largest_win": self.largest_win,
+                "largest_loss": self.largest_loss,
             },
             "risk": {
                 "max_drawdown": self.max_drawdown,
                 "sharpe_ratio": self.sharpe_ratio,
+                "sortino_ratio": self.sortino_ratio,
+                "calmar_ratio": self.calmar_ratio,
                 "volatility": self.volatility,
+                "var_95": self.var_95,
+                "cvar_95": self.cvar_95,
             },
             "execution": {
                 "total_ticks": self.total_ticks,
@@ -137,13 +161,20 @@ Duration: {self.duration:.2f} seconds
 
 Performance Metrics:
 - Total P&L: ${self.total_pnl:,.2f}
+- Total Return: {self.total_return:.2%}
+- Annualized Return: {self.annualized_return:.2%}
 - Total Trades: {self.total_trades}
 - Win Rate: {self.win_rate:.2f}%
 - Profit Factor: {self.profit_factor:.2f}
+- Expectancy: ${self.expectancy:.2f}
 
 Risk Metrics:
 - Max Drawdown: {self.max_drawdown:.2%}
-- Sharpe Ratio: {self.sharpe_ratio:.2f}
+- Sharpe Ratio: {self.sharpe_ratio:.3f}
+- Sortino Ratio: {self.sortino_ratio:.3f}
+- Calmar Ratio: {self.calmar_ratio:.3f}
+- Volatility: {self.volatility:.2%}
+- VaR (95%): {self.var_95:.2%}
 
 Execution Metrics:
 - Total Ticks: {self.total_ticks:,}
@@ -222,15 +253,27 @@ def load_results(result_dir: Path) -> BacktestResult:
         end_time=datetime.fromisoformat(data["metadata"]["end_time"]),
         # Performance metrics
         total_pnl=data["performance"]["total_pnl"],
+        total_return=data["performance"].get("total_return", 0.0),
+        annualized_return=data["performance"].get("annualized_return", 0.0),
+        excess_return=data["performance"].get("excess_return", 0.0),
         total_trades=data["performance"]["total_trades"],
         winning_trades=data["performance"]["winning_trades"],
         losing_trades=data["performance"]["losing_trades"],
         win_rate=data["performance"]["win_rate"],
         profit_factor=data["performance"]["profit_factor"],
+        expectancy=data["performance"].get("expectancy", 0.0),
+        avg_win=data["performance"].get("avg_win", 0.0),
+        avg_loss=data["performance"].get("avg_loss", 0.0),
+        largest_win=data["performance"].get("largest_win", 0.0),
+        largest_loss=data["performance"].get("largest_loss", 0.0),
         # Risk metrics
         max_drawdown=data["risk"]["max_drawdown"],
         sharpe_ratio=data["risk"]["sharpe_ratio"],
+        sortino_ratio=data["risk"].get("sortino_ratio", 0.0),
+        calmar_ratio=data["risk"].get("calmar_ratio", 0.0),
         volatility=data["risk"].get("volatility", 0.0),
+        var_95=data["risk"].get("var_95", 0.0),
+        cvar_95=data["risk"].get("cvar_95", 0.0),
         # Execution metrics
         total_ticks=data["execution"]["total_ticks"],
         execution_time=data["execution"]["execution_time"],

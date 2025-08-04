@@ -4,7 +4,6 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from strategy_lab.core.config.models import OptimizationMethod
 from strategy_lab.core.config.validation import ConfigValidator, ValidationResult
 
 

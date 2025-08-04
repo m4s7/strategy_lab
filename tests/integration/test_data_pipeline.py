@@ -2,12 +2,21 @@
 
 import tempfile
 from datetime import datetime
+from decimal import Decimal
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pandas as pd
 import pytest
 
+from strategy_lab.backtesting.data_integration import BacktestDataProvider
+from strategy_lab.backtesting.engine.backtest_engine import BacktestEngine
+from strategy_lab.backtesting.engine.config import (
+    BacktestConfig,
+    DataConfig,
+    ExecutionConfig,
+    StrategyConfig,
+)
 from strategy_lab.data.adapters.hftbacktest import (
     DataPipeline,
     HftBacktestAdapter,
@@ -16,6 +25,7 @@ from strategy_lab.data.adapters.hftbacktest import (
     PipelineConfig,
     ProcessingStats,
 )
+from strategy_lab.data.pipeline import TickDataStream
 
 
 class TestHftBacktestDataFormatter:
@@ -617,3 +627,417 @@ def pipeline_config():
         enable_l2_processing=True,
         order_book_depth=5,
     )
+
+
+class TestTickDataStream:
+    """Test new TickDataStream functionality."""
+
+    def setup_method(self):
+        """Set up test fixtures."""
+        self.sample_data = pd.DataFrame(
+            {
+                "level": ["1", "1", "1", "2", "2"],
+                "timestamp": [
+                    1609459200000000000,
+                    1609459200000000001,
+                    1609459200000000002,
+                    1609459200000000003,
+                    1609459200000000004,
+                ],
+                "mdt": [0, 1, 2, 0, 1],  # Ask, Bid, Trade, Ask, Bid
+                "price": [100.25, 100.0, 100.125, 100.5, 99.75],
+                "volume": [1000, 1500, 500, 800, 1200],
+                "operation": [0, 0, 0, 0, 0],
+            }
+        )
+
+    def create_test_data_structure(self, tmp_dir: Path) -> Path:
+        """Create test data directory structure."""
+        data_dir = tmp_dir / "MNQ"
+        contract_dir = data_dir / "03-24"
+        contract_dir.mkdir(parents=True)
+
+        # Create test parquet file
+        test_file = contract_dir / "20240315.parquet"
+        self.sample_data.to_parquet(test_file)
+
+        return data_dir
+
+    @patch("strategy_lab.data.pipeline.ParquetFileDiscovery")
+    def test_tick_stream_initialization(self, mock_discovery_class):
+        """Test TickDataStream initialization."""
+        mock_discovery = MagicMock()
+        mock_discovery_class.return_value = mock_discovery
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            data_path = Path(tmp_dir) / "MNQ"
+            data_path.mkdir()
+
+            stream = TickDataStream(
+                data_path=data_path,
+                contracts=["03-24"],
+                chunk_size=1000,
+                memory_limit_mb=500,
+            )
+
+            assert stream.data_path == data_path
+            assert stream.contracts == ["03-24"]
+            assert stream.chunk_size == 1000
+            assert stream.memory_limit_mb == 500
+
+    @patch("strategy_lab.data.pipeline.ParquetFileDiscovery")
+    def test_discover_files_success(self, mock_discovery_class):
+        """Test successful file discovery."""
+        mock_discovery = MagicMock()
+        mock_file_info = MagicMock()
+        mock_file_info.path = Path("test.parquet")
+        mock_file_info.contract_month = "03-24"
+        mock_file_info.date = datetime(2024, 3, 15)
+        mock_discovery.discover_files.return_value = [mock_file_info]
+        mock_discovery_class.return_value = mock_discovery
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            data_path = Path(tmp_dir) / "MNQ"
+            data_path.mkdir()
+
+            stream = TickDataStream(data_path=data_path, validate_data=False)
+            files = stream.discover_files()
+
+            assert len(files) == 1
+            assert files[0] == mock_file_info
+
+    @patch("strategy_lab.data.pipeline.ParquetFileDiscovery")
+    def test_discover_files_no_data_directory(self, mock_discovery_class):
+        """Test file discovery with missing data directory."""
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            data_path = Path(tmp_dir) / "nonexistent"
+
+            stream = TickDataStream(data_path=data_path, validate_data=False)
+
+            with pytest.raises(FileNotFoundError, match="Data directory not found"):
+                stream.discover_files()
+
+    @patch("strategy_lab.data.pipeline.ParquetFileDiscovery")
+    def test_discover_files_no_matching_files(self, mock_discovery_class):
+        """Test file discovery with no matching files."""
+        mock_discovery = MagicMock()
+        mock_discovery.discover_files.return_value = []
+        mock_discovery_class.return_value = mock_discovery
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            data_path = Path(tmp_dir) / "MNQ"
+            data_path.mkdir()
+
+            stream = TickDataStream(data_path=data_path, validate_data=False)
+
+            with pytest.raises(ValueError, match="No data files found"):
+                stream.discover_files()
+
+    def test_stream_ticks_with_real_data(self):
+        """Test tick streaming with real test data."""
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            data_dir = self.create_test_data_structure(Path(tmp_dir))
+
+            stream = TickDataStream(
+                data_path=data_dir,
+                contracts=["03-24"],
+                chunk_size=2,
+                validate_data=False,
+            )
+
+            chunks = list(stream.stream_ticks())
+
+            # Should have at least one chunk
+            assert len(chunks) > 0
+
+            # Verify data integrity
+            total_records = sum(len(chunk) for chunk in chunks)
+            assert total_records == len(self.sample_data)
+
+            # Check that data is sorted by timestamp
+            for chunk in chunks:
+                if len(chunk) > 1:
+                    assert chunk["timestamp"].is_monotonic_increasing
+
+    def test_get_stats(self):
+        """Test statistics retrieval."""
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            data_dir = self.create_test_data_structure(Path(tmp_dir))
+
+            stream = TickDataStream(
+                data_path=data_dir,
+                validate_data=False,
+            )
+
+            stats = stream.get_stats()
+
+            assert "total_files" in stats
+            assert "date_range" in stats
+            assert "chunk_size" in stats
+            assert stats["chunk_size"] == 100_000  # default value
+
+
+class TestBacktestDataProvider:
+    """Test BacktestDataProvider functionality."""
+
+    def create_test_config(self, data_path: Path) -> BacktestConfig:
+        """Create test backtest configuration."""
+        return BacktestConfig(
+            name="test_backtest",
+            strategy=StrategyConfig(
+                name="test_strategy",
+                module="test.module",
+            ),
+            data=DataConfig(
+                symbol="MNQ",
+                data_path=data_path,
+                contracts=["03-24"],
+                chunk_size=1000,
+                memory_limit_mb=500,
+                validate_data=False,
+            ),
+            execution=ExecutionConfig(
+                initial_capital=Decimal("100000"),
+            ),
+        )
+
+    def create_test_data_structure(self, tmp_dir: Path) -> Path:
+        """Create test data directory structure."""
+        data_dir = tmp_dir / "MNQ"
+        contract_dir = data_dir / "03-24"
+        contract_dir.mkdir(parents=True)
+
+        # Create test parquet file
+        sample_data = pd.DataFrame(
+            {
+                "level": ["1", "1", "1"],
+                "timestamp": [
+                    1710460800000000000,  # 2024-03-15
+                    1710460800000000001,
+                    1710460800000000002,
+                ],
+                "mdt": [0, 1, 2],
+                "price": [100.25, 100.0, 100.125],
+                "volume": [1000, 1500, 500],
+                "operation": [0, 0, 0],
+            }
+        )
+
+        test_file = contract_dir / "20240315.parquet"
+        sample_data.to_parquet(test_file)
+
+        return data_dir
+
+    def test_data_provider_initialization(self):
+        """Test data provider initialization."""
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            data_dir = self.create_test_data_structure(Path(tmp_dir))
+            config = self.create_test_config(data_dir)
+
+            provider = BacktestDataProvider(config)
+
+            assert provider.config == config
+            assert provider.data_stream.data_path == data_dir
+
+    def test_validate_date_range_valid(self):
+        """Test date range validation with valid range."""
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            data_dir = self.create_test_data_structure(Path(tmp_dir))
+            config = self.create_test_config(data_dir)
+
+            provider = BacktestDataProvider(config)
+            is_valid, message = provider.validate_date_range()
+
+            assert is_valid
+            assert "valid" in message.lower()
+
+    def test_validate_contracts_valid(self):
+        """Test contract validation with available contracts."""
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            data_dir = self.create_test_data_structure(Path(tmp_dir))
+            config = self.create_test_config(data_dir)
+
+            provider = BacktestDataProvider(config)
+            is_valid, message = provider.validate_contracts()
+
+            assert is_valid
+            assert "available" in message.lower()
+
+    def test_get_data_info(self):
+        """Test data information retrieval."""
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            data_dir = self.create_test_data_structure(Path(tmp_dir))
+            config = self.create_test_config(data_dir)
+
+            provider = BacktestDataProvider(config)
+            info = provider.get_data_info()
+
+            assert "total_files" in info
+            assert "date_range" in info
+            assert "chunk_size" in info
+
+
+class TestBacktestEngineIntegration:
+    """Test BacktestEngine integration with data pipeline."""
+
+    def create_test_config(self, data_path: Path) -> BacktestConfig:
+        """Create test backtest configuration."""
+        return BacktestConfig(
+            name="test_backtest",
+            strategy=StrategyConfig(
+                name="test_strategy",
+                module="test.module",
+            ),
+            data=DataConfig(
+                symbol="MNQ",
+                data_path=data_path,
+                contracts=["03-24"],
+                chunk_size=1000,
+                memory_limit_mb=500,
+                validate_data=False,
+            ),
+            execution=ExecutionConfig(
+                initial_capital=Decimal("100000"),
+            ),
+        )
+
+    def create_test_data_structure(self, tmp_dir: Path) -> Path:
+        """Create test data directory structure."""
+        data_dir = tmp_dir / "MNQ"
+        contract_dir = data_dir / "03-24"
+        contract_dir.mkdir(parents=True)
+
+        # Create test parquet file
+        sample_data = pd.DataFrame(
+            {
+                "level": ["1", "1", "1"],
+                "timestamp": [
+                    1609459200000000000,
+                    1609459200000000001,
+                    1609459200000000002,
+                ],
+                "mdt": [0, 1, 2],
+                "price": [100.25, 100.0, 100.125],
+                "volume": [1000, 1500, 500],
+                "operation": [0, 0, 0],
+            }
+        )
+
+        test_file = contract_dir / "20240315.parquet"
+        sample_data.to_parquet(test_file)
+
+        return data_dir
+
+    def test_create_backtest_with_data_validation(self):
+        """Test backtest creation with data validation."""
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            data_dir = self.create_test_data_structure(Path(tmp_dir))
+            config = self.create_test_config(data_dir)
+
+            engine = BacktestEngine()
+            job_id = engine.create_backtest(config, validate=True)
+
+            assert job_id.startswith("job_")
+            assert job_id in engine.jobs
+
+    def test_create_backtest_with_invalid_data_path(self):
+        """Test backtest creation with invalid data path."""
+        with pytest.raises(ValueError, match="Data path does not exist"):
+            BacktestConfig(
+                name="test_backtest",
+                strategy=StrategyConfig(
+                    name="test_strategy",
+                    module="test.module",
+                ),
+                data=DataConfig(
+                    symbol="MNQ",
+                    data_path=Path("/nonexistent/path"),
+                    validate_data=False,
+                ),
+                execution=ExecutionConfig(
+                    initial_capital=Decimal("100000"),
+                ),
+            )
+
+    def test_get_data_info(self):
+        """Test getting data information from engine."""
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            data_dir = self.create_test_data_structure(Path(tmp_dir))
+            config = self.create_test_config(data_dir)
+
+            engine = BacktestEngine()
+            info = engine.get_data_info(config)
+
+            assert "total_files" in info
+            assert "date_range" in info
+
+    def test_create_backtest_with_data_stream(self):
+        """Test creating backtest with initialized data stream."""
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            data_dir = self.create_test_data_structure(Path(tmp_dir))
+            config = self.create_test_config(data_dir)
+
+            engine = BacktestEngine()
+            job_id, data_provider = engine.create_backtest_with_data_stream(config)
+
+            assert job_id.startswith("job_")
+            assert isinstance(data_provider, BacktestDataProvider)
+            assert data_provider.config == config
+
+
+class TestDataPipelineErrorHandling:
+    """Test error handling in data pipeline."""
+
+    def test_tick_stream_missing_directory(self):
+        """Test TickDataStream with missing data directory."""
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            nonexistent_path = Path(tmp_dir) / "nonexistent"
+
+            stream = TickDataStream(data_path=nonexistent_path, validate_data=False)
+
+            with pytest.raises(FileNotFoundError):
+                stream.discover_files()
+
+    def test_tick_stream_corrupted_file_handling(self):
+        """Test handling of corrupted parquet files."""
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            data_dir = tmp_dir / "MNQ" / "03-24"
+            Path(data_dir).mkdir(parents=True)
+
+            # Create a corrupted file (not valid parquet)
+            corrupted_file = data_dir / "corrupted.parquet"
+            corrupted_file.write_text("not a parquet file")
+
+            stream = TickDataStream(
+                data_path=tmp_dir / "MNQ",
+                validate_data=False,
+            )
+
+            # Should handle corrupted files gracefully
+            chunks = list(stream.stream_ticks())
+            # May be empty if file is completely corrupted
+            assert isinstance(chunks, list)
+
+    def test_backtest_data_provider_error_recovery(self):
+        """Test error recovery in BacktestDataProvider."""
+        config = BacktestConfig(
+            name="test_backtest",
+            strategy=StrategyConfig(
+                name="test_strategy",
+                module="test.module",
+            ),
+            data=DataConfig(
+                symbol="MNQ",
+                data_path=Path("/nonexistent"),
+                validate_data=False,
+            ),
+            execution=ExecutionConfig(
+                initial_capital=Decimal("100000"),
+            ),
+        )
+
+        provider = BacktestDataProvider(config)
+
+        # Should return error information instead of crashing
+        info = provider.get_data_info()
+        assert "error" in info

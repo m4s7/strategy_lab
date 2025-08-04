@@ -10,8 +10,8 @@ from pydantic import ValidationError
 from strategy_lab.core.config.models import (
     BacktestConfig,
     ConfigurationSet,
-    LogLevel,
     LoggingConfig,
+    LogLevel,
     OptimizationConfig,
     OptimizationMethod,
     PerformanceConfig,

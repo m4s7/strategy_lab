@@ -34,6 +34,16 @@ class DataConfig(BaseModel):
     data_path: Path = Field(..., description="Path to data files")
     file_pattern: str = Field("*.parquet", description="File pattern to match")
 
+    # Contract selection
+    contracts: list[str] | None = Field(
+        None, description="Contract months to include (e.g., ['03-24', '06-24'])"
+    )
+
+    # Streaming parameters
+    chunk_size: int = Field(100_000, description="Data chunk size for streaming")
+    memory_limit_mb: int = Field(1000, description="Memory limit for data loading")
+    validate_data: bool = Field(True, description="Whether to validate data integrity")
+
     @validator("data_path")
     def validate_path(cls, v):
         """Ensure data path exists."""
@@ -41,6 +51,20 @@ class DataConfig(BaseModel):
         if not path.exists():
             raise ValueError(f"Data path does not exist: {path}")
         return path
+
+    @validator("chunk_size")
+    def validate_chunk_size(cls, v):
+        """Ensure chunk size is positive."""
+        if v <= 0:
+            raise ValueError("Chunk size must be positive")
+        return v
+
+    @validator("memory_limit_mb")
+    def validate_memory_limit(cls, v):
+        """Ensure memory limit is positive."""
+        if v <= 0:
+            raise ValueError("Memory limit must be positive")
+        return v
 
 
 class ExecutionConfig(BaseModel):
@@ -195,7 +219,13 @@ class ConfigTemplate:
                 name=strategy_name, module=strategy_module, parameters={}
             ),
             data=DataConfig(
-                symbol="MNQ", data_path=Path("data/MNQ"), file_pattern="*.parquet"
+                symbol="MNQ",
+                data_path=Path("data/MNQ"),
+                file_pattern="*.parquet",
+                contracts=None,
+                chunk_size=100_000,
+                memory_limit_mb=1000,
+                validate_data=True,
             ),
             execution=ExecutionConfig(
                 initial_capital=Decimal("100000"),

@@ -52,7 +52,10 @@ def calculate_max_drawdown(
     running_max = np.maximum.accumulate(equity_array)
 
     # Calculate drawdown at each point
-    drawdown = (equity_array - running_max) / running_max
+    # Avoid division by zero by using np.where
+    drawdown = np.where(
+        running_max > 0, (equity_array - running_max) / running_max, 0.0
+    )
 
     # Find maximum drawdown
     max_dd_idx = np.argmin(drawdown)
@@ -292,7 +295,7 @@ def calculate_risk_metrics(
     metrics.cvar_95 = calculate_cvar(returns, 0.95)
 
     # Calculate Calmar ratio
-    if len(timestamps) > 1:
+    if len(timestamps) > 1 and float(equity_curve[0]) != 0:
         years = (timestamps[-1] - timestamps[0]).days / 365.25
         total_return = float(equity_curve[-1] - equity_curve[0]) / float(
             equity_curve[0]

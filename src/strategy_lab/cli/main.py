@@ -1,20 +1,21 @@
 """Strategy Lab CLI - Main command-line interface."""
 
+import logging
 import sys
 from pathlib import Path
+
 import click
-import logging
 
 # Add src to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from strategy_lab.core.config.loader import ConfigLoader
 from strategy_lab.backtesting.engine.backtest_engine import BacktestEngine
-from strategy_lab.strategies.registry import StrategyRegistry, registry
-from strategy_lab.optimization.algorithms.grid_search import GridSearchOptimizer
+from strategy_lab.core.config.loader import ConfigLoader
 from strategy_lab.optimization.algorithms.genetic_algorithm import (
     GeneticAlgorithmOptimizer,
 )
+from strategy_lab.optimization.algorithms.grid_search import GridSearchOptimizer
+from strategy_lab.strategies.registry import registry
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +67,6 @@ def backtest(config, output, verbose):
             )
 
         # Import strategies to ensure registration
-        import strategy_lab.strategies
 
         # Load strategy from registry
         try:
@@ -121,32 +121,161 @@ def backtest(config, output, verbose):
         click.echo("\nStarting backtest...")
         click.echo("-" * 50)
 
-        # TODO: Actual backtest implementation would go here
-        # For now, show what would happen
-        click.echo("🔄 Loading market data...")
-        click.echo("📊 Initializing strategy...")
-        click.echo("💹 Running simulation...")
-        click.echo("📈 Calculating metrics...")
+        try:
+            # Create comprehensive backtest config
+            from ..backtesting.engine.config import (
+                BacktestConfig,
+                DataConfig,
+                ExecutionConfig,
+                StrategyConfig,
+            )
+            from decimal import Decimal
+            from pathlib import Path
 
-        # Mock results for demonstration
-        click.echo("\n" + "=" * 50)
-        click.echo("BACKTEST RESULTS")
-        click.echo("=" * 50)
-        click.echo(f"Strategy: {strategy_name}")
-        click.echo(
-            f"Period: {backtest_config.get('start_date')} to {backtest_config.get('end_date')}"
-        )
-        click.echo(
-            f"Initial Capital: ${backtest_config.get('initial_capital', 100000):,}"
-        )
-        click.echo("\nPerformance Metrics:")
-        click.echo("  Total Return: -- (backtest engine not fully implemented)")
-        click.echo("  Sharpe Ratio: --")
-        click.echo("  Max Drawdown: --")
-        click.echo("  Win Rate: --")
-        click.echo("  Total Trades: --")
-        click.echo("\n⚠️  Note: Full backtest implementation pending")
-        click.echo("=" * 50)
+            # Build backtest configuration
+            backtest_cfg = BacktestConfig(
+                name=f"{strategy_name}_backtest",
+                strategy=StrategyConfig(
+                    name=strategy_name,
+                    module=f"strategy_lab.strategies.{strategy_name.lower()}",
+                    parameters=strategy_params,
+                ),
+                data=DataConfig(
+                    symbol="MNQ",
+                    data_path=data_path,
+                    contracts=contracts
+                    or ["03-24"],  # Default contract if none specified
+                    chunk_size=1000,
+                    memory_limit_mb=1000,
+                    validate_data=False,
+                    start_date=backtest_config.get("start_date"),
+                    end_date=backtest_config.get("end_date"),
+                ),
+                execution=ExecutionConfig(
+                    initial_capital=Decimal(
+                        str(backtest_config.get("initial_capital", 100000))
+                    ),
+                    commission=Decimal(str(backtest_config.get("commission", 2.00))),
+                    slippage=Decimal(str(backtest_config.get("slippage", 0.25))),
+                ),
+                output_dir=Path(output) if output else None,
+            )
+
+            click.echo("🔄 Loading market data...")
+            click.echo("📊 Initializing strategy...")
+            click.echo("💹 Running simulation...")
+            click.echo("📈 Calculating comprehensive metrics...")
+
+            # Execute backtest with comprehensive metrics
+            result = engine.run_backtest_with_data_pipeline(
+                backtest_cfg, use_enhanced=True
+            )
+
+            # Display comprehensive results
+            click.echo("\n" + "=" * 60)
+            click.echo("COMPREHENSIVE BACKTEST RESULTS")
+            click.echo("=" * 60)
+            click.echo(f"Strategy: {strategy_name}")
+            click.echo(
+                f"Period: {backtest_config.get('start_date', 'N/A')} to {backtest_config.get('end_date', 'N/A')}"
+            )
+            click.echo(
+                f"Initial Capital: ${backtest_config.get('initial_capital', 100000):,}"
+            )
+            click.echo(f"Backtest Duration: {result.duration:.2f} seconds")
+
+            click.echo("\nPerformance Metrics:")
+            click.echo(f"  Total P&L: ${result.total_pnl:,.2f}")
+            click.echo(f"  Total Return: {result.total_return:.2%}")
+            click.echo(f"  Annualized Return: {result.annualized_return:.2%}")
+            click.echo(f"  Excess Return: {result.excess_return:.2%}")
+            click.echo(f"  Expectancy: ${result.expectancy:.2f}")
+
+            click.echo("\nTrade Analysis:")
+            click.echo(f"  Total Trades: {result.total_trades}")
+            click.echo(f"  Winning Trades: {result.winning_trades}")
+            click.echo(f"  Losing Trades: {result.losing_trades}")
+            click.echo(f"  Win Rate: {result.win_rate:.2f}%")
+            click.echo(f"  Profit Factor: {result.profit_factor:.2f}")
+            click.echo(f"  Average Win: ${result.avg_win:.2f}")
+            click.echo(f"  Average Loss: ${result.avg_loss:.2f}")
+            click.echo(f"  Largest Win: ${result.largest_win:.2f}")
+            click.echo(f"  Largest Loss: ${result.largest_loss:.2f}")
+
+            click.echo("\nRisk Metrics:")
+            click.echo(f"  Sharpe Ratio: {result.sharpe_ratio:.3f}")
+            click.echo(f"  Sortino Ratio: {result.sortino_ratio:.3f}")
+            click.echo(f"  Calmar Ratio: {result.calmar_ratio:.3f}")
+            click.echo(f"  Max Drawdown: {result.max_drawdown:.2%}")
+            click.echo(f"  Volatility (Ann.): {result.volatility:.2%}")
+            click.echo(f"  VaR (95%): {result.var_95:.2%}")
+            click.echo(f"  CVaR (95%): {result.cvar_95:.2%}")
+
+            click.echo("\nExecution Statistics:")
+            click.echo(f"  Total Ticks Processed: {result.total_ticks:,}")
+            click.echo(
+                f"  Processing Speed: {result.ticks_per_second:,.0f} ticks/second"
+            )
+            click.echo(f"  Peak Memory Usage: {result.peak_memory_mb:.2f} MB")
+            click.echo(f"  Avg CPU Usage: {result.avg_cpu_percent:.1f}%")
+
+            # Show additional insights if available
+            if result.custom_metrics:
+                click.echo("\nAdditional Insights:")
+                if "best_month" in result.custom_metrics:
+                    best_month = result.custom_metrics["best_month"]
+                    click.echo(
+                        f"  Best Month: {best_month['date'][:7]} (${best_month['pnl']:,.2f})"
+                    )
+                if "worst_month" in result.custom_metrics:
+                    worst_month = result.custom_metrics["worst_month"]
+                    click.echo(
+                        f"  Worst Month: {worst_month['date'][:7]} (${worst_month['pnl']:,.2f})"
+                    )
+                if "max_consecutive_wins" in result.custom_metrics:
+                    click.echo(
+                        f"  Max Consecutive Wins: {result.custom_metrics['max_consecutive_wins']}"
+                    )
+                if "max_consecutive_losses" in result.custom_metrics:
+                    click.echo(
+                        f"  Max Consecutive Losses: {result.custom_metrics['max_consecutive_losses']}"
+                    )
+
+            click.echo("=" * 60)
+
+        except Exception as backtest_error:
+            click.echo(f"\n❌ Backtest execution failed: {backtest_error}")
+            if verbose:
+                import traceback
+
+                click.echo(traceback.format_exc(), err=True)
+
+            # Fallback to demonstration mode
+            click.echo("\n⚠️  Falling back to demonstration mode...")
+            click.echo("🔄 Loading market data...")
+            click.echo("📊 Initializing strategy...")
+            click.echo("💹 Running simulation...")
+            click.echo("📈 Calculating metrics...")
+
+            # Show demo results
+            click.echo("\n" + "=" * 50)
+            click.echo("BACKTEST RESULTS (DEMO)")
+            click.echo("=" * 50)
+            click.echo(f"Strategy: {strategy_name}")
+            click.echo(
+                f"Period: {backtest_config.get('start_date')} to {backtest_config.get('end_date')}"
+            )
+            click.echo(
+                f"Initial Capital: ${backtest_config.get('initial_capital', 100000):,}"
+            )
+            click.echo("\nPerformance Metrics:")
+            click.echo("  Total Return: -- (demo mode)")
+            click.echo("  Sharpe Ratio: --")
+            click.echo("  Max Drawdown: --")
+            click.echo("  Win Rate: --")
+            click.echo("  Total Trades: --")
+            click.echo("\n⚠️  Note: Enable full backtest by ensuring data availability")
+            click.echo("=" * 50)
 
         if output:
             output_path = Path(output)
@@ -171,7 +300,6 @@ def list_strategies():
     click.echo("-" * 50)
 
     # Import strategies module to trigger registration
-    import strategy_lab.strategies
 
     strategies = registry.list_strategies()
 
@@ -290,7 +418,7 @@ def create_config(template, output):
 
         click.echo(f"✓ Created configuration: {output}")
         click.echo(f"  Based on template: {template}")
-        click.echo(f"  Edit the file to customize your strategy parameters")
+        click.echo("  Edit the file to customize your strategy parameters")
 
     except Exception as e:
         click.echo(f"Error: {e}", err=True)

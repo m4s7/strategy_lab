@@ -4,10 +4,9 @@ import copy
 import json
 import os
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set
+from typing import Any
 
 import yaml
-from pydantic import ValidationError
 
 from .models import ConfigurationSet
 from .validation import ConfigValidator, ValidationResult
@@ -18,7 +17,7 @@ class ConfigLoader:
 
     SUPPORTED_FORMATS = {".yaml", ".yml", ".json"}
 
-    def __init__(self, base_path: Optional[Path] = None):
+    def __init__(self, base_path: Path | None = None):
         """Initialize configuration loader.
 
         Args:
@@ -26,9 +25,9 @@ class ConfigLoader:
         """
         self.base_path = base_path or Path.cwd()
         self.validator = ConfigValidator()
-        self._cache: Dict[str, Dict[str, Any]] = {}
+        self._cache: dict[str, dict[str, Any]] = {}
 
-    def load_file(self, file_path: Path) -> Dict[str, Any]:
+    def load_file(self, file_path: Path) -> dict[str, Any]:
         """Load a configuration file.
 
         Args:
@@ -63,7 +62,7 @@ class ConfigLoader:
 
         # Load and parse file
         try:
-            with open(file_path, "r") as f:
+            with open(file_path) as f:
                 if suffix in {".yaml", ".yml"}:
                     config = yaml.safe_load(f)
                 else:  # .json
@@ -78,7 +77,7 @@ class ConfigLoader:
 
     def load_directory(
         self, directory: Path, pattern: str = "*.yaml", recursive: bool = False
-    ) -> Dict[str, Dict[str, Any]]:
+    ) -> dict[str, dict[str, Any]]:
         """Load all configuration files from a directory.
 
         Args:
@@ -115,8 +114,8 @@ class ConfigLoader:
         return configs
 
     def load_with_environment(
-        self, base_file: Path, environment: Optional[str] = None
-    ) -> Dict[str, Any]:
+        self, base_file: Path, environment: str | None = None
+    ) -> dict[str, Any]:
         """Load configuration with environment-specific overrides.
 
         Args:
@@ -145,7 +144,7 @@ class ConfigLoader:
 
         return base_config
 
-    def load_template(self, template_name: str) -> Dict[str, Any]:
+    def load_template(self, template_name: str) -> dict[str, Any]:
         """Load a configuration template.
 
         Args:
@@ -212,8 +211,8 @@ class ConfigLoader:
         return ConfigurationSet(**config)
 
     def _deep_merge(
-        self, base: Dict[str, Any], override: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, base: dict[str, Any], override: dict[str, Any]
+    ) -> dict[str, Any]:
         """Deep merge two dictionaries, with override taking precedence.
 
         Args:
@@ -241,7 +240,7 @@ class ConfigLoader:
         """Clear the configuration cache."""
         self._cache.clear()
 
-    def get_available_templates(self) -> List[str]:
+    def get_available_templates(self) -> list[str]:
         """Get list of available configuration templates.
 
         Returns:
@@ -268,7 +267,7 @@ class ConfigLoader:
         self,
         template_name: str,
         output_path: Path,
-        overrides: Optional[Dict[str, Any]] = None,
+        overrides: dict[str, Any] | None = None,
     ) -> None:
         """Create a new configuration file from a template.
 

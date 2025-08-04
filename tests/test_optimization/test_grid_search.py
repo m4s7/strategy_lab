@@ -177,7 +177,6 @@ class TestGridSearchOptimizer:
         mock_executor.return_value = mock_executor_instance
 
         # Import as_completed and mock it
-        from concurrent.futures import as_completed
 
         with patch(
             "strategy_lab.optimization.algorithms.grid_search.as_completed"

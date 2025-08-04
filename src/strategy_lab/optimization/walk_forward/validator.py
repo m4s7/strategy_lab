@@ -2,7 +2,7 @@
 
 import logging
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 import numpy as np
 from scipy import stats
@@ -20,21 +20,21 @@ class StatisticalTests:
     t_significant: bool
 
     # Wilcoxon signed-rank test (non-parametric)
-    wilcoxon_statistic: Optional[float] = None
-    wilcoxon_p_value: Optional[float] = None
-    wilcoxon_significant: Optional[bool] = None
+    wilcoxon_statistic: float | None = None
+    wilcoxon_p_value: float | None = None
+    wilcoxon_significant: bool | None = None
 
     # Bootstrap confidence intervals
-    bootstrap_mean: Optional[float] = None
-    bootstrap_ci_lower: Optional[float] = None
-    bootstrap_ci_upper: Optional[float] = None
-    bootstrap_percentile: Optional[float] = None
+    bootstrap_mean: float | None = None
+    bootstrap_ci_lower: float | None = None
+    bootstrap_ci_upper: float | None = None
+    bootstrap_percentile: float | None = None
 
     # Overall assessment
     is_robust: bool = False
     confidence_level: float = 0.0
 
-    def to_dict(self) -> Dict[str, float]:
+    def to_dict(self) -> dict[str, float]:
         """Convert to dictionary."""
         return {
             "t_statistic": self.t_statistic,
@@ -72,8 +72,8 @@ class PerformanceValidator:
 
     def validate_performance(
         self,
-        in_sample_values: List[float],
-        out_of_sample_values: List[float],
+        in_sample_values: list[float],
+        out_of_sample_values: list[float],
         metric_name: str = "performance",
     ) -> StatisticalTests:
         """Run statistical validation tests.
@@ -155,7 +155,7 @@ class PerformanceValidator:
             confidence_level=confidence,
         )
 
-    def _paired_t_test(self, differences: np.ndarray) -> Tuple[float, float]:
+    def _paired_t_test(self, differences: np.ndarray) -> tuple[float, float]:
         """Perform paired t-test on differences.
 
         H0: Mean difference = 0 (no performance degradation)
@@ -176,8 +176,8 @@ class PerformanceValidator:
         return t_stat, p_value
 
     def _bootstrap_analysis(
-        self, in_sample: List[float], out_of_sample: List[float]
-    ) -> Dict[str, float]:
+        self, in_sample: list[float], out_of_sample: list[float]
+    ) -> dict[str, float]:
         """Perform bootstrap analysis on performance ratios.
 
         Returns:
@@ -220,11 +220,11 @@ class PerformanceValidator:
     def _assess_robustness(
         self,
         t_significant: bool,
-        wilcoxon_significant: Optional[bool],
-        bootstrap_ci_lower: Optional[float],
-        bootstrap_ci_upper: Optional[float],
+        wilcoxon_significant: bool | None,
+        bootstrap_ci_lower: float | None,
+        bootstrap_ci_upper: float | None,
         differences: np.ndarray,
-    ) -> Tuple[bool, float]:
+    ) -> tuple[bool, float]:
         """Assess overall robustness of strategy.
 
         Returns:
@@ -267,8 +267,8 @@ class PerformanceValidator:
         return is_robust, min(confidence_score, 1.0)
 
     def calculate_parameter_stability(
-        self, parameter_values: Dict[str, List[float]]
-    ) -> Dict[str, float]:
+        self, parameter_values: dict[str, list[float]]
+    ) -> dict[str, float]:
         """Calculate stability scores for each parameter.
 
         Args:
@@ -309,8 +309,8 @@ class PerformanceValidator:
         return stability_scores
 
     def detect_overfitting(
-        self, performance_ratios: List[float], parameter_changes: List[float]
-    ) -> Dict[str, Any]:
+        self, performance_ratios: list[float], parameter_changes: list[float]
+    ) -> dict[str, Any]:
         """Detect signs of overfitting.
 
         Args:

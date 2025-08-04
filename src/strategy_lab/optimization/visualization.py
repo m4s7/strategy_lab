@@ -1,10 +1,8 @@
 """Visualization tools for optimization results."""
 
-from typing import Any, Dict, List, Optional, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 import seaborn as sns
 from matplotlib.figure import Figure
 
@@ -31,7 +29,7 @@ class OptimizationVisualizer:
         self,
         parameter: str,
         metric: str,
-        figsize: Tuple[float, float] = (10, 6),
+        figsize: tuple[float, float] = (10, 6),
         show_confidence: bool = True,
     ) -> Figure:
         """Plot parameter sensitivity analysis.
@@ -99,7 +97,7 @@ class OptimizationVisualizer:
         param1: str,
         param2: str,
         metric: str,
-        figsize: Tuple[float, float] = (10, 8),
+        figsize: tuple[float, float] = (10, 8),
         cmap: str = "viridis",
         annotate: bool = True,
     ) -> Figure:
@@ -155,7 +153,7 @@ class OptimizationVisualizer:
         param1: str,
         param2: str,
         metric: str,
-        figsize: Tuple[float, float] = (12, 9),
+        figsize: tuple[float, float] = (12, 9),
         elevation: float = 30,
         azimuth: float = 45,
     ) -> Figure:
@@ -172,7 +170,6 @@ class OptimizationVisualizer:
         Returns:
             Matplotlib figure
         """
-        from mpl_toolkits.mplot3d import Axes3D
 
         fig = plt.figure(figsize=figsize)
         ax = fig.add_subplot(111, projection="3d")
@@ -234,8 +231,8 @@ class OptimizationVisualizer:
         self,
         metric1: str,
         metric2: str,
-        minimize: Optional[List[bool]] = None,
-        figsize: Tuple[float, float] = (10, 8),
+        minimize: list[bool] | None = None,
+        figsize: tuple[float, float] = (10, 8),
         highlight_frontier: bool = True,
     ) -> Figure:
         """Plot Pareto frontier for two objectives.
@@ -326,10 +323,10 @@ class OptimizationVisualizer:
 
     def plot_parallel_coordinates(
         self,
-        parameters: List[str],
+        parameters: list[str],
         metric: str,
         n_best: int = 20,
-        figsize: Tuple[float, float] = (12, 6),
+        figsize: tuple[float, float] = (12, 6),
         colormap: str = "viridis",
     ) -> Figure:
         """Plot parallel coordinates for multiple parameters.
@@ -420,9 +417,9 @@ class OptimizationVisualizer:
 
     def create_dashboard(
         self,
-        metrics: List[str],
-        parameters: Optional[List[str]] = None,
-        figsize: Tuple[float, float] = (16, 12),
+        metrics: list[str],
+        parameters: list[str] | None = None,
+        figsize: tuple[float, float] = (16, 12),
     ) -> Figure:
         """Create comprehensive optimization dashboard.
 

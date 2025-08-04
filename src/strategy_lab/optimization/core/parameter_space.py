@@ -1,8 +1,9 @@
 """Parameter space definitions for optimization."""
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
-from typing import Any, Dict, Iterator, List, Tuple, Union
+from collections.abc import Iterator
+from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
 
@@ -13,19 +14,16 @@ class Parameter(ABC):
     # Subclasses must define name and description attributes
 
     @abstractmethod
-    def get_values(self) -> List[Any]:
+    def get_values(self) -> list[Any]:
         """Get all possible values for this parameter."""
-        pass
 
     @abstractmethod
-    def get_range_info(self) -> Dict[str, Any]:
+    def get_range_info(self) -> dict[str, Any]:
         """Get information about the parameter range."""
-        pass
 
     @abstractmethod
     def validate(self, value: Any) -> bool:
         """Validate if a value is valid for this parameter."""
-        pass
 
 
 @dataclass
@@ -46,7 +44,7 @@ class ContinuousParameter(Parameter):
         if self.step <= 0:
             raise ValueError(f"step must be positive for {self.name}")
 
-    def get_values(self) -> List[float]:
+    def get_values(self) -> list[float]:
         """Get all values in the range."""
         if self.include_endpoint:
             # Use np.arange with adjusted endpoint
@@ -60,12 +58,11 @@ class ContinuousParameter(Parameter):
                 for v in values
                 if v <= self.max_value + self.step * 0.1
             ]
-        else:
-            values = list(np.arange(self.min_value, self.max_value, self.step))
-            decimal_places = max(0, -int(np.floor(np.log10(abs(self.step))))) + 2
-            return [round(v, decimal_places) for v in values]
+        values = list(np.arange(self.min_value, self.max_value, self.step))
+        decimal_places = max(0, -int(np.floor(np.log10(abs(self.step))))) + 2
+        return [round(v, decimal_places) for v in values]
 
-    def get_range_info(self) -> Dict[str, Any]:
+    def get_range_info(self) -> dict[str, Any]:
         """Get range information."""
         return {
             "type": "continuous",
@@ -99,11 +96,11 @@ class DiscreteParameter(Parameter):
         if self.step <= 0:
             raise ValueError(f"step must be positive for {self.name}")
 
-    def get_values(self) -> List[int]:
+    def get_values(self) -> list[int]:
         """Get all values in the range."""
         return list(range(self.min_value, self.max_value + 1, self.step))
 
-    def get_range_info(self) -> Dict[str, Any]:
+    def get_range_info(self) -> dict[str, Any]:
         """Get range information."""
         return {
             "type": "discrete",
@@ -127,7 +124,7 @@ class CategoricalParameter(Parameter):
     """Categorical parameter with finite set of values."""
 
     name: str
-    values: List[Any]
+    values: list[Any]
     description: str = ""
 
     def __post_init__(self):
@@ -137,11 +134,11 @@ class CategoricalParameter(Parameter):
         if len(set(self.values)) != len(self.values):
             raise ValueError(f"values must be unique for {self.name}")
 
-    def get_values(self) -> List[Any]:
+    def get_values(self) -> list[Any]:
         """Get all possible values."""
         return self.values.copy()
 
-    def get_range_info(self) -> Dict[str, Any]:
+    def get_range_info(self) -> dict[str, Any]:
         """Get range information."""
         return {
             "type": "categorical",
@@ -157,7 +154,7 @@ class CategoricalParameter(Parameter):
 class ParameterSpace:
     """Multi-dimensional parameter space for optimization."""
 
-    def __init__(self, parameters: List[Parameter]):
+    def __init__(self, parameters: list[Parameter]):
         """Initialize parameter space.
 
         Args:
@@ -196,7 +193,7 @@ class ParameterSpace:
             raise KeyError(f"Parameter '{name}' not found")
         return self.parameter_dict[name]
 
-    def generate_combinations(self) -> Iterator[Dict[str, Any]]:
+    def generate_combinations(self) -> Iterator[dict[str, Any]]:
         """Generate all parameter combinations.
 
         Yields:
@@ -212,7 +209,7 @@ class ParameterSpace:
         for combination in itertools.product(*param_values):
             yield dict(zip(param_names, combination))
 
-    def get_random_combination(self, n: int = 1) -> List[Dict[str, Any]]:
+    def get_random_combination(self, n: int = 1) -> list[dict[str, Any]]:
         """Get random parameter combinations.
 
         Args:
@@ -232,8 +229,8 @@ class ParameterSpace:
         return combinations if n > 1 else combinations[0]
 
     def validate_combination(
-        self, combination: Dict[str, Any]
-    ) -> Tuple[bool, List[str]]:
+        self, combination: dict[str, Any]
+    ) -> tuple[bool, list[str]]:
         """Validate a parameter combination.
 
         Args:
@@ -263,7 +260,7 @@ class ParameterSpace:
 
         return len(errors) == 0, errors
 
-    def get_summary(self) -> Dict[str, Any]:
+    def get_summary(self) -> dict[str, Any]:
         """Get parameter space summary."""
         return {
             "dimensions": self.dimensions,
@@ -273,7 +270,7 @@ class ParameterSpace:
             },
         }
 
-    def subset(self, parameter_names: List[str]) -> "ParameterSpace":
+    def subset(self, parameter_names: list[str]) -> "ParameterSpace":
         """Create a subset of the parameter space.
 
         Args:
@@ -297,6 +294,6 @@ class ParameterSpace:
             f"combinations={self.total_combinations})"
         )
 
-    def __iter__(self) -> Iterator[Dict[str, Any]]:
+    def __iter__(self) -> Iterator[dict[str, Any]]:
         """Iterate over all combinations."""
         return self.generate_combinations()
