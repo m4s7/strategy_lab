@@ -93,20 +93,29 @@ def backtest(config, output, verbose):
         if not data_path.exists():
             click.echo(f"❌ Data directory not found: {data_path}", err=True)
             click.echo("Please ensure MNQ data is available in the specified path")
-            click.echo(
-                "⚠️  Note: Full backtest requires market data - proceeding with demonstration"
-            )
+            sys.exit(1)
 
         if contracts:
             click.echo(f"Contracts to process: {', '.join(contracts)}")
+            missing_contracts = []
             for contract in contracts:
                 contract_path = data_path / contract
                 if not contract_path.exists():
-                    click.echo(f"⚠️  Warning: Contract data not found: {contract_path}")
+                    missing_contracts.append(contract)
+                    
+            if missing_contracts:
+                click.echo(f"❌ Missing contract data: {', '.join(missing_contracts)}", err=True)
+                click.echo("Available contracts:")
+                available_contracts = [d.name for d in data_path.iterdir() if d.is_dir() and '-' in d.name]
+                for contract in sorted(available_contracts)[:10]:  # Show first 10
+                    click.echo(f"  - {contract}")
+                if len(available_contracts) > 10:
+                    click.echo(f"  ... and {len(available_contracts) - 10} more")
+                sys.exit(1)
 
-        # Initialize backtest engine (simplified for demo)
+        # Initialize backtest engine
         try:
-            engine = BacktestEngine()  # Initialize without complex config for now
+            engine = BacktestEngine()
             click.echo("✓ Initialized backtest engine")
 
         except Exception as e:
@@ -157,7 +166,7 @@ def backtest(config, output, verbose):
                     commission=Decimal(str(backtest_config.get("commission", 2.00))),
                     slippage=Decimal(str(backtest_config.get("slippage", 0.25))),
                 ),
-                output_dir=Path(output) if output else None,
+                output_dir=Path(output) if output else Path("results"),
             )
 
             click.echo("🔄 Loading market data...")
@@ -248,33 +257,13 @@ def backtest(config, output, verbose):
                 import traceback
 
                 click.echo(traceback.format_exc(), err=True)
-
-            # Fallback to demonstration mode
-            click.echo("\n⚠️  Falling back to demonstration mode...")
-            click.echo("🔄 Loading market data...")
-            click.echo("📊 Initializing strategy...")
-            click.echo("💹 Running simulation...")
-            click.echo("📈 Calculating metrics...")
-
-            # Show demo results
-            click.echo("\n" + "=" * 50)
-            click.echo("BACKTEST RESULTS (DEMO)")
-            click.echo("=" * 50)
-            click.echo(f"Strategy: {strategy_name}")
-            click.echo(
-                f"Period: {backtest_config.get('start_date')} to {backtest_config.get('end_date')}"
-            )
-            click.echo(
-                f"Initial Capital: ${backtest_config.get('initial_capital', 100000):,}"
-            )
-            click.echo("\nPerformance Metrics:")
-            click.echo("  Total Return: -- (demo mode)")
-            click.echo("  Sharpe Ratio: --")
-            click.echo("  Max Drawdown: --")
-            click.echo("  Win Rate: --")
-            click.echo("  Total Trades: --")
-            click.echo("\n⚠️  Note: Enable full backtest by ensuring data availability")
-            click.echo("=" * 50)
+            
+            click.echo("\n💡 Troubleshooting tips:")
+            click.echo("  1. Verify data files exist in the specified path")
+            click.echo("  2. Check configuration file parameters")
+            click.echo("  3. Ensure sufficient memory and disk space")
+            click.echo("  4. Run 'python monitor.py' to check system status")
+            sys.exit(1)
 
         if output:
             output_path = Path(output)
