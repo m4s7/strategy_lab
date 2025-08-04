@@ -58,7 +58,32 @@ class BounceState:
     entry_timing_delays: list[float] = field(default_factory=list)
 
 
-@register_strategy
+@register_strategy(
+    StrategyMetadata(
+        name="bid_ask_bounce",
+        version="1.0.0",
+        description="Trades bounces off bid/ask levels using Level 1 data",
+        author="Strategy Lab",
+        tags=["scalping", "level-1", "bid-ask", "high-frequency"],
+        parameters={
+            "bounce_sensitivity": 0.7,
+            "min_bounce_ticks": 2,
+            "lookback_periods": 10,
+            "volume_threshold": 0.8,
+            "spread_filter": 2.0,
+            "stop_loss_ticks": 3,
+            "take_profit_ticks": 5,
+            "position_size": 1,
+            "max_positions": 1,
+            "min_holding_periods": 3,
+            "max_holding_periods": 30,
+        },
+        requirements={
+            "data": ["price", "bid", "ask", "volume"],
+            "min_history": 20,
+        },
+    )
+)
 class BidAskBounceStrategy(PluggableStrategy):
     """Strategy that trades bounces off bid and ask levels.
 

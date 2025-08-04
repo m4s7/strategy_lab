@@ -1,0 +1,49 @@
+# Base System Configuration Template
+# This template provides default settings for the Strategy Lab system
+
+system:
+  version: "1.0.0"
+  environment: "development"
+
+  logging:
+    level: "INFO"
+    file: "logs/strategy_lab.log"
+    console: true
+    format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
+  performance:
+    max_memory_gb: 16.0
+    parallel_workers: 4
+    chunk_size: 10000
+    enable_profiling: false
+
+  data:
+    data_path: "./data/MNQ"
+    cache_enabled: true
+    cache_path: "./cache"
+    preload_data: false
+
+# Strategy configurations (empty by default)
+strategies: {}
+
+# Backtesting configuration (optional)
+backtesting:
+  start_date: "2024-01-01T00:00:00"
+  end_date: "2024-12-31T23:59:59"
+  initial_capital: 100000
+
+  engine:
+    commission_rate: 0.001  # 0.1%
+    slippage_model: "linear"
+    slippage_factor: 0.0001
+    enable_shorting: true
+    margin_requirement: 0.5
+
+# Optimization configuration (optional)
+optimization:
+  method: "grid_search"
+  metric: "sharpe_ratio"
+  direction: "maximize"
+  max_iterations: 1000
+  parallel: true
+  random_seed: 42

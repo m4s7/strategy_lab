@@ -44,7 +44,29 @@ class ImbalanceState:
     consecutive_signals: int = 0
 
 
-@register_strategy
+@register_strategy(
+    StrategyMetadata(
+        name="order_book_imbalance",
+        version="1.0.0",
+        description="Trades based on order book volume imbalances using Level 2 data",
+        author="Strategy Lab",
+        tags=["microstructure", "level-2", "order-book", "imbalance"],
+        parameters={
+            "imbalance_threshold": 0.6,
+            "smoothing_window": 5,
+            "depth_levels": 5,
+            "min_volume_ratio": 1.5,
+            "signal_persistence": 3,
+            "position_size": 1,
+            "stop_loss_percent": 0.002,
+            "take_profit_percent": 0.003,
+        },
+        requirements={
+            "data": ["level-2", "order-book", "bid", "ask"],
+            "min_history": 20,
+        },
+    )
+)
 class OrderBookImbalanceStrategy(PluggableStrategy):
     """Strategy that trades based on order book volume imbalances.
 

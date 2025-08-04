@@ -21,10 +21,32 @@ from ..base import (
     SignalType,
     StrategyBase,
 )
+from ..protocol import StrategyMetadata
+from ..registry import register_strategy
 
 logger = logging.getLogger(__name__)
 
 
+@register_strategy(
+    StrategyMetadata(
+        name="MovingAverageCrossoverStrategy",
+        version="1.0.0",
+        description="Classic moving average crossover strategy with risk management",
+        author="Strategy Lab",
+        tags=["trend-following", "moving-average", "example", "crossover"],
+        parameters={
+            "short_period": 10,
+            "long_period": 20,
+            "min_signal_strength": 0.3,
+            "position_size": 1,
+            "max_positions": 1,
+        },
+        requirements={
+            "data": ["price", "volume"],
+            "min_history": 30,
+        },
+    )
+)
 class MovingAverageCrossoverStrategy(StrategyBase):
     """Moving average crossover strategy implementation.
 
