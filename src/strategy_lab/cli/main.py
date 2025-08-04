@@ -130,7 +130,6 @@ def backtest(config, output, verbose):
                 StrategyConfig,
             )
             from decimal import Decimal
-            from pathlib import Path
 
             # Build backtest configuration
             backtest_cfg = BacktestConfig(

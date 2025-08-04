@@ -1,0 +1,60 @@
+# Base System Configuration Template
+# This template provides default settings for the Strategy Lab system
+
+system:
+  version: "1.0.0"
+  environment: "development"
+
+  logging:
+    level: "INFO"
+    file: "logs/strategy_lab.log"
+    console: true
+    format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
+  performance:
+    max_memory_gb: 16.0
+    parallel_workers: 4
+    chunk_size: 10000
+    enable_profiling: false
+
+  data:
+    data_path: "./data/MNQ"
+    cache_enabled: true
+    cache_path: "./cache"
+    preload_data: false
+
+# Strategy configuration
+strategy:
+  name: "order_book_imbalance"
+  parameters:
+    imbalance_threshold: 0.7
+    min_spread: 0.25
+    max_position_size: 5
+    stop_loss_ticks: 10
+    take_profit_ticks: 5
+    hold_time_seconds: 30
+
+# Backtesting configuration
+backtesting:
+  start_date: "2025-01-01T00:00:00"
+  end_date: "2025-01-02T23:59:59"  # 2 days for quick testing
+  initial_capital: 100000
+  commission: 2.00  # Fixed $2 per trade
+  slippage: 0.25    # $0.25 slippage
+  contracts: ["03-25"]  # Current contract month
+
+  engine:
+    commission_rate: 0.001  # 0.1%
+    slippage_model: "linear"
+    slippage_factor: 0.0001
+    enable_shorting: true
+    margin_requirement: 0.5
+
+# Optimization configuration (optional)
+optimization:
+  method: "grid_search"
+  metric: "sharpe_ratio"
+  direction: "maximize"
+  max_iterations: 1000
+  parallel: true
+  random_seed: 42

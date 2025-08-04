@@ -1,0 +1,81 @@
+# Production Configuration for Strategy Lab
+# Optimized for local deployment
+
+system:
+  version: "1.0.0"
+  environment: "production"
+
+  logging:
+    level: "INFO"
+    file: "logs/strategy_lab_production.log"
+    console: true
+    format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    max_size_mb: 100
+    backup_count: 5
+
+  performance:
+    max_memory_gb: 32.0  # Utilize available RAM
+    parallel_workers: 8  # Use more CPU cores
+    chunk_size: 50000    # Larger chunks for efficiency
+    enable_profiling: true
+    memory_monitoring: true
+
+  data:
+    data_path: "./data/MNQ"
+    cache_enabled: true
+    cache_path: "./cache"
+    preload_data: true
+    validation_enabled: true
+
+# Default strategy for production testing
+strategy:
+  name: "order_book_imbalance"
+  parameters:
+    imbalance_threshold: 0.65
+    min_spread: 0.25
+    max_position_size: 10
+    stop_loss_ticks: 8
+    take_profit_ticks: 4
+    hold_time_seconds: 45
+
+# Production backtesting configuration
+backtesting:
+  start_date: "2025-01-01T00:00:00"
+  end_date: "2025-01-10T23:59:59"  # 10 days for comprehensive testing
+  initial_capital: 100000
+  commission: 2.00
+  slippage: 0.25
+  contracts: ["03-25"]
+
+  engine:
+    commission_rate: 0.001
+    slippage_model: "linear"
+    slippage_factor: 0.0001
+    enable_shorting: true
+    margin_requirement: 0.5
+
+# Optimization configuration
+optimization:
+  method: "genetic"  # More efficient for production
+  metric: "sharpe_ratio"
+  direction: "maximize"
+  max_iterations: 500
+  parallel: true
+  random_seed: 42
+
+  # Performance constraints
+  max_drawdown_limit: 0.15  # 15% max drawdown
+  min_win_rate: 0.45        # 45% minimum win rate
+  min_profit_factor: 1.2    # 1.2 minimum profit factor
+
+# Monitoring and alerting
+monitoring:
+  enabled: true
+  performance_tracking: true
+  memory_alerts: true
+  error_reporting: true
+
+  alerts:
+    max_memory_percent: 80
+    max_cpu_percent: 90
+    min_processing_speed: 50000  # ticks per second
