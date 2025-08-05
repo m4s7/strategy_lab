@@ -36,7 +36,7 @@ except ImportError:
             pass
 
 
-from ...data.ingestion import DataLoader
+from .data_adapter import BacktestDataLoader
 from ..metrics import MetricsAggregator
 from .config import BacktestConfig
 from .portfolio import Portfolio, Position, PositionSide
@@ -53,7 +53,7 @@ class ExecutionContext:
     strategy: Any  # Strategy instance
 
     # Data management
-    data_loader: DataLoader
+    data_loader: BacktestDataLoader
     current_data: pd.DataFrame | None = None
 
     # Progress tracking
@@ -158,7 +158,7 @@ class BacktestExecutor:
         strategy = self._load_strategy()
 
         # Create data loader
-        data_loader = DataLoader(data_path=self.config.data.data_path)
+        data_loader = BacktestDataLoader(self.config.data.data_path)
 
         # Create context
         self.context = ExecutionContext(
@@ -211,7 +211,10 @@ class BacktestExecutor:
 
         # Load data
         self.context.current_data = self.context.data_loader.load_data(
-            start_date=start_date, end_date=end_date, columns=None  # Load all columns
+            start_date=start_date,
+            end_date=end_date,
+            columns=None,  # Load all columns
+            contracts=self.config.data.contracts,
         )
 
         # Set total ticks

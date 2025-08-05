@@ -248,9 +248,18 @@ class BidAskBounceStrategy(PluggableStrategy):
 
         # Update volatility estimate
         if len(self.state.price_history) >= self.volatility_lookback:
-            prices = list(self.state.price_history)[-self.volatility_lookback :]
-            returns = np.diff(prices) / prices[:-1]
-            self.current_volatility = np.std(returns) if len(returns) > 0 else 0.0
+            prices = np.array(
+                list(self.state.price_history)[-self.volatility_lookback :]
+            )
+            # Avoid divide by zero
+            prev_prices = prices[:-1]
+            mask = prev_prices != 0
+            if np.any(mask):
+                returns = np.zeros(len(prev_prices))
+                returns[mask] = np.diff(prices)[mask] / prev_prices[mask]
+                self.current_volatility = np.std(returns) if len(returns) > 0 else 0.0
+            else:
+                self.current_volatility = 0.0
 
         # Check market condition filters
         if not self._check_market_conditions(spread_ticks, volume):

@@ -233,7 +233,15 @@ class OrderBookImbalanceStrategy(PluggableStrategy):
 
         # Calculate simple volatility measure
         prices = np.array(price_history)
-        returns = np.diff(prices) / prices[:-1]
+        prev_prices = prices[:-1]
+
+        # Avoid divide by zero
+        mask = prev_prices != 0
+        if not np.any(mask):
+            return True  # No valid price data, allow trading
+
+        returns = np.zeros(len(prev_prices))
+        returns[mask] = np.diff(prices)[mask] / prev_prices[mask]
 
         # Check for valid returns
         if len(returns) == 0 or np.all(returns == 0):
@@ -370,7 +378,7 @@ class OrderBookImbalanceStrategy(PluggableStrategy):
             return 0
 
         # Check exit conditions for existing position
-        if self.position_manager.has_position() and self.check_exit_conditions(
+        if not self.position_manager.position.is_flat and self.check_exit_conditions(
             price, timestamp
         ):
             self.state.position_entry_time = None
@@ -378,7 +386,7 @@ class OrderBookImbalanceStrategy(PluggableStrategy):
             return 0  # Exit signal
 
         # Generate new signal if flat
-        if not self.position_manager.has_position():
+        if self.position_manager.position.is_flat:
             signal = self.generate_signal(metrics)
 
             # Only take signal if we have enough confirmation
