@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 
 export interface ValidationRule {
   min?: number;
@@ -10,7 +10,7 @@ export interface ValidationRule {
 
 export interface ParameterDefinition {
   name: string;
-  type: 'number' | 'boolean' | 'string' | 'select' | 'date' | 'range';
+  type: "number" | "boolean" | "string" | "select" | "date" | "range";
   description: string;
   required: boolean;
   default?: any;
@@ -54,12 +54,14 @@ export const useStrategies = () => {
   useEffect(() => {
     const fetchStrategies = async () => {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/strategies`);
-        if (!response.ok) throw new Error('Failed to fetch strategies');
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/v1/strategies`
+        );
+        if (!response.ok) throw new Error("Failed to fetch strategies");
         const data = await response.json();
         setStrategies(data.strategies);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Unknown error');
+        setError(err instanceof Error ? err.message : "Unknown error");
       } finally {
         setLoading(false);
       }
@@ -84,12 +86,14 @@ export const useStrategy = (strategyId: string) => {
 
     const fetchStrategy = async () => {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/strategies/${strategyId}`);
-        if (!response.ok) throw new Error('Failed to fetch strategy');
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/v1/strategies/${strategyId}`
+        );
+        if (!response.ok) throw new Error("Failed to fetch strategy");
         const data = await response.json();
         setStrategy(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Unknown error');
+        setError(err instanceof Error ? err.message : "Unknown error");
       } finally {
         setLoading(false);
       }
@@ -111,19 +115,19 @@ export const useStrategyValidation = (strategyId: string) => {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/v1/strategies/${strategyId}/validate`,
         {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ parameters })
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ parameters }),
         }
       );
-      
-      if (!response.ok) throw new Error('Validation request failed');
-      
+
+      if (!response.ok) throw new Error("Validation request failed");
+
       const data = await response.json();
       setErrors(data.errors || []);
       return data.valid;
     } catch (err) {
-      console.error('Validation error:', err);
+      console.error("Validation error:", err);
       return false;
     } finally {
       setValidating(false);
@@ -147,11 +151,11 @@ export const useConfigurationTemplates = (strategyId: string) => {
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/api/v1/strategies/${strategyId}/templates`
         );
-        if (!response.ok) throw new Error('Failed to fetch templates');
+        if (!response.ok) throw new Error("Failed to fetch templates");
         const data = await response.json();
         setTemplates(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Unknown error');
+        setError(err instanceof Error ? err.message : "Unknown error");
       } finally {
         setLoading(false);
       }
@@ -160,29 +164,35 @@ export const useConfigurationTemplates = (strategyId: string) => {
     fetchTemplates();
   }, [strategyId]);
 
-  const saveTemplate = async (name: string, parameters: Record<string, any>, description?: string) => {
+  const saveTemplate = async (
+    name: string,
+    parameters: Record<string, any>,
+    description?: string
+  ) => {
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/v1/strategies/${strategyId}/templates`,
         {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             name,
             strategy_id: strategyId,
             parameters,
-            description
-          })
+            description,
+          }),
         }
       );
 
-      if (!response.ok) throw new Error('Failed to save template');
-      
+      if (!response.ok) throw new Error("Failed to save template");
+
       const newTemplate = await response.json();
-      setTemplates(prev => [...prev, newTemplate]);
+      setTemplates((prev) => [...prev, newTemplate]);
       return newTemplate;
     } catch (err) {
-      throw new Error(err instanceof Error ? err.message : 'Failed to save template');
+      throw new Error(
+        err instanceof Error ? err.message : "Failed to save template"
+      );
     }
   };
 
@@ -191,11 +201,13 @@ export const useConfigurationTemplates = (strategyId: string) => {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/v1/strategies/templates/${templateId}`
       );
-      if (!response.ok) throw new Error('Failed to load template');
+      if (!response.ok) throw new Error("Failed to load template");
       const template = await response.json();
       return template;
     } catch (err) {
-      throw new Error(err instanceof Error ? err.message : 'Failed to load template');
+      throw new Error(
+        err instanceof Error ? err.message : "Failed to load template"
+      );
     }
   };
 
@@ -203,13 +215,15 @@ export const useConfigurationTemplates = (strategyId: string) => {
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/v1/strategies/templates/${templateId}`,
-        { method: 'DELETE' }
+        { method: "DELETE" }
       );
-      if (!response.ok) throw new Error('Failed to delete template');
-      
-      setTemplates(prev => prev.filter(t => t.id !== templateId));
+      if (!response.ok) throw new Error("Failed to delete template");
+
+      setTemplates((prev) => prev.filter((t) => t.id !== templateId));
     } catch (err) {
-      throw new Error(err instanceof Error ? err.message : 'Failed to delete template');
+      throw new Error(
+        err instanceof Error ? err.message : "Failed to delete template"
+      );
     }
   };
 
@@ -219,6 +233,6 @@ export const useConfigurationTemplates = (strategyId: string) => {
     error,
     saveTemplate,
     loadTemplate,
-    deleteTemplate
+    deleteTemplate,
   };
 };

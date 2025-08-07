@@ -1,7 +1,12 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useStrategies, useStrategy, useStrategyValidation, useConfigurationTemplates } from "@/hooks/useStrategies";
+import { useState, useEffect } from "react";
+import {
+  useStrategies,
+  useStrategy,
+  useStrategyValidation,
+  useConfigurationTemplates,
+} from "@/hooks/useStrategies";
 import { StrategySelector } from "@/components/strategy/strategy-selector";
 import { ParameterForm } from "@/components/strategy/parameter-form";
 import { TemplateManager } from "@/components/strategy/template-manager";
@@ -12,23 +17,23 @@ import { toast } from "sonner";
 export default function StrategyConfigurationPage() {
   const router = useRouter();
   const { strategies, loading: strategiesLoading } = useStrategies();
-  const [selectedStrategyId, setSelectedStrategyId] = useState<string | null>(null);
-  const { strategy } = useStrategy(selectedStrategyId || '');
-  const { validateParameters, errors } = useStrategyValidation(selectedStrategyId || '');
-  const { 
-    templates, 
-    saveTemplate, 
-    loadTemplate, 
-    deleteTemplate 
-  } = useConfigurationTemplates(selectedStrategyId || '');
-  
+  const [selectedStrategyId, setSelectedStrategyId] = useState<string | null>(
+    null
+  );
+  const { strategy } = useStrategy(selectedStrategyId || "");
+  const { validateParameters, errors } = useStrategyValidation(
+    selectedStrategyId || ""
+  );
+  const { templates, saveTemplate, loadTemplate, deleteTemplate } =
+    useConfigurationTemplates(selectedStrategyId || "");
+
   const [configuration, setConfiguration] = useState<Record<string, any>>({});
   const [isValid, setIsValid] = useState(false);
   const [recentStrategies, setRecentStrategies] = useState<string[]>([]);
 
   useEffect(() => {
     // Load recent strategies from localStorage
-    const stored = localStorage.getItem('recentStrategies');
+    const stored = localStorage.getItem("recentStrategies");
     if (stored) {
       setRecentStrategies(JSON.parse(stored));
     }
@@ -43,34 +48,37 @@ export default function StrategyConfigurationPage() {
 
   const handleSelectStrategy = (strategy: any) => {
     setSelectedStrategyId(strategy.id);
-    
+
     // Update recent strategies
-    const newRecent = [strategy.id, ...recentStrategies.filter(id => id !== strategy.id)].slice(0, 5);
+    const newRecent = [
+      strategy.id,
+      ...recentStrategies.filter((id) => id !== strategy.id),
+    ].slice(0, 5);
     setRecentStrategies(newRecent);
-    localStorage.setItem('recentStrategies', JSON.stringify(newRecent));
+    localStorage.setItem("recentStrategies", JSON.stringify(newRecent));
   };
 
   const handleValidate = async () => {
     if (!selectedStrategyId) return false;
-    
+
     const valid = await validateParameters(configuration);
     setIsValid(valid);
-    
+
     if (valid) {
-      toast.success('Configuration is valid!');
+      toast.success("Configuration is valid!");
     } else {
-      toast.error('Please fix validation errors');
+      toast.error("Please fix validation errors");
     }
-    
+
     return valid;
   };
 
   const handleSaveTemplate = async (name: string, description?: string) => {
     try {
       await saveTemplate(name, configuration, description);
-      toast.success('Template saved successfully');
+      toast.success("Template saved successfully");
     } catch (error) {
-      toast.error('Failed to save template');
+      toast.error("Failed to save template");
     }
   };
 
@@ -78,49 +86,53 @@ export default function StrategyConfigurationPage() {
     try {
       const template = await loadTemplate(templateId);
       setConfiguration(template.parameters);
-      toast.success('Template loaded successfully');
+      toast.success("Template loaded successfully");
     } catch (error) {
-      toast.error('Failed to load template');
+      toast.error("Failed to load template");
     }
   };
 
   const handleDeleteTemplate = async (templateId: string) => {
     try {
       await deleteTemplate(templateId);
-      toast.success('Template deleted successfully');
+      toast.success("Template deleted successfully");
     } catch (error) {
-      toast.error('Failed to delete template');
+      toast.error("Failed to delete template");
     }
   };
 
   const handleStartBacktest = () => {
     if (!strategy || !isValid) return;
-    
+
     // Store configuration in sessionStorage for the next page
-    sessionStorage.setItem('backtestConfig', JSON.stringify({
-      strategy_id: strategy.id,
-      strategy_name: strategy.name,
-      parameters: configuration
-    }));
-    
+    sessionStorage.setItem(
+      "backtestConfig",
+      JSON.stringify({
+        strategy_id: strategy.id,
+        strategy_name: strategy.name,
+        parameters: configuration,
+      })
+    );
+
     // Navigate to backtest execution page
-    router.push('/backtests/new');
+    router.push("/backtests/new");
   };
 
   const handleExportConfig = () => {
     const dataStr = JSON.stringify(configuration, null, 2);
-    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+    const dataUri =
+      "data:application/json;charset=utf-8," + encodeURIComponent(dataStr);
     const exportFileDefaultName = `strategy-config-${Date.now()}.json`;
-    
-    const linkElement = document.createElement('a');
-    linkElement.setAttribute('href', dataUri);
-    linkElement.setAttribute('download', exportFileDefaultName);
+
+    const linkElement = document.createElement("a");
+    linkElement.setAttribute("href", dataUri);
+    linkElement.setAttribute("download", exportFileDefaultName);
     linkElement.click();
   };
 
   const handleImportConfig = (config: Record<string, any>) => {
     setConfiguration(config);
-    toast.success('Configuration imported successfully');
+    toast.success("Configuration imported successfully");
   };
 
   if (strategiesLoading) {
@@ -165,8 +177,8 @@ export default function StrategyConfigurationPage() {
                 onChange={setConfiguration}
                 errors={errors}
                 onValidate={handleValidate}
-                onSave={() => toast.success('Configuration saved')}
-                onReset={() => toast.info('Configuration reset to defaults')}
+                onSave={() => toast.success("Configuration saved")}
+                onReset={() => toast.info("Configuration reset to defaults")}
               />
               <TemplateManager
                 templates={templates}

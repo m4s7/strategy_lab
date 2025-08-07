@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useWebSocket } from '../lib/websocket/client';
+import { useState, useEffect } from "react";
+import { useWebSocket } from "../lib/websocket/client";
 
 export interface ExecutionProgress {
   percentage: number;
@@ -64,17 +64,19 @@ export const useBacktestExecution = () => {
   const [executions, setExecutions] = useState<BacktestExecution[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   const { subscribe, unsubscribe } = useWebSocket();
 
   const fetchExecutions = async () => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/execution`);
-      if (!response.ok) throw new Error('Failed to fetch executions');
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/execution`
+      );
+      if (!response.ok) throw new Error("Failed to fetch executions");
       const data = await response.json();
       setExecutions(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
+      setError(err instanceof Error ? err.message : "Unknown error");
     }
   };
 
@@ -84,41 +86,49 @@ export const useBacktestExecution = () => {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/v1/execution/start`,
         {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(request)
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(request),
         }
       );
-      
-      if (!response.ok) throw new Error('Failed to start execution');
-      
+
+      if (!response.ok) throw new Error("Failed to start execution");
+
       const result = await response.json();
       await fetchExecutions(); // Refresh list
       return result;
     } catch (err) {
-      throw new Error(err instanceof Error ? err.message : 'Failed to start execution');
+      throw new Error(
+        err instanceof Error ? err.message : "Failed to start execution"
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  const controlExecution = async (executionId: string, action: string, priority?: number) => {
+  const controlExecution = async (
+    executionId: string,
+    action: string,
+    priority?: number
+  ) => {
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/v1/execution/${executionId}/control`,
         {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action, priority })
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action, priority }),
         }
       );
-      
-      if (!response.ok) throw new Error('Failed to control execution');
-      
+
+      if (!response.ok) throw new Error("Failed to control execution");
+
       await fetchExecutions(); // Refresh list
       return await response.json();
     } catch (err) {
-      throw new Error(err instanceof Error ? err.message : 'Failed to control execution');
+      throw new Error(
+        err instanceof Error ? err.message : "Failed to control execution"
+      );
     }
   };
 
@@ -126,14 +136,16 @@ export const useBacktestExecution = () => {
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/v1/execution/${executionId}`,
-        { method: 'DELETE' }
+        { method: "DELETE" }
       );
-      
-      if (!response.ok) throw new Error('Failed to delete execution');
-      
+
+      if (!response.ok) throw new Error("Failed to delete execution");
+
       await fetchExecutions(); // Refresh list
     } catch (err) {
-      throw new Error(err instanceof Error ? err.message : 'Failed to delete execution');
+      throw new Error(
+        err instanceof Error ? err.message : "Failed to delete execution"
+      );
     }
   };
 
@@ -142,17 +154,26 @@ export const useBacktestExecution = () => {
 
     // Set up real-time updates
     const handleExecutionUpdate = (data: any) => {
-      if (data.type === 'execution_progress' || data.type === 'execution_status') {
+      if (
+        data.type === "execution_progress" ||
+        data.type === "execution_status"
+      ) {
         fetchExecutions(); // Refresh on updates
       }
     };
 
-    subscribe('execution:all', handleExecutionUpdate);
+    subscribe("execution:all", handleExecutionUpdate);
 
     // Refresh every 5 seconds for active executions
     const interval = setInterval(() => {
-      const hasActive = executions.some(e => 
-        ['queued', 'initializing', 'loading_data', 'processing', 'calculating_metrics'].includes(e.status)
+      const hasActive = executions.some((e) =>
+        [
+          "queued",
+          "initializing",
+          "loading_data",
+          "processing",
+          "calculating_metrics",
+        ].includes(e.status)
       );
       if (hasActive) {
         fetchExecutions();
@@ -160,7 +181,7 @@ export const useBacktestExecution = () => {
     }, 5000);
 
     return () => {
-      unsubscribe('execution:all');
+      unsubscribe("execution:all");
       clearInterval(interval);
     };
   }, [subscribe, unsubscribe, executions]);
@@ -172,6 +193,6 @@ export const useBacktestExecution = () => {
     startExecution,
     controlExecution,
     deleteExecution,
-    refresh: fetchExecutions
+    refresh: fetchExecutions,
   };
 };

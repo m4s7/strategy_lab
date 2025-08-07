@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -45,13 +45,13 @@ export function ActiveBacktestsMonitor() {
     );
   }
 
-  const runningBacktests = backtests.filter(bt => bt.status === 'running');
-  const pendingBacktests = backtests.filter(bt => bt.status === 'pending');
+  const runningBacktests = backtests.filter((bt) => bt.status === "running");
+  const pendingBacktests = backtests.filter((bt) => bt.status === "pending");
 
   // Mock progress data - in real implementation this would come from WebSocket updates
   const getProgress = (backtest: Backtest) => {
-    if (backtest.status === 'pending') return 0;
-    if (backtest.status === 'running') {
+    if (backtest.status === "pending") return 0;
+    if (backtest.status === "running") {
       // Mock progress based on how long it's been running
       const elapsed = Date.now() - new Date(backtest.created_at).getTime();
       const estimatedDuration = 5 * 60 * 1000; // 5 minutes
@@ -60,11 +60,11 @@ export function ActiveBacktestsMonitor() {
     return 100;
   };
 
-  const getStatusIcon = (status: Backtest['status']) => {
+  const getStatusIcon = (status: Backtest["status"]) => {
     switch (status) {
-      case 'running':
+      case "running":
         return <Play className="h-4 w-4 text-green-600" />;
-      case 'pending':
+      case "pending":
         return <Clock className="h-4 w-4 text-yellow-600" />;
       default:
         return <Square className="h-4 w-4 text-gray-600" />;
@@ -72,15 +72,15 @@ export function ActiveBacktestsMonitor() {
   };
 
   const getEstimatedCompletion = (backtest: Backtest) => {
-    if (backtest.status === 'pending') return 'Queued';
-    if (backtest.status === 'running') {
+    if (backtest.status === "pending") return "Queued";
+    if (backtest.status === "running") {
       const progress = getProgress(backtest);
-      if (progress < 10) return 'Starting...';
+      if (progress < 10) return "Starting...";
       const remaining = Math.round((100 - progress) * 3); // Mock: ~3 seconds per percent
       if (remaining < 60) return `~${remaining}s`;
       return `~${Math.round(remaining / 60)}m`;
     }
-    return 'Complete';
+    return "Complete";
   };
 
   return (
@@ -124,15 +124,14 @@ export function ActiveBacktestsMonitor() {
                         {backtest.strategy_id}
                       </div>
                       <div className="text-xs text-muted-foreground">
-                        Started {formatDistanceToNow(new Date(backtest.created_at), { 
-                          addSuffix: true 
+                        Started{" "}
+                        {formatDistanceToNow(new Date(backtest.created_at), {
+                          addSuffix: true,
                         })}
                       </div>
                     </div>
                   </div>
-                  <Badge variant="secondary">
-                    {backtest.status}
-                  </Badge>
+                  <Badge variant="secondary">{backtest.status}</Badge>
                 </div>
                 <div className="space-y-2">
                   <div className="flex justify-between text-xs">
@@ -164,16 +163,15 @@ export function ActiveBacktestsMonitor() {
                         {backtest.strategy_id}
                       </div>
                       <div className="text-xs text-muted-foreground">
-                        Queued {formatDistanceToNow(new Date(backtest.created_at), { 
-                          addSuffix: true 
+                        Queued{" "}
+                        {formatDistanceToNow(new Date(backtest.created_at), {
+                          addSuffix: true,
                         })}
                       </div>
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <Badge variant="outline">
-                      {backtest.status}
-                    </Badge>
+                    <Badge variant="outline">{backtest.status}</Badge>
                     <Button variant="ghost" size="sm">
                       <ExternalLink className="h-3 w-3" />
                     </Button>

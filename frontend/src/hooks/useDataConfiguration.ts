@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 
 export interface DateRange {
   start: string;
@@ -34,7 +34,7 @@ export interface ContractInfo {
 export interface DataConfiguration {
   date_range: DateRange;
   contracts: string[];
-  data_level: 'L1' | 'L2';
+  data_level: "L1" | "L2";
   include_holidays: boolean;
   time_zone: string;
 }
@@ -63,12 +63,14 @@ export const useDataAvailability = () => {
   useEffect(() => {
     const fetchAvailability = async () => {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/data/availability`);
-        if (!response.ok) throw new Error('Failed to fetch data availability');
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/v1/data/availability`
+        );
+        if (!response.ok) throw new Error("Failed to fetch data availability");
         const data = await response.json();
         setAvailability(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Unknown error');
+        setError(err instanceof Error ? err.message : "Unknown error");
       } finally {
         setLoading(false);
       }
@@ -88,12 +90,14 @@ export const useContracts = () => {
   useEffect(() => {
     const fetchContracts = async () => {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/data/contracts`);
-        if (!response.ok) throw new Error('Failed to fetch contracts');
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/v1/data/contracts`
+        );
+        if (!response.ok) throw new Error("Failed to fetch contracts");
         const data = await response.json();
         setContracts(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Unknown error');
+        setError(err instanceof Error ? err.message : "Unknown error");
       } finally {
         setLoading(false);
       }
@@ -115,19 +119,19 @@ export const useDataValidation = () => {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/v1/data/validate`,
         {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(config)
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(config),
         }
       );
-      
-      if (!response.ok) throw new Error('Validation request failed');
-      
+
+      if (!response.ok) throw new Error("Validation request failed");
+
       const data = await response.json();
       setValidation(data);
       return data;
     } catch (err) {
-      console.error('Validation error:', err);
+      console.error("Validation error:", err);
       return null;
     } finally {
       setValidating(false);
@@ -147,19 +151,19 @@ export const useDataEstimate = () => {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/v1/data/estimate`,
         {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(config)
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(config),
         }
       );
-      
-      if (!response.ok) throw new Error('Estimate request failed');
-      
+
+      if (!response.ok) throw new Error("Estimate request failed");
+
       const data = await response.json();
       setEstimate(data);
       return data;
     } catch (err) {
-      console.error('Estimate error:', err);
+      console.error("Estimate error:", err);
       return null;
     } finally {
       setEstimating(false);
@@ -169,24 +173,27 @@ export const useDataEstimate = () => {
   return { estimatePerformance, estimating, estimate };
 };
 
-export const useSampleData = (contract: string, dataLevel: 'L1' | 'L2' = 'L1') => {
+export const useSampleData = (
+  contract: string,
+  dataLevel: "L1" | "L2" = "L1"
+) => {
   const [samples, setSamples] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchSamples = async () => {
     if (!contract) return;
-    
+
     setLoading(true);
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/v1/data/sample/${contract}?data_level=${dataLevel}&limit=100`
       );
-      if (!response.ok) throw new Error('Failed to fetch sample data');
+      if (!response.ok) throw new Error("Failed to fetch sample data");
       const data = await response.json();
       setSamples(data.samples || []);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
+      setError(err instanceof Error ? err.message : "Unknown error");
     } finally {
       setLoading(false);
     }

@@ -1,7 +1,13 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState, useEffect } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -27,7 +33,7 @@ export function ParameterForm({
   errors,
   onValidate,
   onSave,
-  onReset
+  onReset,
 }: ParameterFormProps) {
   const [localErrors, setLocalErrors] = useState<Record<string, string>>({});
   const [isDirty, setIsDirty] = useState(false);
@@ -35,7 +41,7 @@ export function ParameterForm({
   useEffect(() => {
     // Convert validation errors to local error format
     const errorMap: Record<string, string> = {};
-    errors.forEach(error => {
+    errors.forEach((error) => {
       errorMap[error.parameter] = error.error;
     });
     setLocalErrors(errorMap);
@@ -45,7 +51,7 @@ export function ParameterForm({
     const newValues = { ...values, [name]: value };
     onChange(newValues);
     setIsDirty(true);
-    
+
     // Clear error for this field when user makes changes
     if (localErrors[name]) {
       const newErrors = { ...localErrors };
@@ -70,18 +76,24 @@ export function ParameterForm({
   };
 
   // Group parameters by category if they have dependencies
-  const groupedParameters = strategy.parameters.reduce((acc, param) => {
-    const group = param.dependencies && param.dependencies.length > 0 ? 'Advanced' : 'Basic';
-    if (!acc[group]) acc[group] = [];
-    acc[group].push(param);
-    return acc;
-  }, {} as Record<string, typeof strategy.parameters>);
+  const groupedParameters = strategy.parameters.reduce(
+    (acc, param) => {
+      const group =
+        param.dependencies && param.dependencies.length > 0
+          ? "Advanced"
+          : "Basic";
+      if (!acc[group]) acc[group] = [];
+      acc[group].push(param);
+      return acc;
+    },
+    {} as Record<string, typeof strategy.parameters>
+  );
 
   const hasMultipleGroups = Object.keys(groupedParameters).length > 1;
 
   const renderParameters = (parameters: typeof strategy.parameters) => (
     <div className="space-y-4">
-      {parameters.map(param => (
+      {parameters.map((param) => (
         <ParameterInput
           key={param.name}
           parameter={param}
@@ -153,7 +165,7 @@ export function ParameterForm({
         {hasMultipleGroups ? (
           <Tabs defaultValue="Basic" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
-              {Object.keys(groupedParameters).map(group => (
+              {Object.keys(groupedParameters).map((group) => (
                 <TabsTrigger key={group} value={group}>
                   {group} Parameters
                 </TabsTrigger>
@@ -171,11 +183,7 @@ export function ParameterForm({
 
         {/* Validation Button */}
         <div className="pt-4 border-t">
-          <Button
-            variant="outline"
-            className="w-full"
-            onClick={handleValidate}
-          >
+          <Button variant="outline" className="w-full" onClick={handleValidate}>
             Validate Configuration
           </Button>
         </div>

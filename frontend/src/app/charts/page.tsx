@@ -1,8 +1,20 @@
-'use client';
+"use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Slider } from "@/components/ui/slider";
@@ -10,13 +22,13 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useResults } from "@/hooks/useResults";
 import { useState, useMemo } from "react";
-import { 
-  LineChart, 
-  Line, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
   ResponsiveContainer,
   ScatterChart,
   Scatter,
@@ -26,10 +38,10 @@ import {
   AreaChart,
   ReferenceLine,
   Brush,
-  Legend
-} from 'recharts';
+  Legend,
+} from "recharts";
 import { format, subDays } from "date-fns";
-import { 
+import {
   TrendingUp,
   TrendingDown,
   BarChart3,
@@ -38,32 +50,33 @@ import {
   Maximize2,
   RefreshCw,
   Filter,
-  Calendar
+  Calendar,
 } from "lucide-react";
 
 // Mock advanced chart data
 const generateMockChartData = () => {
-  const baseDate = new Date('2024-01-01');
+  const baseDate = new Date("2024-01-01");
   const data = [];
   let equity = 100000;
   let drawdown = 0;
   let maxEquity = equity;
-  
-  for (let i = 0; i < 252; i++) { // Trading days in a year
+
+  for (let i = 0; i < 252; i++) {
+    // Trading days in a year
     const date = new Date(baseDate);
     date.setDate(date.getDate() + i);
-    
+
     // Generate realistic trading data
     const dailyReturn = (Math.random() - 0.48) * 0.02; // Slight positive bias
     const volume = Math.floor(Math.random() * 1000) + 100;
     const trades = Math.floor(Math.random() * 20) + 1;
-    
-    equity *= (1 + dailyReturn);
+
+    equity *= 1 + dailyReturn;
     maxEquity = Math.max(maxEquity, equity);
     drawdown = ((maxEquity - equity) / maxEquity) * 100;
-    
+
     data.push({
-      date: date.toISOString().split('T')[0],
+      date: date.toISOString().split("T")[0],
       timestamp: date.toISOString(),
       equity: Math.round(equity),
       dailyReturn: dailyReturn * 100,
@@ -73,61 +86,61 @@ const generateMockChartData = () => {
       vwap: equity * (0.995 + Math.random() * 0.01),
       sharpe: Math.random() * 3,
       volatility: Math.random() * 0.3 + 0.1,
-      beta: 0.8 + Math.random() * 0.4
+      beta: 0.8 + Math.random() * 0.4,
     });
   }
-  
+
   return data;
 };
 
 export default function ChartsPage() {
   const { results, loading } = useResults();
-  const [selectedTimeframe, setSelectedTimeframe] = useState('1Y');
-  const [selectedMetric, setSelectedMetric] = useState('equity');
+  const [selectedTimeframe, setSelectedTimeframe] = useState("1Y");
+  const [selectedMetric, setSelectedMetric] = useState("equity");
   const [showDrawdown, setShowDrawdown] = useState(false);
   const [showVolume, setShowVolume] = useState(true);
   const [zoomRange, setZoomRange] = useState([0, 100]);
   const [selectedResults, setSelectedResults] = useState<string[]>([]);
 
   const chartData = useMemo(() => generateMockChartData(), []);
-  
+
   const getTimeframeData = (data: any[], timeframe: string) => {
     const now = new Date();
     let startDate = new Date();
-    
+
     switch (timeframe) {
-      case '1M':
+      case "1M":
         startDate = subDays(now, 30);
         break;
-      case '3M':
+      case "3M":
         startDate = subDays(now, 90);
         break;
-      case '6M':
+      case "6M":
         startDate = subDays(now, 180);
         break;
-      case '1Y':
+      case "1Y":
         startDate = subDays(now, 365);
         break;
       default:
         return data;
     }
-    
-    return data.filter(d => new Date(d.timestamp) >= startDate);
+
+    return data.filter((d) => new Date(d.timestamp) >= startDate);
   };
 
   const filteredData = getTimeframeData(chartData, selectedTimeframe);
-  
+
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(value);
   };
 
   const formatPercent = (value: number) => {
-    return `${value >= 0 ? '+' : ''}${value.toFixed(2)}%`;
+    return `${value >= 0 ? "+" : ""}${value.toFixed(2)}%`;
   };
 
   const CustomTooltip = ({ active, payload, label }: any) => {
@@ -135,7 +148,9 @@ export default function ChartsPage() {
       const data = payload[0].payload;
       return (
         <div className="bg-card border rounded-lg p-3 shadow-lg">
-          <p className="text-sm font-medium">{format(new Date(label), 'MMM dd, yyyy')}</p>
+          <p className="text-sm font-medium">
+            {format(new Date(label), "MMM dd, yyyy")}
+          </p>
           <div className="space-y-1 mt-2">
             {payload.map((entry: any, index: number) => (
               <div key={index} className="flex justify-between space-x-4">
@@ -143,12 +158,12 @@ export default function ChartsPage() {
                   {entry.name}:
                 </span>
                 <span className="text-sm font-medium">
-                  {entry.dataKey === 'equity' || entry.dataKey === 'vwap' ? 
-                    formatCurrency(entry.value) : 
-                    entry.dataKey === 'dailyReturn' || entry.dataKey === 'drawdown' ?
-                    formatPercent(entry.value) :
-                    entry.value
-                  }
+                  {entry.dataKey === "equity" || entry.dataKey === "vwap"
+                    ? formatCurrency(entry.value)
+                    : entry.dataKey === "dailyReturn" ||
+                      entry.dataKey === "drawdown"
+                    ? formatPercent(entry.value)
+                    : entry.value}
                 </span>
               </div>
             ))}
@@ -194,7 +209,10 @@ export default function ChartsPage() {
           <div className="grid gap-4 md:grid-cols-4 lg:grid-cols-6">
             <div className="space-y-2">
               <Label>Timeframe</Label>
-              <Select value={selectedTimeframe} onValueChange={setSelectedTimeframe}>
+              <Select
+                value={selectedTimeframe}
+                onValueChange={setSelectedTimeframe}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -223,16 +241,16 @@ export default function ChartsPage() {
               </Select>
             </div>
             <div className="flex items-center space-x-2">
-              <Switch 
-                id="drawdown-overlay" 
+              <Switch
+                id="drawdown-overlay"
                 checked={showDrawdown}
                 onCheckedChange={setShowDrawdown}
               />
               <Label htmlFor="drawdown-overlay">Show Drawdown</Label>
             </div>
             <div className="flex items-center space-x-2">
-              <Switch 
-                id="volume-bars" 
+              <Switch
+                id="volume-bars"
                 checked={showVolume}
                 onCheckedChange={setShowVolume}
               />
@@ -281,29 +299,43 @@ export default function ChartsPage() {
               <div className="h-[500px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <ComposedChart data={filteredData}>
-                    <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-                    <XAxis 
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      className="opacity-30"
+                    />
+                    <XAxis
                       dataKey="timestamp"
-                      tickFormatter={(value) => format(new Date(value), 'MMM dd')}
+                      tickFormatter={(value) =>
+                        format(new Date(value), "MMM dd")
+                      }
                       className="text-xs"
                     />
-                    <YAxis yAxisId="equity" orientation="left" tickFormatter={formatCurrency} className="text-xs" />
+                    <YAxis
+                      yAxisId="equity"
+                      orientation="left"
+                      tickFormatter={formatCurrency}
+                      className="text-xs"
+                    />
                     {showVolume && (
-                      <YAxis yAxisId="volume" orientation="right" className="text-xs" />
+                      <YAxis
+                        yAxisId="volume"
+                        orientation="right"
+                        className="text-xs"
+                      />
                     )}
                     <Tooltip content={<CustomTooltip />} />
                     <Legend />
-                    
+
                     {showVolume && (
-                      <Bar 
+                      <Bar
                         yAxisId="volume"
-                        dataKey="volume" 
-                        fill="#8884d8" 
+                        dataKey="volume"
+                        fill="#8884d8"
                         opacity={0.3}
                         name="Volume"
                       />
                     )}
-                    
+
                     <Line
                       yAxisId="equity"
                       type="monotone"
@@ -313,7 +345,7 @@ export default function ChartsPage() {
                       dot={false}
                       name="Equity"
                     />
-                    
+
                     <Line
                       yAxisId="equity"
                       type="monotone"
@@ -324,7 +356,7 @@ export default function ChartsPage() {
                       dot={false}
                       name="VWAP"
                     />
-                    
+
                     {showDrawdown && (
                       <Area
                         yAxisId="equity"
@@ -353,26 +385,40 @@ export default function ChartsPage() {
                 <div className="h-[300px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <ScatterChart data={filteredData}>
-                      <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-                      <XAxis 
+                      <CartesianGrid
+                        strokeDasharray="3 3"
+                        className="opacity-30"
+                      />
+                      <XAxis
                         dataKey="timestamp"
-                        tickFormatter={(value) => format(new Date(value), 'MMM')}
+                        tickFormatter={(value) =>
+                          format(new Date(value), "MMM")
+                        }
                         className="text-xs"
                       />
-                      <YAxis 
+                      <YAxis
                         tickFormatter={(value) => `${value.toFixed(2)}%`}
                         className="text-xs"
                       />
-                      <Tooltip 
-                        formatter={(value: number) => [`${value.toFixed(2)}%`, 'Daily Return']}
-                        labelFormatter={(value) => format(new Date(value), 'MMM dd, yyyy')}
+                      <Tooltip
+                        formatter={(value: number) => [
+                          `${value.toFixed(2)}%`,
+                          "Daily Return",
+                        ]}
+                        labelFormatter={(value) =>
+                          format(new Date(value), "MMM dd, yyyy")
+                        }
                       />
-                      <Scatter 
-                        dataKey="dailyReturn" 
+                      <Scatter
+                        dataKey="dailyReturn"
                         fill="#8884d8"
                         fillOpacity={0.6}
                       />
-                      <ReferenceLine y={0} stroke="#666" strokeDasharray="2 2" />
+                      <ReferenceLine
+                        y={0}
+                        stroke="#666"
+                        strokeDasharray="2 2"
+                      />
                     </ScatterChart>
                   </ResponsiveContainer>
                 </div>
@@ -387,19 +433,29 @@ export default function ChartsPage() {
                 <div className="h-[300px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={filteredData}>
-                      <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-                      <XAxis 
+                      <CartesianGrid
+                        strokeDasharray="3 3"
+                        className="opacity-30"
+                      />
+                      <XAxis
                         dataKey="timestamp"
-                        tickFormatter={(value) => format(new Date(value), 'MMM')}
+                        tickFormatter={(value) =>
+                          format(new Date(value), "MMM")
+                        }
                         className="text-xs"
                       />
-                      <YAxis 
+                      <YAxis
                         tickFormatter={(value) => `-${value.toFixed(1)}%`}
                         className="text-xs"
                       />
-                      <Tooltip 
-                        formatter={(value: number) => [`-${value.toFixed(2)}%`, 'Drawdown']}
-                        labelFormatter={(value) => format(new Date(value), 'MMM dd, yyyy')}
+                      <Tooltip
+                        formatter={(value: number) => [
+                          `-${value.toFixed(2)}%`,
+                          "Drawdown",
+                        ]}
+                        labelFormatter={(value) =>
+                          format(new Date(value), "MMM dd, yyyy")
+                        }
                       />
                       <Area
                         dataKey="drawdown"
@@ -407,9 +463,23 @@ export default function ChartsPage() {
                         fill="url(#drawdownGradient)"
                       />
                       <defs>
-                        <linearGradient id="drawdownGradient" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#ef4444" stopOpacity={0.8}/>
-                          <stop offset="95%" stopColor="#ef4444" stopOpacity={0.1}/>
+                        <linearGradient
+                          id="drawdownGradient"
+                          x1="0"
+                          y1="0"
+                          x2="0"
+                          y2="1"
+                        >
+                          <stop
+                            offset="5%"
+                            stopColor="#ef4444"
+                            stopOpacity={0.8}
+                          />
+                          <stop
+                            offset="95%"
+                            stopColor="#ef4444"
+                            stopOpacity={0.1}
+                          />
                         </linearGradient>
                       </defs>
                     </AreaChart>
@@ -430,10 +500,15 @@ export default function ChartsPage() {
                 <div className="h-[400px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={filteredData}>
-                      <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-                      <XAxis 
+                      <CartesianGrid
+                        strokeDasharray="3 3"
+                        className="opacity-30"
+                      />
+                      <XAxis
                         dataKey="timestamp"
-                        tickFormatter={(value) => format(new Date(value), 'MMM')}
+                        tickFormatter={(value) =>
+                          format(new Date(value), "MMM")
+                        }
                         className="text-xs"
                       />
                       <YAxis className="text-xs" />
@@ -455,7 +530,11 @@ export default function ChartsPage() {
                         dot={false}
                         name="Volatility"
                       />
-                      <ReferenceLine y={1} stroke="#666" strokeDasharray="2 2" />
+                      <ReferenceLine
+                        y={1}
+                        stroke="#666"
+                        strokeDasharray="2 2"
+                      />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
@@ -470,32 +549,47 @@ export default function ChartsPage() {
                 <div className="h-[400px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <ScatterChart data={filteredData}>
-                      <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-                      <XAxis 
+                      <CartesianGrid
+                        strokeDasharray="3 3"
+                        className="opacity-30"
+                      />
+                      <XAxis
                         dataKey="volatility"
                         name="Volatility"
-                        tickFormatter={(value) => `${(value * 100).toFixed(1)}%`}
+                        tickFormatter={(value) =>
+                          `${(value * 100).toFixed(1)}%`
+                        }
                         className="text-xs"
                       />
-                      <YAxis 
+                      <YAxis
                         dataKey="sharpe"
                         name="Sharpe"
                         className="text-xs"
                       />
-                      <Tooltip 
+                      <Tooltip
                         formatter={(value: number, name: string) => [
-                          name === 'sharpe' ? value.toFixed(2) : `${(value * 100).toFixed(1)}%`,
-                          name === 'sharpe' ? 'Sharpe Ratio' : 'Volatility'
+                          name === "sharpe"
+                            ? value.toFixed(2)
+                            : `${(value * 100).toFixed(1)}%`,
+                          name === "sharpe" ? "Sharpe Ratio" : "Volatility",
                         ]}
-                        labelFormatter={() => 'Risk-Return Profile'}
+                        labelFormatter={() => "Risk-Return Profile"}
                       />
-                      <Scatter 
-                        dataKey="sharpe" 
+                      <Scatter
+                        dataKey="sharpe"
                         fill="#8884d8"
                         fillOpacity={0.6}
                       />
-                      <ReferenceLine x={0.2} stroke="#666" strokeDasharray="2 2" />
-                      <ReferenceLine y={1} stroke="#666" strokeDasharray="2 2" />
+                      <ReferenceLine
+                        x={0.2}
+                        stroke="#666"
+                        strokeDasharray="2 2"
+                      />
+                      <ReferenceLine
+                        y={1}
+                        stroke="#666"
+                        strokeDasharray="2 2"
+                      />
                     </ScatterChart>
                   </ResponsiveContainer>
                 </div>
@@ -516,25 +610,32 @@ export default function ChartsPage() {
               <div className="h-[400px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <ComposedChart data={filteredData}>
-                    <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-                    <XAxis 
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      className="opacity-30"
+                    />
+                    <XAxis
                       dataKey="timestamp"
-                      tickFormatter={(value) => format(new Date(value), 'MMM')}
+                      tickFormatter={(value) => format(new Date(value), "MMM")}
                       className="text-xs"
                     />
                     <YAxis yAxisId="left" className="text-xs" />
-                    <YAxis yAxisId="right" orientation="right" className="text-xs" />
+                    <YAxis
+                      yAxisId="right"
+                      orientation="right"
+                      className="text-xs"
+                    />
                     <Tooltip content={<CustomTooltip />} />
                     <Legend />
-                    
-                    <Bar 
+
+                    <Bar
                       yAxisId="right"
-                      dataKey="trades" 
-                      fill="#8884d8" 
+                      dataKey="trades"
+                      fill="#8884d8"
                       opacity={0.3}
                       name="Daily Trades"
                     />
-                    
+
                     <Line
                       yAxisId="left"
                       type="monotone"
@@ -544,7 +645,7 @@ export default function ChartsPage() {
                       dot={false}
                       name="Volatility"
                     />
-                    
+
                     <Line
                       yAxisId="left"
                       type="monotone"
@@ -572,9 +673,12 @@ export default function ChartsPage() {
             <CardContent>
               <div className="text-center py-12">
                 <BarChart3 className="mx-auto h-16 w-16 text-muted-foreground" />
-                <h3 className="mt-4 text-lg font-medium">Strategy Comparison</h3>
+                <h3 className="mt-4 text-lg font-medium">
+                  Strategy Comparison
+                </h3>
                 <p className="text-muted-foreground mt-2">
-                  Select multiple results to compare their performance side by side
+                  Select multiple results to compare their performance side by
+                  side
                 </p>
                 <Button className="mt-4" variant="outline">
                   <Filter className="mr-2 h-4 w-4" />

@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { 
-  Play, 
-  BarChart3, 
-  Settings, 
+import {
+  Play,
+  BarChart3,
+  Settings,
   Database,
   Activity,
   FileText,
-  Plus
+  Plus,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -21,43 +21,43 @@ export function QuickActionsPanel() {
       icon: Plus,
       href: "/backtests/new",
       variant: "default" as const,
-      className: "bg-primary text-primary-foreground hover:bg-primary/90"
+      className: "bg-primary text-primary-foreground hover:bg-primary/90",
     },
     {
       title: "View Results",
       description: "Browse and analyze backtest results",
       icon: BarChart3,
       href: "/results",
-      variant: "outline" as const
+      variant: "outline" as const,
     },
     {
       title: "Strategy Config",
       description: "Configure trading strategies",
       icon: Settings,
       href: "/strategies",
-      variant: "outline" as const
+      variant: "outline" as const,
     },
     {
       title: "Data Management",
       description: "Manage market data sources",
       icon: Database,
       href: "/data",
-      variant: "outline" as const
+      variant: "outline" as const,
     },
     {
       title: "System Health",
       description: "Monitor system performance",
       icon: Activity,
       href: "/system",
-      variant: "outline" as const
+      variant: "outline" as const,
     },
     {
       title: "Documentation",
       description: "View API docs and guides",
       icon: FileText,
       href: "/docs",
-      variant: "outline" as const
-    }
+      variant: "outline" as const,
+    },
   ];
 
   return (
@@ -73,7 +73,9 @@ export function QuickActionsPanel() {
               <Link key={action.title} href={action.href}>
                 <Button
                   variant={action.variant}
-                  className={`w-full h-auto p-4 flex flex-col items-start space-y-2 ${action.className || ''}`}
+                  className={`w-full h-auto p-4 flex flex-col items-start space-y-2 ${
+                    action.className || ""
+                  }`}
                 >
                   <div className="flex items-center space-x-2 w-full">
                     <Icon className="h-5 w-5" />

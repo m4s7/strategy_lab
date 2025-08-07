@@ -1,7 +1,13 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,7 +29,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ConfigurationTemplate } from "@/hooks/useStrategies";
-import { Save, FolderOpen, Trash2, MoreVertical, Download, Upload } from "lucide-react";
+import {
+  Save,
+  FolderOpen,
+  Trash2,
+  MoreVertical,
+  Download,
+  Upload,
+} from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
 interface TemplateManagerProps {
@@ -43,20 +56,20 @@ export function TemplateManager({
   onLoadTemplate,
   onDeleteTemplate,
   onExportConfig,
-  onImportConfig
+  onImportConfig,
 }: TemplateManagerProps) {
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
-  const [templateName, setTemplateName] = useState('');
-  const [templateDescription, setTemplateDescription] = useState('');
+  const [templateName, setTemplateName] = useState("");
+  const [templateDescription, setTemplateDescription] = useState("");
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
 
   const handleSaveTemplate = async () => {
     if (!templateName.trim()) return;
-    
+
     await onSaveTemplate(templateName, templateDescription);
     setSaveDialogOpen(false);
-    setTemplateName('');
-    setTemplateDescription('');
+    setTemplateName("");
+    setTemplateDescription("");
   };
 
   const handleLoadTemplate = async (templateId: string) => {
@@ -65,19 +78,19 @@ export function TemplateManager({
   };
 
   const handleImportConfig = () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.json';
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".json";
     input.onchange = async (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (!file) return;
-      
+
       const text = await file.text();
       try {
         const config = JSON.parse(text);
         onImportConfig(config);
       } catch (error) {
-        console.error('Failed to parse configuration file:', error);
+        console.error("Failed to parse configuration file:", error);
       }
     };
     input.click();
@@ -85,13 +98,14 @@ export function TemplateManager({
 
   const handleExportConfig = () => {
     const dataStr = JSON.stringify(currentConfig, null, 2);
-    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-    
+    const dataUri =
+      "data:application/json;charset=utf-8," + encodeURIComponent(dataStr);
+
     const exportFileDefaultName = `strategy-config-${Date.now()}.json`;
-    
-    const linkElement = document.createElement('a');
-    linkElement.setAttribute('href', dataUri);
-    linkElement.setAttribute('download', exportFileDefaultName);
+
+    const linkElement = document.createElement("a");
+    linkElement.setAttribute("href", dataUri);
+    linkElement.setAttribute("download", exportFileDefaultName);
     linkElement.click();
   };
 
@@ -106,19 +120,11 @@ export function TemplateManager({
             </CardDescription>
           </div>
           <div className="flex items-center space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleImportConfig}
-            >
+            <Button variant="outline" size="sm" onClick={handleImportConfig}>
               <Upload className="h-4 w-4 mr-2" />
               Import
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleExportConfig}
-            >
+            <Button variant="outline" size="sm" onClick={handleExportConfig}>
               <Download className="h-4 w-4 mr-2" />
               Export
             </Button>
@@ -147,7 +153,9 @@ export function TemplateManager({
                     />
                   </div>
                   <div>
-                    <Label htmlFor="template-description">Description (Optional)</Label>
+                    <Label htmlFor="template-description">
+                      Description (Optional)
+                    </Label>
                     <Textarea
                       id="template-description"
                       value={templateDescription}
@@ -181,18 +189,20 @@ export function TemplateManager({
           <div className="text-center py-8 text-muted-foreground">
             <FolderOpen className="h-8 w-8 mx-auto mb-2 opacity-50" />
             <p>No saved templates yet</p>
-            <p className="text-sm mt-1">Save your first template to get started</p>
+            <p className="text-sm mt-1">
+              Save your first template to get started
+            </p>
           </div>
         ) : (
           <ScrollArea className="h-[300px] pr-4">
             <div className="space-y-2">
-              {templates.map(template => (
+              {templates.map((template) => (
                 <div
                   key={template.id}
                   className={`p-3 rounded-lg border cursor-pointer transition-colors ${
                     selectedTemplate === template.id
-                      ? 'border-primary bg-primary/5'
-                      : 'border-border hover:bg-muted/50'
+                      ? "border-primary bg-primary/5"
+                      : "border-border hover:bg-muted/50"
                   }`}
                   onClick={() => handleLoadTemplate(template.id)}
                 >
@@ -205,10 +215,16 @@ export function TemplateManager({
                         </div>
                       )}
                       <div className="text-xs text-muted-foreground">
-                        Created {formatDistanceToNow(new Date(template.created_at), { addSuffix: true })}
+                        Created{" "}
+                        {formatDistanceToNow(new Date(template.created_at), {
+                          addSuffix: true,
+                        })}
                         {template.last_used && (
                           <span>
-                            {' • '}Last used {formatDistanceToNow(new Date(template.last_used), { addSuffix: true })}
+                            {" • "}Last used{" "}
+                            {formatDistanceToNow(new Date(template.last_used), {
+                              addSuffix: true,
+                            })}
                           </span>
                         )}
                       </div>
@@ -224,7 +240,9 @@ export function TemplateManager({
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => handleLoadTemplate(template.id)}>
+                        <DropdownMenuItem
+                          onClick={() => handleLoadTemplate(template.id)}
+                        >
                           <FolderOpen className="h-4 w-4 mr-2" />
                           Load
                         </DropdownMenuItem>

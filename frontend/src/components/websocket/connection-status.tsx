@@ -2,24 +2,18 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { 
-  Wifi, 
-  WifiOff, 
-  Loader2, 
-  AlertTriangle,
-  RefreshCw 
-} from "lucide-react";
+import { Wifi, WifiOff, Loader2, AlertTriangle, RefreshCw } from "lucide-react";
 import { useWebSocketStatus } from "@/lib/websocket/hooks";
 
 export function ConnectionStatus() {
-  const { 
-    status, 
-    isConnected, 
-    isConnecting, 
-    isReconnecting, 
+  const {
+    status,
+    isConnected,
+    isConnecting,
+    isReconnecting,
     hasError,
     connect,
-    disconnect 
+    disconnect,
   } = useWebSocketStatus();
 
   const getStatusIcon = () => {
@@ -44,18 +38,18 @@ export function ConnectionStatus() {
 
   const getStatusText = () => {
     switch (status) {
-      case 'connected':
-        return 'Connected';
-      case 'connecting':
-        return 'Connecting...';
-      case 'reconnecting':
-        return 'Reconnecting...';
-      case 'disconnected':
-        return 'Disconnected';
-      case 'error':
-        return 'Connection Error';
+      case "connected":
+        return "Connected";
+      case "connecting":
+        return "Connecting...";
+      case "reconnecting":
+        return "Reconnecting...";
+      case "disconnected":
+        return "Disconnected";
+      case "error":
+        return "Connection Error";
       default:
-        return 'Unknown';
+        return "Unknown";
     }
   };
 
@@ -65,7 +59,7 @@ export function ConnectionStatus() {
         {getStatusIcon()}
         {getStatusText()}
       </Badge>
-      
+
       {!isConnected && !isConnecting && !isReconnecting && (
         <Button
           variant="outline"
@@ -77,7 +71,7 @@ export function ConnectionStatus() {
           Reconnect
         </Button>
       )}
-      
+
       {isConnected && (
         <Button
           variant="outline"

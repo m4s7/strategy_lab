@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useWebSocket } from '../lib/websocket/client';
+import { useState, useEffect } from "react";
+import { useWebSocket } from "../lib/websocket/client";
 
 interface SystemMetrics {
   cpu: number;
@@ -13,8 +13,8 @@ interface SystemMetrics {
     free_gb: number;
     total_gb: number;
   };
-  database: 'healthy' | 'warning' | 'error';
-  websocket: 'connected' | 'disconnected';
+  database: "healthy" | "warning" | "error";
+  websocket: "connected" | "disconnected";
   uptime: number;
   timestamp: string;
 }
@@ -44,28 +44,32 @@ export const useSystemStatus = () => {
   const [stats, setStats] = useState<SystemStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   const { connectionStatus, subscribe, unsubscribe } = useWebSocket();
 
   const fetchSystemStatus = async () => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/system/status`);
-      if (!response.ok) throw new Error('Failed to fetch system status');
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/system/status`
+      );
+      if (!response.ok) throw new Error("Failed to fetch system status");
       const data = await response.json();
       setMetrics(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
+      setError(err instanceof Error ? err.message : "Unknown error");
     }
   };
 
   const fetchSystemStats = async () => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/system/stats`);
-      if (!response.ok) throw new Error('Failed to fetch system stats');
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/system/stats`
+      );
+      if (!response.ok) throw new Error("Failed to fetch system stats");
       const data = await response.json();
       setStats(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
+      setError(err instanceof Error ? err.message : "Unknown error");
     }
   };
 
@@ -80,15 +84,15 @@ export const useSystemStatus = () => {
 
     // Set up real-time updates
     const handleSystemUpdate = (data: any) => {
-      if (data.type === 'system_status') {
+      if (data.type === "system_status") {
         setMetrics(data.payload);
-      } else if (data.type === 'system_stats') {
+      } else if (data.type === "system_stats") {
         setStats(data.payload);
       }
     };
 
-    subscribe('system:status', handleSystemUpdate);
-    subscribe('system:stats', handleSystemUpdate);
+    subscribe("system:status", handleSystemUpdate);
+    subscribe("system:stats", handleSystemUpdate);
 
     // Fallback polling every 30 seconds
     const interval = setInterval(() => {
@@ -97,8 +101,8 @@ export const useSystemStatus = () => {
     }, 30000);
 
     return () => {
-      unsubscribe('system:status');
-      unsubscribe('system:stats');
+      unsubscribe("system:status");
+      unsubscribe("system:stats");
       clearInterval(interval);
     };
   }, [subscribe, unsubscribe]);
@@ -112,6 +116,6 @@ export const useSystemStatus = () => {
     refresh: () => {
       fetchSystemStatus();
       fetchSystemStats();
-    }
+    },
   };
 };

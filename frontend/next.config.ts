@@ -11,7 +11,7 @@ const nextConfig: NextConfig = {
     CUSTOM_KEY: process.env.CUSTOM_KEY,
   },
   images: {
-    domains: ['localhost'],
+    domains: ["localhost"],
   },
 };
 

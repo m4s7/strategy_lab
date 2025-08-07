@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { Cpu, Database, HardDrive, MemoryStick, Activity } from "lucide-react";
 import { MetricCard } from "@/components/ui/metric-card";
@@ -41,21 +41,21 @@ export function SystemMetricsGrid() {
   };
 
   const getCpuStatus = (usage: number) => {
-    if (usage > 80) return 'error';
-    if (usage > 60) return 'warning';
-    return 'healthy';
+    if (usage > 80) return "error";
+    if (usage > 60) return "warning";
+    return "healthy";
   };
 
   const getMemoryStatus = (usage: number) => {
-    if (usage > 85) return 'error';
-    if (usage > 70) return 'warning';
-    return 'healthy';
+    if (usage > 85) return "error";
+    if (usage > 70) return "warning";
+    return "healthy";
   };
 
   const getDiskStatus = (usage: number) => {
-    if (usage > 90) return 'error';
-    if (usage > 80) return 'warning';
-    return 'healthy';
+    if (usage > 90) return "error";
+    if (usage > 80) return "warning";
+    return "healthy";
   };
 
   return (
@@ -64,12 +64,14 @@ export function SystemMetricsGrid() {
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">System Status</h3>
         <div className="flex items-center space-x-4">
-          <StatusIndicator 
-            status={metrics.database === 'healthy' ? 'healthy' : 'error'}
+          <StatusIndicator
+            status={metrics.database === "healthy" ? "healthy" : "error"}
             label={`Database: ${metrics.database}`}
           />
-          <StatusIndicator 
-            status={metrics.websocket === 'connected' ? 'connected' : 'disconnected'}
+          <StatusIndicator
+            status={
+              metrics.websocket === "connected" ? "connected" : "disconnected"
+            }
             label={`WebSocket: ${metrics.websocket}`}
           />
         </div>
@@ -84,7 +86,7 @@ export function SystemMetricsGrid() {
           icon={Cpu}
           status={getCpuStatus(metrics.cpu)}
         />
-        
+
         <MetricCard
           title="Memory Usage"
           value={`${metrics.memory.used_percent}%`}
@@ -92,7 +94,7 @@ export function SystemMetricsGrid() {
           icon={MemoryStick}
           status={getMemoryStatus(metrics.memory.used_percent)}
         />
-        
+
         <MetricCard
           title="Disk Usage"
           value={`${metrics.disk.used_percent}%`}
@@ -100,7 +102,7 @@ export function SystemMetricsGrid() {
           icon={HardDrive}
           status={getDiskStatus(metrics.disk.used_percent)}
         />
-        
+
         <MetricCard
           title="System Uptime"
           value={formatUptime(metrics.uptime)}

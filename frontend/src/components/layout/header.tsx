@@ -27,7 +27,7 @@ export function Header({ onMenuToggle }: HeaderProps) {
             <h1 className="text-xl font-bold">Strategy Lab</h1>
           </div>
         </div>
-        
+
         <div className="flex items-center gap-2">
           <div className="hidden md:flex items-center gap-4 text-sm text-muted-foreground">
             <span>Market: Closed</span>

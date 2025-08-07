@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { SystemMetricsGrid } from "@/components/dashboard/system-metrics-grid";
 import { RecentActivityPanel } from "@/components/dashboard/recent-activity-panel";

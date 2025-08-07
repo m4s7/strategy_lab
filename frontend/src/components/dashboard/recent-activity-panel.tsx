@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -44,28 +44,28 @@ export function RecentActivityPanel() {
     );
   }
 
-  const getStatusBadgeVariant = (status: Backtest['status']) => {
+  const getStatusBadgeVariant = (status: Backtest["status"]) => {
     switch (status) {
-      case 'completed':
-        return 'default';
-      case 'running':
-        return 'secondary';
-      case 'failed':
-        return 'destructive';
-      case 'pending':
-        return 'outline';
-      case 'cancelled':
-        return 'secondary';
+      case "completed":
+        return "default";
+      case "running":
+        return "secondary";
+      case "failed":
+        return "destructive";
+      case "pending":
+        return "outline";
+      case "cancelled":
+        return "secondary";
       default:
-        return 'outline';
+        return "outline";
     }
   };
 
-  const getStatusIcon = (status: Backtest['status']) => {
+  const getStatusIcon = (status: Backtest["status"]) => {
     switch (status) {
-      case 'completed':
+      case "completed":
         return <TrendingUp className="h-4 w-4 text-green-600" />;
-      case 'failed':
+      case "failed":
         return <TrendingDown className="h-4 w-4 text-red-600" />;
       default:
         return <Clock className="h-4 w-4 text-blue-600" />;
@@ -100,8 +100,8 @@ export function RecentActivityPanel() {
                       {backtest.strategy_id}
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      {formatDistanceToNow(new Date(backtest.created_at), { 
-                        addSuffix: true 
+                      {formatDistanceToNow(new Date(backtest.created_at), {
+                        addSuffix: true,
                       })}
                     </div>
                   </div>

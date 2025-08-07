@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { BarChart3, CheckCircle, Clock, AlertTriangle } from "lucide-react";
 import { MetricCard } from "@/components/ui/metric-card";
@@ -48,7 +48,7 @@ export function PerformanceStatsCards() {
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold">Today's Performance</h3>
-      
+
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <MetricCard
           title="Backtests Run"
@@ -57,15 +57,21 @@ export function PerformanceStatsCards() {
           icon={BarChart3}
           status="neutral"
         />
-        
+
         <MetricCard
           title="Success Rate"
           value={`${stats.today.success_rate}%`}
           description={`${stats.today.completed} completed`}
           icon={CheckCircle}
-          status={stats.today.success_rate > 90 ? 'healthy' : stats.today.success_rate > 70 ? 'warning' : 'error'}
+          status={
+            stats.today.success_rate > 90
+              ? "healthy"
+              : stats.today.success_rate > 70
+              ? "warning"
+              : "error"
+          }
         />
-        
+
         <MetricCard
           title="Avg Duration"
           value={formatDuration(stats.today.average_duration)}
@@ -73,7 +79,7 @@ export function PerformanceStatsCards() {
           icon={Clock}
           status="neutral"
         />
-        
+
         <MetricCard
           title="Processing Speed"
           value={`${formatNumber(stats.data.processing_speed)}/s`}
@@ -89,9 +95,13 @@ export function PerformanceStatsCards() {
           value={`${stats.performance.average_response_time}ms`}
           description="Average API response"
           icon={Clock}
-          status={stats.performance.average_response_time < 200 ? 'healthy' : 'warning'}
+          status={
+            stats.performance.average_response_time < 200
+              ? "healthy"
+              : "warning"
+          }
         />
-        
+
         <MetricCard
           title="Records Processed"
           value={formatNumber(stats.data.records_processed)}

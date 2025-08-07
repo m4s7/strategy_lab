@@ -18,7 +18,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Strategy Lab - Trading Backtesting Platform",
-  description: "High-performance futures trading backtesting and optimization platform for MNQ strategies",
+  description:
+    "High-performance futures trading backtesting and optimization platform for MNQ strategies",
 };
 
 export default function RootLayout({

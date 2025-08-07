@@ -17,7 +17,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Strategy Lab - Trading Backtesting Platform",
-  description: "High-performance futures trading backtesting and optimization platform for MNQ strategies",
+  description:
+    "High-performance futures trading backtesting and optimization platform for MNQ strategies",
 };
 
 export default function RootLayout({
@@ -35,9 +36,7 @@ export default function RootLayout({
             <AppSidebar />
             <div className="flex-1 flex flex-col">
               <Header />
-              <main className="flex-1 p-6">
-                {children}
-              </main>
+              <main className="flex-1 p-6">{children}</main>
             </div>
           </div>
         </SidebarProvider>

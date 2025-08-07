@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
-import { useWebSocket } from '../lib/websocket/client';
+import { useState, useEffect } from "react";
+import { useWebSocket } from "../lib/websocket/client";
 
 export interface Backtest {
   id: string;
   strategy_id: string;
   config: Record<string, any>;
-  status: 'pending' | 'running' | 'completed' | 'failed' | 'cancelled';
+  status: "pending" | "running" | "completed" | "failed" | "cancelled";
   error_message?: string;
   created_at: string;
   updated_at: string;
@@ -15,7 +15,7 @@ export const useRecentBacktests = (limit = 10) => {
   const [backtests, setBacktests] = useState<Backtest[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   const { subscribe, unsubscribe } = useWebSocket();
 
   const fetchRecentBacktests = async () => {
@@ -23,11 +23,11 @@ export const useRecentBacktests = (limit = 10) => {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/v1/backtests/recent?limit=${limit}`
       );
-      if (!response.ok) throw new Error('Failed to fetch recent backtests');
+      if (!response.ok) throw new Error("Failed to fetch recent backtests");
       const data = await response.json();
       setBacktests(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
+      setError(err instanceof Error ? err.message : "Unknown error");
     }
   };
 
@@ -42,16 +42,19 @@ export const useRecentBacktests = (limit = 10) => {
 
     // Set up real-time updates
     const handleBacktestUpdate = (data: any) => {
-      if (data.type === 'backtest_created' || data.type === 'backtest_updated') {
+      if (
+        data.type === "backtest_created" ||
+        data.type === "backtest_updated"
+      ) {
         // Refetch recent backtests when there are updates
         fetchRecentBacktests();
       }
     };
 
-    subscribe('backtest:all', handleBacktestUpdate);
+    subscribe("backtest:all", handleBacktestUpdate);
 
     return () => {
-      unsubscribe('backtest:all');
+      unsubscribe("backtest:all");
     };
   }, [limit, subscribe, unsubscribe]);
 
@@ -59,7 +62,7 @@ export const useRecentBacktests = (limit = 10) => {
     backtests,
     loading,
     error,
-    refresh: fetchRecentBacktests
+    refresh: fetchRecentBacktests,
   };
 };
 
@@ -67,7 +70,7 @@ export const useActiveBacktests = () => {
   const [backtests, setBacktests] = useState<Backtest[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   const { subscribe, unsubscribe } = useWebSocket();
 
   const fetchActiveBacktests = async () => {
@@ -75,11 +78,11 @@ export const useActiveBacktests = () => {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/v1/backtests/active`
       );
-      if (!response.ok) throw new Error('Failed to fetch active backtests');
+      if (!response.ok) throw new Error("Failed to fetch active backtests");
       const data = await response.json();
       setBacktests(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
+      setError(err instanceof Error ? err.message : "Unknown error");
     }
   };
 
@@ -94,18 +97,21 @@ export const useActiveBacktests = () => {
 
     // Set up real-time updates for active backtests
     const handleBacktestUpdate = (data: any) => {
-      if (data.type === 'backtest_updated' || data.type === 'backtest_progress') {
+      if (
+        data.type === "backtest_updated" ||
+        data.type === "backtest_progress"
+      ) {
         fetchActiveBacktests();
       }
     };
 
-    subscribe('backtest:active', handleBacktestUpdate);
+    subscribe("backtest:active", handleBacktestUpdate);
 
     // Refresh active backtests more frequently
     const interval = setInterval(fetchActiveBacktests, 10000);
 
     return () => {
-      unsubscribe('backtest:active');
+      unsubscribe("backtest:active");
       clearInterval(interval);
     };
   }, [subscribe, unsubscribe]);
@@ -114,6 +120,6 @@ export const useActiveBacktests = () => {
     backtests,
     loading,
     error,
-    refresh: fetchActiveBacktests
+    refresh: fetchActiveBacktests,
   };
 };

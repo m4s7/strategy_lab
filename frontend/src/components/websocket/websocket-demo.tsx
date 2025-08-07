@@ -6,10 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { 
-  useWebSocketStatus, 
-  useWebSocketSubscription, 
-  useWebSocketDebug 
+import {
+  useWebSocketStatus,
+  useWebSocketSubscription,
+  useWebSocketDebug,
 } from "@/lib/websocket/hooks";
 
 export function WebSocketDemo() {
@@ -20,40 +20,42 @@ export function WebSocketDemo() {
 
   const sendTestMessage = async () => {
     try {
-      const response = await fetch('/api/v1/websocket/broadcast', {
-        method: 'POST',
+      const response = await fetch("/api/v1/websocket/broadcast", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           topic: testTopic,
           message: {
             test: true,
             timestamp: new Date().toISOString(),
-            data: `Test message from frontend at ${new Date().toLocaleTimeString()}`
-          }
-        })
+            data: `Test message from frontend at ${new Date().toLocaleTimeString()}`,
+          },
+        }),
       });
-      
+
       if (!response.ok) {
-        console.error('Failed to send test message');
+        console.error("Failed to send test message");
       }
     } catch (error) {
-      console.error('Error sending test message:', error);
+      console.error("Error sending test message:", error);
     }
   };
 
   return (
     <div className="space-y-6">
       <Card className="p-6">
-        <h3 className="text-lg font-semibold mb-4">WebSocket Connection Demo</h3>
-        
+        <h3 className="text-lg font-semibold mb-4">
+          WebSocket Connection Demo
+        </h3>
+
         <div className="space-y-4">
           <div className="flex items-center gap-4">
             <Badge variant={isConnected ? "success" : "destructive"}>
               {isConnected ? "Connected" : "Disconnected"}
             </Badge>
-            
+
             {!isConnected && (
               <Button onClick={connect} size="sm">
                 Connect WebSocket
@@ -64,7 +66,10 @@ export function WebSocketDemo() {
           {connectionStats && (
             <div className="text-sm text-muted-foreground">
               <p>Status: {connectionStats.status}</p>
-              <p>Subscriptions: {connectionStats.subscriptions.join(', ') || 'None'}</p>
+              <p>
+                Subscriptions:{" "}
+                {connectionStats.subscriptions.join(", ") || "None"}
+              </p>
             </div>
           )}
         </div>
@@ -72,7 +77,7 @@ export function WebSocketDemo() {
 
       <Card className="p-6">
         <h3 className="text-lg font-semibold mb-4">Topic Testing</h3>
-        
+
         <div className="space-y-4">
           <div className="flex gap-2">
             <Input
@@ -81,18 +86,16 @@ export function WebSocketDemo() {
               onChange={(e) => setTestTopic(e.target.value)}
               className="flex-1"
             />
-            <Button 
-              onClick={sendTestMessage}
-              disabled={!isConnected}
-              size="sm"
-            >
+            <Button onClick={sendTestMessage} disabled={!isConnected} size="sm">
               Send Test Message
             </Button>
           </div>
 
           {testData && (
             <div className="p-3 bg-muted rounded">
-              <p className="text-sm font-medium mb-2">Latest data for {testTopic}:</p>
+              <p className="text-sm font-medium mb-2">
+                Latest data for {testTopic}:
+              </p>
               <pre className="text-xs overflow-auto">
                 {JSON.stringify(testData, null, 2)}
               </pre>
@@ -108,14 +111,17 @@ export function WebSocketDemo() {
             Clear History
           </Button>
         </div>
-        
+
         <ScrollArea className="h-64 w-full border rounded p-2">
           {messageHistory.length === 0 ? (
             <p className="text-sm text-muted-foreground">No messages yet</p>
           ) : (
             <div className="space-y-2">
               {messageHistory.slice(-20).map((msg, index) => (
-                <div key={index} className="text-xs font-mono p-2 bg-muted rounded">
+                <div
+                  key={index}
+                  className="text-xs font-mono p-2 bg-muted rounded"
+                >
                   <div className="flex items-center gap-2 mb-1">
                     <Badge variant="outline" className="text-xs">
                       {msg.type}

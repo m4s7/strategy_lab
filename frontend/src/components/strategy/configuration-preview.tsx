@@ -1,6 +1,12 @@
-'use client';
+"use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -19,7 +25,7 @@ export function ConfigurationPreview({
   strategy,
   configuration,
   isValid,
-  onStartBacktest
+  onStartBacktest,
 }: ConfigurationPreviewProps) {
   const [copied, setCopied] = useState(false);
 
@@ -31,28 +37,38 @@ export function ConfigurationPreview({
   };
 
   const exportAsJson = () => {
-    const dataStr = JSON.stringify({
-      strategy_id: strategy.id,
-      strategy_name: strategy.name,
-      parameters: configuration,
-      timestamp: new Date().toISOString()
-    }, null, 2);
-    
-    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+    const dataStr = JSON.stringify(
+      {
+        strategy_id: strategy.id,
+        strategy_name: strategy.name,
+        parameters: configuration,
+        timestamp: new Date().toISOString(),
+      },
+      null,
+      2
+    );
+
+    const dataUri =
+      "data:application/json;charset=utf-8," + encodeURIComponent(dataStr);
     const exportFileDefaultName = `${strategy.id}-config-${Date.now()}.json`;
-    
-    const linkElement = document.createElement('a');
-    linkElement.setAttribute('href', dataUri);
-    linkElement.setAttribute('download', exportFileDefaultName);
+
+    const linkElement = document.createElement("a");
+    linkElement.setAttribute("href", dataUri);
+    linkElement.setAttribute("download", exportFileDefaultName);
     linkElement.click();
   };
 
   // Calculate configuration completeness
-  const requiredParams = strategy.parameters.filter(p => p.required);
-  const configuredRequired = requiredParams.filter(p => 
-    configuration[p.name] !== undefined && configuration[p.name] !== null && configuration[p.name] !== ''
+  const requiredParams = strategy.parameters.filter((p) => p.required);
+  const configuredRequired = requiredParams.filter(
+    (p) =>
+      configuration[p.name] !== undefined &&
+      configuration[p.name] !== null &&
+      configuration[p.name] !== ""
   );
-  const completeness = Math.round((configuredRequired.length / requiredParams.length) * 100);
+  const completeness = Math.round(
+    (configuredRequired.length / requiredParams.length) * 100
+  );
 
   return (
     <Card>
@@ -65,19 +81,11 @@ export function ConfigurationPreview({
             </CardDescription>
           </div>
           <div className="flex items-center space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={copyToClipboard}
-            >
+            <Button variant="outline" size="sm" onClick={copyToClipboard}>
               <Copy className="h-4 w-4 mr-2" />
-              {copied ? 'Copied!' : 'Copy'}
+              {copied ? "Copied!" : "Copy"}
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={exportAsJson}
-            >
+            <Button variant="outline" size="sm" onClick={exportAsJson}>
               <FileJson className="h-4 w-4 mr-2" />
               Export
             </Button>
@@ -107,7 +115,9 @@ export function ConfigurationPreview({
 
         {/* Strategy Info */}
         <div className="space-y-2">
-          <h4 className="text-sm font-medium text-muted-foreground">Strategy</h4>
+          <h4 className="text-sm font-medium text-muted-foreground">
+            Strategy
+          </h4>
           <div className="p-3 border rounded-lg">
             <div className="font-medium">{strategy.name}</div>
             <div className="text-sm text-muted-foreground">
@@ -119,14 +129,16 @@ export function ConfigurationPreview({
         {/* Parameters Summary */}
         <div className="space-y-2">
           <h4 className="text-sm font-medium text-muted-foreground">
-            Configured Parameters ({Object.keys(configuration).length}/{strategy.parameters.length})
+            Configured Parameters ({Object.keys(configuration).length}/
+            {strategy.parameters.length})
           </h4>
           <ScrollArea className="h-[200px] pr-4">
             <div className="space-y-2">
-              {strategy.parameters.map(param => {
+              {strategy.parameters.map((param) => {
                 const value = configuration[param.name];
-                const isConfigured = value !== undefined && value !== null && value !== '';
-                
+                const isConfigured =
+                  value !== undefined && value !== null && value !== "";
+
                 return (
                   <div
                     key={param.name}
@@ -135,7 +147,7 @@ export function ConfigurationPreview({
                     <div className="flex items-center space-x-2">
                       <div
                         className={`w-2 h-2 rounded-full ${
-                          isConfigured ? 'bg-green-500' : 'bg-gray-400'
+                          isConfigured ? "bg-green-500" : "bg-gray-400"
                         }`}
                       />
                       <span className="text-sm font-medium">{param.name}</span>
@@ -148,7 +160,9 @@ export function ConfigurationPreview({
                     <div className="text-sm">
                       {isConfigured ? (
                         <span className="font-mono">
-                          {typeof value === 'boolean' ? value.toString() : value}
+                          {typeof value === "boolean"
+                            ? value.toString()
+                            : value}
                         </span>
                       ) : (
                         <span className="text-muted-foreground">Not set</span>
@@ -168,7 +182,7 @@ export function ConfigurationPreview({
             disabled={!isValid}
             onClick={onStartBacktest}
           >
-            {isValid ? 'Start Backtest' : 'Complete Configuration First'}
+            {isValid ? "Start Backtest" : "Complete Configuration First"}
           </Button>
         </div>
       </CardContent>

@@ -1,8 +1,20 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -21,25 +33,27 @@ export function StrategySelector({
   strategies,
   selectedStrategy,
   onSelectStrategy,
-  recentStrategies = []
+  recentStrategies = [],
 }: StrategySelectorProps) {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
 
   // Get unique categories
-  const categories = ['all', ...new Set(strategies.map(s => s.category))];
+  const categories = ["all", ...new Set(strategies.map((s) => s.category))];
 
   // Filter strategies based on search and category
-  const filteredStrategies = strategies.filter(strategy => {
-    const matchesSearch = strategy.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          strategy.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || strategy.category === selectedCategory;
+  const filteredStrategies = strategies.filter((strategy) => {
+    const matchesSearch =
+      strategy.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      strategy.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory =
+      selectedCategory === "all" || strategy.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
   // Get recent strategy objects
   const recentStrategyObjects = recentStrategies
-    .map(id => strategies.find(s => s.id === id))
+    .map((id) => strategies.find((s) => s.id === id))
     .filter(Boolean) as Strategy[];
 
   return (
@@ -67,9 +81,9 @@ export function StrategySelector({
               <SelectValue placeholder="Category" />
             </SelectTrigger>
             <SelectContent>
-              {categories.map(category => (
+              {categories.map((category) => (
                 <SelectItem key={category} value={category}>
-                  {category === 'all' ? 'All Categories' : category}
+                  {category === "all" ? "All Categories" : category}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -77,31 +91,37 @@ export function StrategySelector({
         </div>
 
         {/* Recent Strategies */}
-        {recentStrategyObjects.length > 0 && searchTerm === '' && selectedCategory === 'all' && (
-          <div className="space-y-2">
-            <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-              <History className="h-4 w-4" />
-              <span>Recently Used</span>
-            </div>
-            <div className="grid gap-2">
-              {recentStrategyObjects.slice(0, 3).map(strategy => (
-                <Button
-                  key={strategy.id}
-                  variant={selectedStrategy?.id === strategy.id ? "secondary" : "outline"}
-                  className="justify-start h-auto p-3"
-                  onClick={() => onSelectStrategy(strategy)}
-                >
-                  <div className="text-left">
-                    <div className="font-medium">{strategy.name}</div>
-                    <div className="text-xs text-muted-foreground">
-                      {strategy.category} • v{strategy.version}
+        {recentStrategyObjects.length > 0 &&
+          searchTerm === "" &&
+          selectedCategory === "all" && (
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                <History className="h-4 w-4" />
+                <span>Recently Used</span>
+              </div>
+              <div className="grid gap-2">
+                {recentStrategyObjects.slice(0, 3).map((strategy) => (
+                  <Button
+                    key={strategy.id}
+                    variant={
+                      selectedStrategy?.id === strategy.id
+                        ? "secondary"
+                        : "outline"
+                    }
+                    className="justify-start h-auto p-3"
+                    onClick={() => onSelectStrategy(strategy)}
+                  >
+                    <div className="text-left">
+                      <div className="font-medium">{strategy.name}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {strategy.category} • v{strategy.version}
+                      </div>
                     </div>
-                  </div>
-                </Button>
-              ))}
+                  </Button>
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
         {/* Strategy List */}
         <div className="space-y-2">
@@ -110,7 +130,7 @@ export function StrategySelector({
           </div>
           <ScrollArea className="h-[300px] pr-4">
             <div className="grid gap-2">
-              {filteredStrategies.map(strategy => (
+              {filteredStrategies.map((strategy) => (
                 <div
                   key={strategy.id}
                   className={cn(
@@ -141,7 +161,7 @@ export function StrategySelector({
                         onClick={(e) => {
                           e.stopPropagation();
                           // Open documentation modal or panel
-                          console.log('Show docs for', strategy.id);
+                          console.log("Show docs for", strategy.id);
                         }}
                       >
                         <FileText className="h-4 w-4" />
@@ -179,5 +199,5 @@ export function StrategySelector({
 }
 
 function cn(...classes: (string | boolean | undefined)[]) {
-  return classes.filter(Boolean).join(' ');
+  return classes.filter(Boolean).join(" ");
 }

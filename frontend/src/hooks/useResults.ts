@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 
 export interface EquityPoint {
   timestamp: string;
@@ -85,12 +85,14 @@ export const useResults = () => {
   useEffect(() => {
     const fetchResults = async () => {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/results`);
-        if (!response.ok) throw new Error('Failed to fetch results');
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/v1/results`
+        );
+        if (!response.ok) throw new Error("Failed to fetch results");
         const data = await response.json();
         setResults(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Unknown error');
+        setError(err instanceof Error ? err.message : "Unknown error");
       } finally {
         setLoading(false);
       }
@@ -115,17 +117,19 @@ export const useResult = (resultId: string) => {
 
     const fetchResult = async () => {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/results/${resultId}`);
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/v1/results/${resultId}`
+        );
         if (!response.ok) {
           if (response.status === 404) {
-            throw new Error('Result not found');
+            throw new Error("Result not found");
           }
-          throw new Error('Failed to fetch result details');
+          throw new Error("Failed to fetch result details");
         }
         const data = await response.json();
         setResult(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Unknown error');
+        setError(err instanceof Error ? err.message : "Unknown error");
       } finally {
         setLoading(false);
       }
@@ -134,22 +138,24 @@ export const useResult = (resultId: string) => {
     fetchResult();
   }, [resultId]);
 
-  const exportResult = async (format: 'csv' | 'json' | 'pdf') => {
+  const exportResult = async (format: "csv" | "json" | "pdf") => {
     if (!resultId) return;
 
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/v1/results/${resultId}/export/${format}`
       );
-      if (!response.ok) throw new Error('Failed to export result');
-      
+      if (!response.ok) throw new Error("Failed to export result");
+
       const data = await response.json();
-      
-      if (format === 'json') {
+
+      if (format === "json") {
         // Download JSON
-        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const blob = new Blob([JSON.stringify(data, null, 2)], {
+          type: "application/json",
+        });
         const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
+        const a = document.createElement("a");
         a.href = url;
         a.download = `${result?.strategy_name}_${resultId}.json`;
         a.click();
@@ -159,7 +165,7 @@ export const useResult = (resultId: string) => {
         console.log(`Exported ${format}:`, data);
       }
     } catch (err) {
-      throw new Error(err instanceof Error ? err.message : 'Failed to export');
+      throw new Error(err instanceof Error ? err.message : "Failed to export");
     }
   };
 
@@ -167,12 +173,14 @@ export const useResult = (resultId: string) => {
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/v1/results/generate/${executionId}`,
-        { method: 'POST' }
+        { method: "POST" }
       );
-      if (!response.ok) throw new Error('Failed to generate result');
+      if (!response.ok) throw new Error("Failed to generate result");
       return await response.json();
     } catch (err) {
-      throw new Error(err instanceof Error ? err.message : 'Failed to generate result');
+      throw new Error(
+        err instanceof Error ? err.message : "Failed to generate result"
+      );
     }
   };
 
@@ -181,6 +189,6 @@ export const useResult = (resultId: string) => {
     loading,
     error,
     exportResult,
-    generateMockResult
+    generateMockResult,
   };
 };

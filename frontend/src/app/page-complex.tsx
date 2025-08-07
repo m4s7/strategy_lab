@@ -11,7 +11,7 @@ export default function Home() {
           Welcome to Strategy Lab - Your trading backtesting platform
         </p>
       </div>
-      
+
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <Card className="p-6">
           <div className="flex items-center space-x-2">
@@ -25,7 +25,7 @@ export default function Home() {
             <p className="text-sm text-success">+12.34%</p>
           </div>
         </Card>
-        
+
         <Card className="p-6">
           <div className="flex items-center space-x-2">
             <Activity className="h-5 w-5 text-primary" />
@@ -38,7 +38,7 @@ export default function Home() {
             <p className="text-sm text-muted-foreground">Running</p>
           </div>
         </Card>
-        
+
         <Card className="p-6">
           <div className="flex items-center space-x-2">
             <BarChart3 className="h-5 w-5 text-chart-1" />
@@ -51,7 +51,7 @@ export default function Home() {
             <p className="text-sm text-success">+2.3%</p>
           </div>
         </Card>
-        
+
         <Card className="p-6">
           <div className="flex items-center space-x-2">
             <Zap className="h-5 w-5 text-warning" />
@@ -65,7 +65,7 @@ export default function Home() {
           </div>
         </Card>
       </div>
-      
+
       <div className="grid gap-6 md:grid-cols-2">
         <Card className="p-6">
           <h3 className="text-lg font-semibold mb-4">Recent Backtests</h3>
@@ -84,13 +84,11 @@ export default function Home() {
             </div>
           </div>
         </Card>
-        
+
         <Card className="p-6">
           <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
           <div className="space-y-3">
-            <Button className="w-full justify-start">
-              Run New Backtest
-            </Button>
+            <Button className="w-full justify-start">Run New Backtest</Button>
             <Button variant="outline" className="w-full justify-start">
               Configure Strategy
             </Button>
