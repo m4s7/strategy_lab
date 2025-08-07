@@ -3,9 +3,10 @@ from typing import Dict, Any, List, Optional
 from pydantic import BaseModel, Field
 from datetime import datetime
 
+
 class ExecutionStatus(str, Enum):
     QUEUED = "queued"
-    INITIALIZING = "initializing" 
+    INITIALIZING = "initializing"
     LOADING_DATA = "loading_data"
     PROCESSING = "processing"
     CALCULATING_METRICS = "calculating_metrics"
@@ -14,13 +15,15 @@ class ExecutionStatus(str, Enum):
     CANCELLED = "cancelled"
     PAUSED = "paused"
 
+
 class ExecutionStage(str, Enum):
     INITIALIZATION = "initialization"
-    DATA_LOADING = "data_loading" 
+    DATA_LOADING = "data_loading"
     STRATEGY_SETUP = "strategy_setup"
     SIMULATION = "simulation"
     METRICS_CALCULATION = "metrics_calculation"
     FINALIZATION = "finalization"
+
 
 class ExecutionProgress(BaseModel):
     percentage: float = 0.0
@@ -30,12 +33,14 @@ class ExecutionProgress(BaseModel):
     current_date: Optional[str] = None
     stage: str = ""
     stage_progress: float = 0.0
-    
+
+
 class ResourceUsage(BaseModel):
     cpu_percent: float = 0.0
     memory_mb: float = 0.0
     peak_memory_mb: float = 0.0
     disk_io_mb: float = 0.0
+
 
 class ExecutionError(BaseModel):
     timestamp: datetime
@@ -43,6 +48,7 @@ class ExecutionError(BaseModel):
     message: str
     details: Optional[str] = None
     recoverable: bool = False
+
 
 class BacktestMetrics(BaseModel):
     total_trades: int = 0
@@ -54,6 +60,7 @@ class BacktestMetrics(BaseModel):
     sharpe_ratio: Optional[float] = None
     current_equity: float = 0.0
     last_trade_time: Optional[str] = None
+
 
 class BacktestExecution(BaseModel):
     id: str
@@ -69,18 +76,21 @@ class BacktestExecution(BaseModel):
     errors: List[ExecutionError] = Field(default_factory=list)
     configuration: Dict[str, Any] = Field(default_factory=dict)
 
+
 class ExecutionRequest(BaseModel):
     strategy_id: str
     strategy_parameters: Dict[str, Any]
     data_configuration: Dict[str, Any]
     priority: int = 5  # 1-10, higher = more priority
-    
+
+
 class ExecutionResponse(BaseModel):
     execution_id: str
     backtest_id: str
     status: ExecutionStatus
     queue_position: Optional[int] = None
     estimated_start_time: Optional[datetime] = None
+
 
 class ExecutionControlRequest(BaseModel):
     action: str  # 'pause', 'resume', 'cancel', 'priority_change'

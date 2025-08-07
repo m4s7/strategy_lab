@@ -19,7 +19,7 @@ class ValidationRule(BaseModel):
     step: Optional[float] = None
     required: Optional[bool] = None
     pattern: Optional[str] = None
-    
+
 
 class ParameterDefinition(BaseModel):
     name: str

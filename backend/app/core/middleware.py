@@ -12,23 +12,23 @@ logger = logging.getLogger(__name__)
 
 class LoggingMiddleware(BaseHTTPMiddleware):
     """Middleware for request/response logging with request ID tracking."""
-    
+
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
         # Generate unique request ID
         request_id = str(uuid.uuid4())
         request.state.request_id = request_id
-        
+
         # Log incoming request
         start_time = time.time()
         logger.info(
             f"Request started - ID: {request_id} | "
             f"Method: {request.method} | Path: {request.url.path}"
         )
-        
+
         # Process request
         try:
             response = await call_next(request)
-            
+
             # Log successful response
             process_time = time.time() - start_time
             logger.info(
@@ -36,11 +36,11 @@ class LoggingMiddleware(BaseHTTPMiddleware):
                 f"Status: {response.status_code} | "
                 f"Duration: {process_time:.4f}s"
             )
-            
+
             # Add request ID to response headers
             response.headers["X-Request-ID"] = request_id
             return response
-            
+
         except Exception as exc:
             # Log error
             process_time = time.time() - start_time

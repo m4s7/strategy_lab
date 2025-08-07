@@ -13,7 +13,7 @@ engine = create_async_engine(
         "check_same_thread": False,  # Only needed for SQLite
     },
     pool_pre_ping=True,
-    future=True
+    future=True,
 )
 
 # Create session factory
@@ -22,14 +22,14 @@ async_session_factory = async_sessionmaker(
     class_=AsyncSession,
     expire_on_commit=False,
     autocommit=False,
-    autoflush=False
+    autoflush=False,
 )
 
 
 async def get_db_session() -> AsyncSession:
     """
     Database dependency that provides async session.
-    
+
     Yields:
         AsyncSession: Database session
     """
@@ -47,7 +47,7 @@ async def get_db_session() -> AsyncSession:
 async def test_db_connection() -> bool:
     """
     Test database connection.
-    
+
     Returns:
         bool: True if connection successful, False otherwise
     """

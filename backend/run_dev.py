@@ -13,11 +13,11 @@ if __name__ == "__main__":
     print(f"Server URL: http://{settings.host}:{settings.port}")
     print(f"API Documentation: http://{settings.host}:{settings.port}/docs")
     print("-" * 50)
-    
+
     uvicorn.run(
         "app.main:app",
         host=settings.host,
         port=settings.port,
         reload=settings.debug,
-        log_level=settings.log_level
+        log_level=settings.log_level,
     )

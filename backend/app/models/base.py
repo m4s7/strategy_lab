@@ -5,15 +5,13 @@ from pydantic import BaseModel, ConfigDict
 
 class BaseResponse(BaseModel):
     """Base response model for all API responses."""
-    
-    model_config = ConfigDict(
-        from_attributes=True,
-        arbitrary_types_allowed=True
-    )
+
+    model_config = ConfigDict(from_attributes=True, arbitrary_types_allowed=True)
 
 
 class HealthResponse(BaseResponse):
     """Health check response model."""
+
     status: str
     timestamp: datetime
     version: str
@@ -25,6 +23,7 @@ class HealthResponse(BaseResponse):
 
 class ErrorResponse(BaseResponse):
     """Standard error response model."""
+
     error: str
     message: str
     detail: Optional[str] = None
@@ -34,6 +33,7 @@ class ErrorResponse(BaseResponse):
 
 class SuccessResponse(BaseResponse):
     """Generic success response model."""
+
     message: str
     data: Optional[Any] = None
     timestamp: datetime
