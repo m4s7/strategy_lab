@@ -21,6 +21,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { FileText, History, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Strategy } from "@/hooks/useStrategies";
+import { StrategyDocumentation } from "./strategy-documentation";
+import { cn } from "@/lib/utils";
 
 interface StrategySelectorProps {
   strategies: Strategy[];
@@ -37,6 +39,8 @@ export function StrategySelector({
 }: StrategySelectorProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [showDocumentation, setShowDocumentation] = useState(false);
+  const [documentationStrategy, setDocumentationStrategy] = useState<Strategy | null>(null);
 
   // Get unique categories
   const categories = ["all", ...new Set(strategies.map((s) => s.category))];
@@ -57,7 +61,8 @@ export function StrategySelector({
     .filter(Boolean) as Strategy[];
 
   return (
-    <Card>
+    <>
+      <Card>
       <CardHeader>
         <CardTitle>Select Strategy</CardTitle>
         <CardDescription>
@@ -154,19 +159,17 @@ export function StrategySelector({
                         </span>
                       </div>
                     </div>
-                    {strategy.documentation && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          // Open documentation modal or panel
-                          console.log("Show docs for", strategy.id);
-                        }}
-                      >
-                        <FileText className="h-4 w-4" />
-                      </Button>
-                    )}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDocumentationStrategy(strategy);
+                        setShowDocumentation(true);
+                      }}
+                    >
+                      <FileText className="h-4 w-4" />
+                    </Button>
                   </div>
                 </div>
               ))}
@@ -194,10 +197,14 @@ export function StrategySelector({
           </div>
         )}
       </CardContent>
-    </Card>
-  );
-}
+      </Card>
 
-function cn(...classes: (string | boolean | undefined)[]) {
-  return classes.filter(Boolean).join(" ");
+      {/* Documentation Dialog */}
+      <StrategyDocumentation
+        strategy={documentationStrategy}
+        open={showDocumentation}
+        onOpenChange={setShowDocumentation}
+      />
+    </>
+  );
 }

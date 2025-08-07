@@ -60,6 +60,39 @@ export function ParameterForm({
     }
   };
 
+  // Check if a parameter should be visible based on dependencies
+  const isParameterVisible = (param: typeof strategy.parameters[0]): boolean => {
+    if (!param.dependencies || param.dependencies.length === 0) {
+      return true;
+    }
+
+    // Check if all dependencies are met
+    return param.dependencies.every((dep) => {
+      if (typeof dep === "string") {
+        // Simple dependency - parameter must have a truthy value
+        return !!values[dep];
+      } else if (typeof dep === "object" && dep.parameter && dep.condition) {
+        // Conditional dependency - check if condition is met
+        const depValue = values[dep.parameter];
+        switch (dep.condition.operator) {
+          case "equals":
+            return depValue === dep.condition.value;
+          case "not_equals":
+            return depValue !== dep.condition.value;
+          case "greater_than":
+            return depValue > dep.condition.value;
+          case "less_than":
+            return depValue < dep.condition.value;
+          case "in":
+            return Array.isArray(dep.condition.value) && dep.condition.value.includes(depValue);
+          default:
+            return true;
+        }
+      }
+      return true;
+    });
+  };
+
   const handleReset = () => {
     const defaultValues = strategy.default_params || {};
     onChange(defaultValues);
@@ -93,15 +126,20 @@ export function ParameterForm({
 
   const renderParameters = (parameters: typeof strategy.parameters) => (
     <div className="space-y-4">
-      {parameters.map((param) => (
-        <ParameterInput
-          key={param.name}
-          parameter={param}
-          value={values[param.name]}
-          onChange={(value) => updateParameter(param.name, value)}
-          error={localErrors[param.name]}
-        />
-      ))}
+      {parameters.map((param) => {
+        if (!isParameterVisible(param)) {
+          return null;
+        }
+        return (
+          <ParameterInput
+            key={param.name}
+            parameter={param}
+            value={values[param.name]}
+            onChange={(value) => updateParameter(param.name, value)}
+            error={localErrors[param.name]}
+          />
+        );
+      })}
     </div>
   );
 
