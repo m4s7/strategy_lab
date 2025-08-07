@@ -35,24 +35,29 @@ import {
 } from "lucide-react";
 
 export default function MonitorPage() {
-  const { 
-    monitors, 
-    activeMonitors, 
-    abortBacktest, 
-    pauseBacktest, 
+  const {
+    monitors,
+    activeMonitors,
+    abortBacktest,
+    pauseBacktest,
     resumeBacktest,
     clearCompleted,
-    subscriptionCount 
+    subscriptionCount,
   } = useBacktestMonitor();
-  
-  const { status: wsStatus, isConnected, connect, disconnect } = useWebSocketStatus();
+
+  const {
+    status: wsStatus,
+    isConnected,
+    connect,
+    disconnect,
+  } = useWebSocketStatus();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [autoRefresh, setAutoRefresh] = useState(true);
 
   // Update current time every second
   useEffect(() => {
     if (!autoRefresh) return;
-    
+
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 1000);
@@ -66,7 +71,7 @@ export default function MonitorPage() {
       const reconnectTimer = setTimeout(() => {
         connect();
       }, 5000);
-      
+
       return () => clearTimeout(reconnectTimer);
     }
   }, [isConnected, connect, autoRefresh]);
@@ -88,11 +93,14 @@ export default function MonitorPage() {
     );
   };
 
-  const runningMonitors = monitors.filter(m => m.status === 'running');
-  const pausedMonitors = monitors.filter(m => m.status === 'paused');
-  const queuedMonitors = monitors.filter(m => m.status === 'queued');
-  const completedMonitors = monitors.filter(m => 
-    m.status === 'completed' || m.status === 'aborted' || m.status === 'failed'
+  const runningMonitors = monitors.filter((m) => m.status === "running");
+  const pausedMonitors = monitors.filter((m) => m.status === "paused");
+  const queuedMonitors = monitors.filter((m) => m.status === "queued");
+  const completedMonitors = monitors.filter(
+    (m) =>
+      m.status === "completed" ||
+      m.status === "aborted" ||
+      m.status === "failed"
   );
 
   return (
@@ -123,8 +131,10 @@ export default function MonitorPage() {
               size="sm"
               onClick={() => setAutoRefresh(!autoRefresh)}
             >
-              <RefreshCw className={`mr-2 h-4 w-4 ${autoRefresh ? 'animate-spin' : ''}`} />
-              {autoRefresh ? 'Pause' : 'Resume'}
+              <RefreshCw
+                className={`mr-2 h-4 w-4 ${autoRefresh ? "animate-spin" : ""}`}
+              />
+              {autoRefresh ? "Pause" : "Resume"}
             </Button>
           </div>
         </div>
@@ -191,9 +201,7 @@ export default function MonitorPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {subscriptionCount}
-            </div>
+            <div className="text-2xl font-bold">{subscriptionCount}</div>
             <div className="text-sm text-muted-foreground">
               WebSocket topics
             </div>
@@ -208,18 +216,18 @@ export default function MonitorPage() {
             <TabsTrigger value="active">
               Active ({runningMonitors.length + pausedMonitors.length})
             </TabsTrigger>
-            <TabsTrigger value="queue">Queue ({queuedMonitors.length})</TabsTrigger>
-            <TabsTrigger value="completed">History ({completedMonitors.length})</TabsTrigger>
+            <TabsTrigger value="queue">
+              Queue ({queuedMonitors.length})
+            </TabsTrigger>
+            <TabsTrigger value="completed">
+              History ({completedMonitors.length})
+            </TabsTrigger>
             <TabsTrigger value="system">System</TabsTrigger>
           </TabsList>
 
           <div className="flex items-center space-x-2">
             {completedMonitors.length > 0 && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={clearCompleted}
-              >
+              <Button variant="outline" size="sm" onClick={clearCompleted}>
                 <Trash2 className="mr-2 h-4 w-4" />
                 Clear History
               </Button>
@@ -237,7 +245,9 @@ export default function MonitorPage() {
               <CardContent className="pt-6">
                 <div className="text-center py-8">
                   <BarChart3 className="mx-auto h-12 w-12 text-muted-foreground" />
-                  <h3 className="mt-4 text-lg font-medium">No active backtests</h3>
+                  <h3 className="mt-4 text-lg font-medium">
+                    No active backtests
+                  </h3>
                   <p className="text-muted-foreground mb-4">
                     Start a backtest to see real-time monitoring
                   </p>
@@ -280,7 +290,9 @@ export default function MonitorPage() {
               <CardContent className="pt-6">
                 <div className="text-center py-8">
                   <Clock className="mx-auto h-12 w-12 text-muted-foreground" />
-                  <h3 className="mt-4 text-lg font-medium">No queued backtests</h3>
+                  <h3 className="mt-4 text-lg font-medium">
+                    No queued backtests
+                  </h3>
                   <p className="text-muted-foreground">
                     All backtests are either running or completed
                   </p>
@@ -308,7 +320,9 @@ export default function MonitorPage() {
               <CardContent className="pt-6">
                 <div className="text-center py-8">
                   <CheckCircle className="mx-auto h-12 w-12 text-muted-foreground" />
-                  <h3 className="mt-4 text-lg font-medium">No completed backtests</h3>
+                  <h3 className="mt-4 text-lg font-medium">
+                    No completed backtests
+                  </h3>
                   <p className="text-muted-foreground">
                     Completed backtests will appear here
                   </p>
@@ -344,19 +358,25 @@ export default function MonitorPage() {
             <CardContent>
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 <div className="space-y-2">
-                  <div className="text-sm text-muted-foreground">WebSocket Status</div>
+                  <div className="text-sm text-muted-foreground">
+                    WebSocket Status
+                  </div>
                   {getConnectionStatus()}
                 </div>
-                
+
                 <div className="space-y-2">
-                  <div className="text-sm text-muted-foreground">Active Subscriptions</div>
+                  <div className="text-sm text-muted-foreground">
+                    Active Subscriptions
+                  </div>
                   <div className="text-lg font-medium">{subscriptionCount}</div>
                 </div>
-                
+
                 <div className="space-y-2">
-                  <div className="text-sm text-muted-foreground">Auto Refresh</div>
-                  <Badge variant={autoRefresh ? 'default' : 'secondary'}>
-                    {autoRefresh ? 'Enabled' : 'Disabled'}
+                  <div className="text-sm text-muted-foreground">
+                    Auto Refresh
+                  </div>
+                  <Badge variant={autoRefresh ? "default" : "secondary"}>
+                    {autoRefresh ? "Enabled" : "Disabled"}
                   </Badge>
                 </div>
               </div>
@@ -370,16 +390,20 @@ export default function MonitorPage() {
                     Reconnect
                   </Button>
                 )}
-                
-                <Button 
-                  variant="outline" 
+
+                <Button
+                  variant="outline"
                   size="sm"
                   onClick={() => setAutoRefresh(!autoRefresh)}
                 >
-                  {autoRefresh ? 'Disable' : 'Enable'} Auto Refresh
+                  {autoRefresh ? "Disable" : "Enable"} Auto Refresh
                 </Button>
-                
-                <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => window.location.reload()}
+                >
                   <RefreshCw className="mr-2 h-4 w-4" />
                   Refresh Page
                 </Button>
@@ -391,14 +415,18 @@ export default function MonitorPage() {
           <Card>
             <CardHeader>
               <CardTitle>System Alerts</CardTitle>
-              <CardDescription>Recent warnings and notifications</CardDescription>
+              <CardDescription>
+                Recent warnings and notifications
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               {isConnected ? (
                 <div className="flex items-start space-x-3">
                   <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium">Real-time monitoring active</p>
+                    <p className="text-sm font-medium">
+                      Real-time monitoring active
+                    </p>
                     <p className="text-xs text-muted-foreground">
                       {format(currentTime, "HH:mm:ss")}
                     </p>
@@ -408,30 +436,36 @@ export default function MonitorPage() {
                 <div className="flex items-start space-x-3">
                   <AlertTriangle className="h-5 w-5 text-red-600 mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium">WebSocket disconnected</p>
+                    <p className="text-sm font-medium">
+                      WebSocket disconnected
+                    </p>
                     <p className="text-xs text-muted-foreground">
                       Real-time updates unavailable
                     </p>
                   </div>
                 </div>
               )}
-              
+
               {runningMonitors.length > 3 && (
                 <div className="flex items-start space-x-3">
                   <AlertTriangle className="h-5 w-5 text-yellow-600 mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium">High concurrent backtest load</p>
+                    <p className="text-sm font-medium">
+                      High concurrent backtest load
+                    </p>
                     <p className="text-xs text-muted-foreground">
                       {runningMonitors.length} backtests running simultaneously
                     </p>
                   </div>
                 </div>
               )}
-              
+
               <div className="flex items-start space-x-3">
                 <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
                 <div>
-                  <p className="text-sm font-medium">State persistence enabled</p>
+                  <p className="text-sm font-medium">
+                    State persistence enabled
+                  </p>
                   <p className="text-xs text-muted-foreground">
                     Monitor state saved across page refreshes
                   </p>

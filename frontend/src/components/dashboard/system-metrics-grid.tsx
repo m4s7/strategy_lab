@@ -1,6 +1,13 @@
 "use client";
 
-import { Cpu, Database, HardDrive, MemoryStick, Activity, Wifi } from "lucide-react";
+import {
+  Cpu,
+  Database,
+  HardDrive,
+  MemoryStick,
+  Activity,
+  Wifi,
+} from "lucide-react";
 import { MetricCard } from "@/components/ui/metric-card";
 import { StatusIndicator } from "@/components/ui/status-indicator";
 import { ResourceMonitor } from "@/components/monitoring/resource-monitor";

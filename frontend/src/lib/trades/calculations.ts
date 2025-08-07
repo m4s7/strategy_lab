@@ -55,10 +55,10 @@ export function calculateMaxConsecutive(trades: Trade[], winners: boolean): numb
 
 export function calculateEntryEfficiency(trade: Trade): number {
   if (!trade.signalPrice || trade.signalPrice === 0) return 0;
-  
+
   const slippage = Math.abs(trade.entryPrice - trade.signalPrice);
   const maxSlippage = trade.signalPrice * 0.01; // 1% as max reasonable slippage
-  
+
   return Math.max(0, 1 - (slippage / maxSlippage));
 }
 

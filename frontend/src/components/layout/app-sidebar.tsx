@@ -55,9 +55,24 @@ const items = [
     icon: Activity,
   },
   {
+    title: "Portfolio",
+    url: "/portfolio",
+    icon: Target,
+  },
+  {
     title: "Charts",
     url: "/charts",
     icon: LineChart,
+  },
+  {
+    title: "Charts Demo",
+    url: "/charts/demo",
+    icon: BarChart3,
+  },
+  {
+    title: "Advanced Charts",
+    url: "/charts/advanced",
+    icon: TrendingUp,
   },
   {
     title: "Optimization",

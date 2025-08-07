@@ -16,10 +16,10 @@ import { ResultsSharing } from "@/components/results/results-sharing";
 import { useState } from "react";
 import { format } from "date-fns";
 import Link from "next/link";
-import { 
-  ArrowLeft, 
-  Download, 
-  Share2, 
+import {
+  ArrowLeft,
+  Download,
+  Share2,
   Calendar,
   Clock,
   BarChart3,
@@ -30,7 +30,8 @@ import {
   Target,
   Users,
   Home,
-  ExternalLink
+  ExternalLink,
+  Shield
 } from "lucide-react";
 
 interface ResultDetailPageProps {
@@ -177,7 +178,7 @@ export default async function ResultDetailPage({ params }: ResultDetailPageProps
           </div>
         </div>
         <div className="flex items-center space-x-2">
-          <Badge 
+          <Badge
             className={`${riskRating.color} text-white`}
             variant="secondary"
           >
@@ -339,7 +340,7 @@ export default async function ResultDetailPage({ params }: ResultDetailPageProps
               console.log('Navigate to trade explorer');
             }}
           />
-          
+
           <TradeDistributionChart
             tradeSummary={result.trade_summary}
             initialCapital={result.initial_capital}
@@ -384,6 +385,22 @@ export default async function ResultDetailPage({ params }: ResultDetailPageProps
                   <Button variant="outline" className="w-full mt-3" asChild>
                     <Link href={`/results/${id}/trades`}>
                       Analyze Trades
+                      <ExternalLink className="ml-2 h-4 w-4" />
+                    </Link>
+                  </Button>
+                </Card>
+
+                <Card className="p-4 hover:shadow-md transition-shadow cursor-pointer">
+                  <div className="flex items-center space-x-3">
+                    <Shield className="h-8 w-8 text-red-600" />
+                    <div>
+                      <h4 className="font-medium">Risk Analysis</h4>
+                      <p className="text-sm text-muted-foreground">VaR, drawdowns & stress testing</p>
+                    </div>
+                  </div>
+                  <Button variant="outline" className="w-full mt-3" asChild>
+                    <Link href={`/results/${id}/risk`}>
+                      Analyze Risk
                       <ExternalLink className="ml-2 h-4 w-4" />
                     </Link>
                   </Button>

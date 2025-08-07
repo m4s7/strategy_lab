@@ -1,42 +1,42 @@
 export interface Trade {
   id: string;
   backtestId: string;
-  
+
   // Timing
   signalTime: string;
   entryTime: string;
   exitTime: string;
   duration: number; // milliseconds
-  
+
   // Trade details
   side: 'long' | 'short';
   quantity: number;
-  
+
   // Pricing
   signalPrice: number;
   entryPrice: number;
   exitPrice: number;
-  
+
   // Performance
   pnl: number;
   returnPct: number;
   maxProfit: number;
   maxLoss: number;
-  
+
   // Slippage
   entrySlippage: number;
   exitSlippage: number;
-  
+
   // Reasons
   entryReason: string;
   exitReason: string;
   signalType: string;
-  
+
   // Risk management
   stopLoss?: number;
   takeProfit?: number;
   stopLossUpdates?: StopLossUpdate[];
-  
+
   // Context
   marketContext?: MarketSnapshot;
 }
@@ -93,7 +93,7 @@ export interface TradeFilters {
   maxPnl?: number;
 }
 
-export type GroupingCriteria = 
+export type GroupingCriteria =
   | 'hourOfDay'
   | 'dayOfWeek'
   | 'month'

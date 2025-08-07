@@ -16,7 +16,7 @@ export default async function TradesPage({ params }: TradesPageProps) {
           Detailed analysis of individual trades for backtest {id}
         </p>
       </div>
-      
+
       <TradeAnalysisDashboard backtestId={id} />
     </div>
   );

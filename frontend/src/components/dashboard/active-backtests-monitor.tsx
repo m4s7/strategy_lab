@@ -11,8 +11,8 @@ import Link from "next/link";
 export function ActiveBacktestsMonitor() {
   const { monitors, activeMonitors } = useBacktestMonitor();
 
-  const runningMonitors = monitors.filter(m => m.status === 'running');
-  const totalActive = activeMonitors().length;
+  const runningMonitors = monitors.filter((m) => m.status === "running");
+  const totalActive = activeMonitors.length;
 
   return (
     <Card>
@@ -44,20 +44,22 @@ export function ActiveBacktestsMonitor() {
         ) : (
           <div className="space-y-3">
             {/* Show compact version of active monitors */}
-            {activeMonitors().slice(0, 3).map((monitor) => (
-              <BacktestMonitor
-                key={monitor.id}
-                backtestId={monitor.id}
-                initialData={monitor}
-                compact={true}
-              />
-            ))}
-            
-            {activeMonitors().length > 3 && (
+            {activeMonitors
+              .slice(0, 3)
+              .map((monitor) => (
+                <BacktestMonitor
+                  key={monitor.id}
+                  backtestId={monitor.id}
+                  initialData={monitor}
+                  compact={true}
+                />
+              ))}
+
+            {activeMonitors.length > 3 && (
               <div className="text-center pt-2">
                 <Button variant="outline" size="sm" asChild>
                   <Link href="/monitor">
-                    View All {activeMonitors().length} Active Backtests
+                    View All {activeMonitors.length} Active Backtests
                   </Link>
                 </Button>
               </div>

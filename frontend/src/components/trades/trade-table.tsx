@@ -1,11 +1,17 @@
-'use client';
+"use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -14,18 +20,18 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { 
-  Eye, 
-  ArrowUpDown, 
-  ArrowUp, 
-  ArrowDown, 
+import {
+  Eye,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
   Filter,
   Download,
-  Search
-} from 'lucide-react';
-import { Trade, TradeFilters, SortConfig } from '@/lib/trades/types';
-import { filterTrades, sortTrades } from '@/lib/trades/calculations';
-import { TradeExporter } from '@/lib/trades/export';
+  Search,
+} from "lucide-react";
+import { Trade, TradeFilters, SortConfig } from "@/lib/trades/types";
+import { filterTrades, sortTrades } from "@/lib/trades/calculations";
+import { TradeExporter } from "@/lib/trades/export";
 
 interface TradeTableProps {
   trades: Trade[];
@@ -33,58 +39,66 @@ interface TradeTableProps {
   className?: string;
 }
 
-export function TradeTable({ trades, onTradeSelect, className }: TradeTableProps) {
+export function TradeTable({
+  trades,
+  onTradeSelect,
+  className,
+}: TradeTableProps) {
   const [filters, setFilters] = useState<TradeFilters>({
     dateRange: { start: null, end: null },
-    profitability: 'all',
+    profitability: "all",
     minDuration: null,
     maxDuration: null,
     tags: [],
-    side: 'all'
+    side: "all",
   });
 
   const [sortConfig, setSortConfig] = useState<SortConfig>({
-    key: 'entryTime',
-    direction: 'desc'
+    key: "entryTime",
+    direction: "desc",
   });
 
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [showFilters, setShowFilters] = useState(false);
 
   // Filter and sort trades
   const processedTrades = useMemo(() => {
     let filtered = filterTrades(trades, filters);
-    
+
     // Apply search filter
     if (searchTerm) {
-      filtered = filtered.filter(trade =>
-        trade.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        trade.entryReason.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        trade.exitReason.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        trade.signalType.toLowerCase().includes(searchTerm.toLowerCase())
+      filtered = filtered.filter(
+        (trade) =>
+          trade.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          trade.entryReason.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          trade.exitReason.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          trade.signalType.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
-    
+
     return sortTrades(filtered, sortConfig);
   }, [trades, filters, searchTerm, sortConfig]);
 
   const handleSort = (key: keyof Trade) => {
-    setSortConfig(prev => ({
+    setSortConfig((prev) => ({
       key,
-      direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc'
+      direction: prev.key === key && prev.direction === "asc" ? "desc" : "asc",
     }));
   };
 
   const handleExport = async () => {
-    await TradeExporter.exportToCSV(processedTrades, `trades-${new Date().toISOString().split('T')[0]}.csv`);
+    await TradeExporter.exportToCSV(
+      processedTrades,
+      `trades-${new Date().toISOString().split("T")[0]}.csv`
+    );
   };
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
       minimumFractionDigits: 0,
-      maximumFractionDigits: 0
+      maximumFractionDigits: 0,
     }).format(value);
   };
 
@@ -93,11 +107,11 @@ export function TradeTable({ trades, onTradeSelect, className }: TradeTableProps
   };
 
   const formatDateTime = (dateString: string) => {
-    return new Date(dateString).toLocaleString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    return new Date(dateString).toLocaleString("en-US", {
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
@@ -113,9 +127,11 @@ export function TradeTable({ trades, onTradeSelect, className }: TradeTableProps
     if (sortConfig.key !== columnKey) {
       return <ArrowUpDown className="h-4 w-4 opacity-50" />;
     }
-    return sortConfig.direction === 'asc' ? 
-      <ArrowUp className="h-4 w-4" /> : 
-      <ArrowDown className="h-4 w-4" />;
+    return sortConfig.direction === "asc" ? (
+      <ArrowUp className="h-4 w-4" />
+    ) : (
+      <ArrowDown className="h-4 w-4" />
+    );
   };
 
   return (
@@ -128,7 +144,7 @@ export function TradeTable({ trades, onTradeSelect, className }: TradeTableProps
               {processedTrades.length} of {trades.length}
             </Badge>
           </CardTitle>
-          
+
           <div className="flex items-center space-x-2">
             <Button
               variant="outline"
@@ -164,8 +180,8 @@ export function TradeTable({ trades, onTradeSelect, className }: TradeTableProps
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-muted/20 rounded-lg">
               <Select
                 value={filters.profitability}
-                onValueChange={(value: 'all' | 'winners' | 'losers') =>
-                  setFilters(prev => ({ ...prev, profitability: value }))
+                onValueChange={(value: "all" | "winners" | "losers") =>
+                  setFilters((prev) => ({ ...prev, profitability: value }))
                 }
               >
                 <SelectTrigger>
@@ -179,9 +195,9 @@ export function TradeTable({ trades, onTradeSelect, className }: TradeTableProps
               </Select>
 
               <Select
-                value={filters.side || 'all'}
-                onValueChange={(value: 'all' | 'long' | 'short') =>
-                  setFilters(prev => ({ ...prev, side: value }))
+                value={filters.side || "all"}
+                onValueChange={(value: "all" | "long" | "short") =>
+                  setFilters((prev) => ({ ...prev, side: value }))
                 }
               >
                 <SelectTrigger>
@@ -197,21 +213,29 @@ export function TradeTable({ trades, onTradeSelect, className }: TradeTableProps
               <Input
                 type="number"
                 placeholder="Min P&L"
-                value={filters.minPnl || ''}
-                onChange={(e) => setFilters(prev => ({ 
-                  ...prev, 
-                  minPnl: e.target.value ? parseFloat(e.target.value) : undefined 
-                }))}
+                value={filters.minPnl || ""}
+                onChange={(e) =>
+                  setFilters((prev) => ({
+                    ...prev,
+                    minPnl: e.target.value
+                      ? parseFloat(e.target.value)
+                      : undefined,
+                  }))
+                }
               />
 
               <Input
                 type="number"
                 placeholder="Max P&L"
-                value={filters.maxPnl || ''}
-                onChange={(e) => setFilters(prev => ({ 
-                  ...prev, 
-                  maxPnl: e.target.value ? parseFloat(e.target.value) : undefined 
-                }))}
+                value={filters.maxPnl || ""}
+                onChange={(e) =>
+                  setFilters((prev) => ({
+                    ...prev,
+                    maxPnl: e.target.value
+                      ? parseFloat(e.target.value)
+                      : undefined,
+                  }))
+                }
               />
             </div>
           )}
@@ -224,53 +248,93 @@ export function TradeTable({ trades, onTradeSelect, className }: TradeTableProps
             <TableHeader>
               <TableRow>
                 <TableHead className="w-20">
-                  <Button variant="ghost" size="sm" onClick={() => handleSort('id')}>
-                    ID {getSortIcon('id')}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleSort("id")}
+                  >
+                    ID {getSortIcon("id")}
                   </Button>
                 </TableHead>
                 <TableHead>
-                  <Button variant="ghost" size="sm" onClick={() => handleSort('entryTime')}>
-                    Entry Time {getSortIcon('entryTime')}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleSort("entryTime")}
+                  >
+                    Entry Time {getSortIcon("entryTime")}
                   </Button>
                 </TableHead>
                 <TableHead>
-                  <Button variant="ghost" size="sm" onClick={() => handleSort('exitTime')}>
-                    Exit Time {getSortIcon('exitTime')}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleSort("exitTime")}
+                  >
+                    Exit Time {getSortIcon("exitTime")}
                   </Button>
                 </TableHead>
                 <TableHead>
-                  <Button variant="ghost" size="sm" onClick={() => handleSort('side')}>
-                    Side {getSortIcon('side')}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleSort("side")}
+                  >
+                    Side {getSortIcon("side")}
                   </Button>
                 </TableHead>
                 <TableHead>
-                  <Button variant="ghost" size="sm" onClick={() => handleSort('entryPrice')}>
-                    Entry {getSortIcon('entryPrice')}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleSort("entryPrice")}
+                  >
+                    Entry {getSortIcon("entryPrice")}
                   </Button>
                 </TableHead>
                 <TableHead>
-                  <Button variant="ghost" size="sm" onClick={() => handleSort('exitPrice')}>
-                    Exit {getSortIcon('exitPrice')}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleSort("exitPrice")}
+                  >
+                    Exit {getSortIcon("exitPrice")}
                   </Button>
                 </TableHead>
                 <TableHead>
-                  <Button variant="ghost" size="sm" onClick={() => handleSort('quantity')}>
-                    Size {getSortIcon('quantity')}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleSort("quantity")}
+                  >
+                    Size {getSortIcon("quantity")}
                   </Button>
                 </TableHead>
                 <TableHead>
-                  <Button variant="ghost" size="sm" onClick={() => handleSort('pnl')}>
-                    P&L {getSortIcon('pnl')}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleSort("pnl")}
+                  >
+                    P&L {getSortIcon("pnl")}
                   </Button>
                 </TableHead>
                 <TableHead>
-                  <Button variant="ghost" size="sm" onClick={() => handleSort('returnPct')}>
-                    Return % {getSortIcon('returnPct')}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleSort("returnPct")}
+                  >
+                    Return % {getSortIcon("returnPct")}
                   </Button>
                 </TableHead>
                 <TableHead>
-                  <Button variant="ghost" size="sm" onClick={() => handleSort('duration')}>
-                    Duration {getSortIcon('duration')}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleSort("duration")}
+                  >
+                    Duration {getSortIcon("duration")}
                   </Button>
                 </TableHead>
                 <TableHead className="w-20">Actions</TableHead>
@@ -291,8 +355,8 @@ export function TradeTable({ trades, onTradeSelect, className }: TradeTableProps
                     {formatDateTime(trade.exitTime)}
                   </TableCell>
                   <TableCell>
-                    <Badge 
-                      variant={trade.side === 'long' ? 'default' : 'secondary'}
+                    <Badge
+                      variant={trade.side === "long" ? "default" : "secondary"}
                       className="text-xs"
                     >
                       {trade.side.toUpperCase()}
@@ -306,12 +370,20 @@ export function TradeTable({ trades, onTradeSelect, className }: TradeTableProps
                   </TableCell>
                   <TableCell>{trade.quantity}</TableCell>
                   <TableCell>
-                    <span className={trade.pnl >= 0 ? 'text-green-600' : 'text-red-600'}>
+                    <span
+                      className={
+                        trade.pnl >= 0 ? "text-green-600" : "text-red-600"
+                      }
+                    >
                       {formatCurrency(trade.pnl)}
                     </span>
                   </TableCell>
                   <TableCell>
-                    <span className={trade.returnPct >= 0 ? 'text-green-600' : 'text-red-600'}>
+                    <span
+                      className={
+                        trade.returnPct >= 0 ? "text-green-600" : "text-red-600"
+                      }
+                    >
                       {(trade.returnPct * 100).toFixed(2)}%
                     </span>
                   </TableCell>
@@ -331,7 +403,10 @@ export function TradeTable({ trades, onTradeSelect, className }: TradeTableProps
               ))}
               {processedTrades.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={11} className="text-center py-8 text-muted-foreground">
+                  <TableCell
+                    colSpan={11}
+                    className="text-center py-8 text-muted-foreground"
+                  >
                     No trades match the current filters
                   </TableCell>
                 </TableRow>
@@ -346,8 +421,17 @@ export function TradeTable({ trades, onTradeSelect, className }: TradeTableProps
               Showing {processedTrades.length} of {trades.length} trades
             </div>
             <div className="text-sm">
-              Total P&L: <span className={processedTrades.reduce((sum, t) => sum + t.pnl, 0) >= 0 ? 'text-green-600' : 'text-red-600'}>
-                {formatCurrency(processedTrades.reduce((sum, t) => sum + t.pnl, 0))}
+              Total P&L:{" "}
+              <span
+                className={
+                  processedTrades.reduce((sum, t) => sum + t.pnl, 0) >= 0
+                    ? "text-green-600"
+                    : "text-red-600"
+                }
+              >
+                {formatCurrency(
+                  processedTrades.reduce((sum, t) => sum + t.pnl, 0)
+                )}
               </span>
             </div>
           </div>

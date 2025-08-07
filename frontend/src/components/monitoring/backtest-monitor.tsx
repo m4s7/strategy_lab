@@ -1,16 +1,30 @@
-'use client';
+"use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { 
-  Play, 
-  Pause, 
-  Square, 
-  AlertTriangle, 
-  Cpu, 
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Play,
+  Pause,
+  Square,
+  AlertTriangle,
+  Cpu,
   MemoryStick,
   Clock,
   Zap,
@@ -18,15 +32,19 @@ import {
   TrendingDown,
   BarChart3,
   CheckCircle,
-  XCircle
+  XCircle,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useWebSocketSubscription } from "@/lib/websocket/hooks";
-import { format, formatDistanceToNow, differenceInMilliseconds } from "date-fns";
+import {
+  format,
+  formatDistanceToNow,
+  differenceInMilliseconds,
+} from "date-fns";
 
 export interface BacktestMonitorData {
   backtestId: string;
-  status: 'running' | 'paused' | 'completed' | 'aborted' | 'failed' | 'queued';
+  status: "running" | "paused" | "completed" | "aborted" | "failed" | "queued";
   progress: {
     currentTime: number;
     totalTime: number;
@@ -55,7 +73,7 @@ export interface BacktestMonitorData {
   errors: Array<{
     message: string;
     timestamp: string;
-    level: 'error' | 'warning';
+    level: "error" | "warning";
   }>;
 }
 
@@ -68,16 +86,18 @@ interface BacktestMonitorProps {
   compact?: boolean;
 }
 
-export function BacktestMonitor({ 
-  backtestId, 
-  initialData, 
-  onAbort, 
-  onPause, 
+export function BacktestMonitor({
+  backtestId,
+  initialData,
+  onAbort,
+  onPause,
   onResume,
-  compact = false 
+  compact = false,
 }: BacktestMonitorProps) {
   const [showAbortDialog, setShowAbortDialog] = useState(false);
-  const [localData, setLocalData] = useState<BacktestMonitorData | undefined>(initialData);
+  const [localData, setLocalData] = useState<BacktestMonitorData | undefined>(
+    initialData
+  );
 
   // Subscribe to real-time updates
   const { data: realtimeData } = useWebSocketSubscription<BacktestMonitorData>(
@@ -90,11 +110,11 @@ export function BacktestMonitor({
 
   // Persist state to localStorage
   useEffect(() => {
-    if (data && data.status === 'running') {
-      const saved = localStorage.getItem('backtest_monitors');
+    if (data && data.status === "running") {
+      const saved = localStorage.getItem("backtest_monitors");
       const monitors = saved ? JSON.parse(saved) : {};
       monitors[backtestId] = data;
-      localStorage.setItem('backtest_monitors', JSON.stringify(monitors));
+      localStorage.setItem("backtest_monitors", JSON.stringify(monitors));
     }
   }, [backtestId, data]);
 
@@ -122,16 +142,16 @@ export function BacktestMonitor({
 
   const getStatusIcon = () => {
     switch (data.status) {
-      case 'running':
+      case "running":
         return <Play className="h-4 w-4 text-green-600" />;
-      case 'paused':
+      case "paused":
         return <Pause className="h-4 w-4 text-yellow-600" />;
-      case 'completed':
+      case "completed":
         return <CheckCircle className="h-4 w-4 text-green-600" />;
-      case 'aborted':
-      case 'failed':
+      case "aborted":
+      case "failed":
         return <XCircle className="h-4 w-4 text-red-600" />;
-      case 'queued':
+      case "queued":
         return <Clock className="h-4 w-4 text-blue-600" />;
       default:
         return <Square className="h-4 w-4 text-gray-600" />;
@@ -140,17 +160,17 @@ export function BacktestMonitor({
 
   const getStatusBadge = () => {
     switch (data.status) {
-      case 'running':
+      case "running":
         return <Badge className="bg-green-500 text-white">Running</Badge>;
-      case 'paused':
+      case "paused":
         return <Badge className="bg-yellow-500 text-white">Paused</Badge>;
-      case 'completed':
+      case "completed":
         return <Badge className="bg-green-500 text-white">Completed</Badge>;
-      case 'aborted':
+      case "aborted":
         return <Badge className="bg-orange-500 text-white">Aborted</Badge>;
-      case 'failed':
+      case "failed":
         return <Badge className="bg-red-500 text-white">Failed</Badge>;
-      case 'queued':
+      case "queued":
         return <Badge className="bg-blue-500 text-white">Queued</Badge>;
       default:
         return <Badge variant="secondary">{data.status}</Badge>;
@@ -164,9 +184,9 @@ export function BacktestMonitor({
   };
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(value);
@@ -179,15 +199,19 @@ export function BacktestMonitor({
   };
 
   const getProgressColor = () => {
-    if (data.status === 'completed') return 'bg-green-500';
-    if (data.status === 'failed' || data.status === 'aborted') return 'bg-red-500';
-    if (data.status === 'paused') return 'bg-yellow-500';
-    return 'bg-blue-500';
+    if (data.status === "completed") return "bg-green-500";
+    if (data.status === "failed" || data.status === "aborted")
+      return "bg-red-500";
+    if (data.status === "paused") return "bg-yellow-500";
+    return "bg-blue-500";
   };
 
-  const canPause = data.status === 'running';
-  const canResume = data.status === 'paused';
-  const canAbort = data.status === 'running' || data.status === 'paused' || data.status === 'queued';
+  const canPause = data.status === "running";
+  const canResume = data.status === "paused";
+  const canAbort =
+    data.status === "running" ||
+    data.status === "paused" ||
+    data.status === "queued";
 
   if (compact) {
     return (
@@ -205,10 +229,7 @@ export function BacktestMonitor({
               <span>Progress</span>
               <span>{data.progress.percentage.toFixed(1)}%</span>
             </div>
-            <Progress 
-              value={data.progress.percentage} 
-              className="h-2"
-            />
+            <Progress value={data.progress.percentage} className="h-2" />
             {data.progress.eta && (
               <div className="text-xs text-muted-foreground">
                 ETA: {data.progress.eta}
@@ -229,7 +250,10 @@ export function BacktestMonitor({
             <div>
               <CardTitle className="text-lg">{data.strategyName}</CardTitle>
               <CardDescription>
-                ID: {backtestId.slice(0, 8)}... • Started {formatDistanceToNow(new Date(data.startTime), { addSuffix: true })}
+                ID: {backtestId.slice(0, 8)}... • Started{" "}
+                {formatDistanceToNow(new Date(data.startTime), {
+                  addSuffix: true,
+                })}
               </CardDescription>
             </div>
           </div>
@@ -237,17 +261,28 @@ export function BacktestMonitor({
             {getStatusBadge()}
             <div className="flex space-x-1">
               {canPause && onPause && (
-                <Button variant="outline" size="sm" onClick={() => onPause(backtestId)}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onPause(backtestId)}
+                >
                   <Pause className="h-4 w-4" />
                 </Button>
               )}
               {canResume && onResume && (
-                <Button variant="outline" size="sm" onClick={() => onResume(backtestId)}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onResume(backtestId)}
+                >
                   <Play className="h-4 w-4" />
                 </Button>
               )}
               {canAbort && onAbort && (
-                <Dialog open={showAbortDialog} onOpenChange={setShowAbortDialog}>
+                <Dialog
+                  open={showAbortDialog}
+                  onOpenChange={setShowAbortDialog}
+                >
                   <DialogTrigger asChild>
                     <Button variant="outline" size="sm">
                       <Square className="h-4 w-4" />
@@ -257,26 +292,40 @@ export function BacktestMonitor({
                     <DialogHeader>
                       <DialogTitle>Abort Backtest</DialogTitle>
                       <DialogDescription>
-                        Are you sure you want to abort this backtest? This action cannot be undone, 
-                        but partial results will be saved.
+                        Are you sure you want to abort this backtest? This
+                        action cannot be undone, but partial results will be
+                        saved.
                       </DialogDescription>
                     </DialogHeader>
                     <div className="py-4">
                       <div className="space-y-2 text-sm">
-                        <div><strong>Strategy:</strong> {data.strategyName}</div>
-                        <div><strong>Progress:</strong> {data.progress.percentage.toFixed(1)}%</div>
-                        <div><strong>Runtime:</strong> {calculateRuntime()}</div>
+                        <div>
+                          <strong>Strategy:</strong> {data.strategyName}
+                        </div>
+                        <div>
+                          <strong>Progress:</strong>{" "}
+                          {data.progress.percentage.toFixed(1)}%
+                        </div>
+                        <div>
+                          <strong>Runtime:</strong> {calculateRuntime()}
+                        </div>
                         {data.partialResults && (
-                          <div><strong>Current P&L:</strong> {formatCurrency(data.partialResults.pnl)}</div>
+                          <div>
+                            <strong>Current P&L:</strong>{" "}
+                            {formatCurrency(data.partialResults.pnl)}
+                          </div>
                         )}
                       </div>
                     </div>
                     <DialogFooter>
-                      <Button variant="outline" onClick={() => setShowAbortDialog(false)}>
+                      <Button
+                        variant="outline"
+                        onClick={() => setShowAbortDialog(false)}
+                      >
                         Cancel
                       </Button>
-                      <Button 
-                        variant="destructive" 
+                      <Button
+                        variant="destructive"
                         onClick={() => {
                           onAbort(backtestId);
                           setShowAbortDialog(false);
@@ -305,17 +354,17 @@ export function BacktestMonitor({
                 </Badge>
               )}
             </div>
-            <span className="font-medium">{data.progress.percentage.toFixed(1)}%</span>
+            <span className="font-medium">
+              {data.progress.percentage.toFixed(1)}%
+            </span>
           </div>
-          
-          <Progress 
-            value={data.progress.percentage} 
-            className="h-3"
-          />
-          
+
+          <Progress value={data.progress.percentage} className="h-3" />
+
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 text-xs text-muted-foreground">
             <div>
-              Events: {formatNumber(data.progress.eventsProcessed)} / {formatNumber(data.progress.totalTime)}
+              Events: {formatNumber(data.progress.eventsProcessed)} /{" "}
+              {formatNumber(data.progress.totalTime)}
             </div>
             <div className="flex items-center space-x-1">
               <Zap className="h-3 w-3" />
@@ -338,16 +387,22 @@ export function BacktestMonitor({
         {data.partialResults && (
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             <div className="text-center p-3 bg-muted/50 rounded-lg">
-              <div className={`text-lg font-medium ${
-                data.partialResults.pnl >= 0 ? 'text-green-600' : 'text-red-600'
-              }`}>
+              <div
+                className={`text-lg font-medium ${
+                  data.partialResults.pnl >= 0
+                    ? "text-green-600"
+                    : "text-red-600"
+                }`}
+              >
                 {formatCurrency(data.partialResults.pnl)}
               </div>
               <div className="text-xs text-muted-foreground">Current P&L</div>
             </div>
 
             <div className="text-center p-3 bg-muted/50 rounded-lg">
-              <div className="text-lg font-medium">{data.partialResults.trades}</div>
+              <div className="text-lg font-medium">
+                {data.partialResults.trades}
+              </div>
               <div className="text-xs text-muted-foreground">Trades</div>
             </div>
 

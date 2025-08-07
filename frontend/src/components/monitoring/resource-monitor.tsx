@@ -1,16 +1,22 @@
-'use client';
+"use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Cpu, 
-  MemoryStick, 
+import {
+  Cpu,
+  MemoryStick,
   HardDrive,
   Activity,
   AlertTriangle,
   CheckCircle,
-  Server
+  Server,
 } from "lucide-react";
 import { useWebSocketSubscription } from "@/lib/websocket/hooks";
 import { useState, useEffect } from "react";
@@ -30,14 +36,18 @@ interface ResourceMonitorProps {
   showDetails?: boolean;
 }
 
-export function ResourceMonitor({ compact = false, showDetails = true }: ResourceMonitorProps) {
-  const { data: resourceData, lastUpdate } = useWebSocketSubscription<ResourceData>('system:resources');
+export function ResourceMonitor({
+  compact = false,
+  showDetails = true,
+}: ResourceMonitorProps) {
+  const { data: resourceData, lastUpdate } =
+    useWebSocketSubscription<ResourceData>("system:resources");
   const [history, setHistory] = useState<ResourceData[]>([]);
 
   // Keep history for trending
   useEffect(() => {
     if (resourceData) {
-      setHistory(prev => {
+      setHistory((prev) => {
         const newHistory = [...prev, resourceData].slice(-60); // Keep last 60 data points (1 minute at 1s intervals)
         return newHistory;
       });
@@ -66,24 +76,41 @@ export function ResourceMonitor({ compact = false, showDetails = true }: Resourc
   }
 
   const getResourceStatus = (value: number) => {
-    if (value >= 90) return { level: 'critical', color: 'text-red-600', bg: 'bg-red-500' };
-    if (value >= 75) return { level: 'warning', color: 'text-yellow-600', bg: 'bg-yellow-500' };
-    if (value >= 50) return { level: 'moderate', color: 'text-blue-600', bg: 'bg-blue-500' };
-    return { level: 'good', color: 'text-green-600', bg: 'bg-green-500' };
+    if (value >= 90)
+      return { level: "critical", color: "text-red-600", bg: "bg-red-500" };
+    if (value >= 75)
+      return {
+        level: "warning",
+        color: "text-yellow-600",
+        bg: "bg-yellow-500",
+      };
+    if (value >= 50)
+      return { level: "moderate", color: "text-blue-600", bg: "bg-blue-500" };
+    return { level: "good", color: "text-green-600", bg: "bg-green-500" };
   };
 
   const formatBytes = (bytes: number) => {
-    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
-    if (bytes === 0) return '0 B';
+    const sizes = ["B", "KB", "MB", "GB", "TB"];
+    if (bytes === 0) return "0 B";
     const i = Math.floor(Math.log(bytes) / Math.log(1024));
-    return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i];
+    return Math.round((bytes / Math.pow(1024, i)) * 100) / 100 + " " + sizes[i];
   };
 
   const getOverallHealthStatus = () => {
-    const maxUsage = Math.max(resourceData.cpu, resourceData.memory, resourceData.disk);
-    if (maxUsage >= 90) return { icon: AlertTriangle, color: 'text-red-600', label: 'Critical' };
-    if (maxUsage >= 75) return { icon: AlertTriangle, color: 'text-yellow-600', label: 'Warning' };
-    return { icon: CheckCircle, color: 'text-green-600', label: 'Good' };
+    const maxUsage = Math.max(
+      resourceData.cpu,
+      resourceData.memory,
+      resourceData.disk
+    );
+    if (maxUsage >= 90)
+      return { icon: AlertTriangle, color: "text-red-600", label: "Critical" };
+    if (maxUsage >= 75)
+      return {
+        icon: AlertTriangle,
+        color: "text-yellow-600",
+        label: "Warning",
+      };
+    return { icon: CheckCircle, color: "text-green-600", label: "Good" };
   };
 
   const cpuStatus = getResourceStatus(resourceData.cpu);
@@ -100,14 +127,16 @@ export function ResourceMonitor({ compact = false, showDetails = true }: Resourc
               <Server className="h-4 w-4 text-muted-foreground" />
               <span className="font-medium text-sm">System Resources</span>
             </div>
-            <Badge 
-              variant={healthStatus.label === 'Good' ? 'default' : 'destructive'}
+            <Badge
+              variant={
+                healthStatus.label === "Good" ? "default" : "destructive"
+              }
               className="text-xs"
             >
               {healthStatus.label}
             </Badge>
           </div>
-          
+
           <div className="grid grid-cols-3 gap-3 text-xs">
             <div className="text-center">
               <div className={`font-medium ${cpuStatus.color}`}>
@@ -153,8 +182,10 @@ export function ResourceMonitor({ compact = false, showDetails = true }: Resourc
           </div>
           <div className="flex items-center space-x-2">
             <healthStatus.icon className={`h-5 w-5 ${healthStatus.color}`} />
-            <Badge 
-              variant={healthStatus.label === 'Good' ? 'default' : 'destructive'}
+            <Badge
+              variant={
+                healthStatus.label === "Good" ? "default" : "destructive"
+              }
             >
               {healthStatus.label}
             </Badge>
@@ -213,41 +244,52 @@ export function ResourceMonitor({ compact = false, showDetails = true }: Resourc
                 <div className="text-lg font-medium text-blue-600">
                   {resourceData.activeBacktests}
                 </div>
-                <div className="text-xs text-muted-foreground">Active Tests</div>
+                <div className="text-xs text-muted-foreground">
+                  Active Tests
+                </div>
               </div>
-              
+
               <div className="text-center p-2 bg-muted/30 rounded-lg">
                 <div className="text-lg font-medium">
-                  {history.length > 1 ? 
-                    ((resourceData.cpu - history[history.length - 2].cpu) >= 0 ? '+' : '') +
-                    (resourceData.cpu - history[history.length - 2].cpu).toFixed(1) + '%'
-                    : '—'
-                  }
+                  {history.length > 1
+                    ? (resourceData.cpu - history[history.length - 2].cpu >= 0
+                        ? "+"
+                        : "") +
+                      (
+                        resourceData.cpu - history[history.length - 2].cpu
+                      ).toFixed(1) +
+                      "%"
+                    : "—"}
                 </div>
                 <div className="text-xs text-muted-foreground">CPU Δ</div>
               </div>
-              
+
               <div className="text-center p-2 bg-muted/30 rounded-lg">
                 <div className="text-lg font-medium">
-                  {history.length > 1 ? 
-                    ((resourceData.memory - history[history.length - 2].memory) >= 0 ? '+' : '') +
-                    (resourceData.memory - history[history.length - 2].memory).toFixed(1) + '%'
-                    : '—'
-                  }
+                  {history.length > 1
+                    ? (resourceData.memory -
+                        history[history.length - 2].memory >=
+                      0
+                        ? "+"
+                        : "") +
+                      (
+                        resourceData.memory - history[history.length - 2].memory
+                      ).toFixed(1) +
+                      "%"
+                    : "—"}
                 </div>
                 <div className="text-xs text-muted-foreground">RAM Δ</div>
               </div>
 
               <div className="text-center p-2 bg-muted/30 rounded-lg">
-                <div className="text-lg font-medium">
-                  {history.length}
-                </div>
+                <div className="text-lg font-medium">{history.length}</div>
                 <div className="text-xs text-muted-foreground">Samples</div>
               </div>
             </div>
 
             {/* Network Activity */}
-            {(resourceData.networkRx !== undefined || resourceData.networkTx !== undefined) && (
+            {(resourceData.networkRx !== undefined ||
+              resourceData.networkTx !== undefined) && (
               <div className="grid grid-cols-2 gap-3 pt-2 border-t">
                 <div className="flex items-center space-x-2 text-sm">
                   <Activity className="h-4 w-4 text-green-600" />
@@ -261,14 +303,17 @@ export function ResourceMonitor({ compact = false, showDetails = true }: Resourc
             )}
 
             {/* Warning Messages */}
-            {(resourceData.cpu >= 90 || resourceData.memory >= 90 || resourceData.disk >= 90) && (
+            {(resourceData.cpu >= 90 ||
+              resourceData.memory >= 90 ||
+              resourceData.disk >= 90) && (
               <div className="p-3 bg-red-50 dark:bg-red-950 rounded-lg">
                 <div className="flex items-center space-x-2 text-sm font-medium text-red-800 dark:text-red-200 mb-1">
                   <AlertTriangle className="h-4 w-4" />
                   <span>Resource Warning</span>
                 </div>
                 <div className="text-xs text-red-700 dark:text-red-300">
-                  System resources are critically high. Consider pausing non-essential backtests.
+                  System resources are critically high. Consider pausing
+                  non-essential backtests.
                 </div>
               </div>
             )}

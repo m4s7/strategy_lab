@@ -9,11 +9,11 @@ import { useResults } from "@/hooks/useResults";
 import { useState } from "react";
 import { format } from "date-fns";
 import Link from "next/link";
-import { 
-  Search, 
-  FileText, 
-  Calendar, 
-  TrendingUp, 
+import {
+  Search,
+  FileText,
+  Calendar,
+  TrendingUp,
   TrendingDown,
   Target,
   BarChart3,
@@ -51,7 +51,7 @@ export default function ResultsPage() {
   };
 
   const filteredResults = results
-    .filter(result => 
+    .filter(result =>
       result.strategy_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       result.id.toLowerCase().includes(searchTerm.toLowerCase())
     )
@@ -222,7 +222,7 @@ export default function ResultsPage() {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {filteredResults.map((result) => {
             const performanceBadge = getPerformanceBadge(result.sharpe_ratio);
-            
+
             return (
               <Card key={result.id} className="hover:shadow-lg transition-shadow">
                 <CardHeader>
@@ -233,7 +233,7 @@ export default function ResultsPage() {
                         {format(new Date(result.start_date), 'MMM dd')} - {format(new Date(result.end_date), 'MMM dd, yyyy')}
                       </CardDescription>
                     </div>
-                    <Badge 
+                    <Badge
                       className={`${performanceBadge.color} text-white`}
                       variant="secondary"
                     >

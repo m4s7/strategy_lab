@@ -1,29 +1,29 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
-import { 
-  TrendingUp, 
-  TrendingDown, 
-  Clock, 
-  Target, 
+import {
+  TrendingUp,
+  TrendingDown,
+  Clock,
+  Target,
   AlertTriangle,
   Activity,
   BarChart3,
   Download,
-  Info
-} from 'lucide-react';
-import { Trade, TimelineEvent } from '@/lib/trades/types';
-import { 
-  calculateEntryEfficiency, 
-  calculateExitEfficiency, 
+  Info,
+} from "lucide-react";
+import { Trade, TimelineEvent } from "@/lib/trades/types";
+import {
+  calculateEntryEfficiency,
+  calculateExitEfficiency,
   calculateRiskReward,
-  calculateTradeDrawdown 
-} from '@/lib/trades/calculations';
+  calculateTradeDrawdown,
+} from "@/lib/trades/calculations";
 
 interface TradeDetailsProps {
   trade: Trade;
@@ -32,23 +32,23 @@ interface TradeDetailsProps {
 }
 
 export function TradeDetails({ trade, onClose, className }: TradeDetailsProps) {
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState("overview");
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
     }).format(value);
   };
 
   const formatDateTime = (dateString: string) => {
-    return new Date(dateString).toLocaleString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit'
+    return new Date(dateString).toLocaleString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
     });
   };
 
@@ -57,7 +57,7 @@ export function TradeDetails({ trade, onClose, className }: TradeDetailsProps) {
     const hours = Math.floor(totalMinutes / 60);
     const minutes = totalMinutes % 60;
     const seconds = Math.floor((duration % 60000) / 1000);
-    
+
     if (hours > 0) {
       return `${hours}h ${minutes}m ${seconds}s`;
     } else if (minutes > 0) {
@@ -85,10 +85,10 @@ export function TradeDetails({ trade, onClose, className }: TradeDetailsProps) {
               Trade {trade.id.slice(-8)}
             </p>
           </div>
-          
+
           <div className="flex items-center space-x-2">
-            <Badge 
-              variant={trade.pnl >= 0 ? 'default' : 'destructive'}
+            <Badge
+              variant={trade.pnl >= 0 ? "default" : "destructive"}
               className="text-lg px-3 py-1"
             >
               {formatCurrency(trade.pnl)}
@@ -124,7 +124,7 @@ export function TradeDetails({ trade, onClose, className }: TradeDetailsProps) {
           </TabsContent>
 
           <TabsContent value="analysis" className="space-y-4">
-            <TradeAnalysis 
+            <TradeAnalysis
               trade={trade}
               entryEfficiency={entryEfficiency}
               exitEfficiency={exitEfficiency}
@@ -141,7 +141,7 @@ export function TradeDetails({ trade, onClose, className }: TradeDetailsProps) {
 function TradeOverview({ trade }: { trade: Trade }) {
   const formatCurrency = (value: number) => formatCurrency(value);
   const formatPrice = (value: number) => value.toFixed(2);
-  
+
   return (
     <div className="space-y-6">
       {/* Key Metrics */}
@@ -184,18 +184,24 @@ function TradeOverview({ trade }: { trade: Trade }) {
           <div className="grid grid-cols-3 gap-4">
             <div className="text-center">
               <p className="text-sm text-muted-foreground">Signal Price</p>
-              <p className="text-lg font-mono">{formatPrice(trade.signalPrice)}</p>
+              <p className="text-lg font-mono">
+                {formatPrice(trade.signalPrice)}
+              </p>
             </div>
             <div className="text-center">
               <p className="text-sm text-muted-foreground">Entry Price</p>
-              <p className="text-lg font-mono">{formatPrice(trade.entryPrice)}</p>
+              <p className="text-lg font-mono">
+                {formatPrice(trade.entryPrice)}
+              </p>
               <p className="text-xs text-muted-foreground">
                 Slippage: {trade.entrySlippage.toFixed(2)}
               </p>
             </div>
             <div className="text-center">
               <p className="text-sm text-muted-foreground">Exit Price</p>
-              <p className="text-lg font-mono">{formatPrice(trade.exitPrice)}</p>
+              <p className="text-lg font-mono">
+                {formatPrice(trade.exitPrice)}
+              </p>
               <p className="text-xs text-muted-foreground">
                 Slippage: {trade.exitSlippage.toFixed(2)}
               </p>
@@ -213,13 +219,21 @@ function TradeOverview({ trade }: { trade: Trade }) {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <p className="text-sm text-muted-foreground">Total P&L</p>
-              <p className={`text-2xl font-bold ${trade.pnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              <p
+                className={`text-2xl font-bold ${
+                  trade.pnl >= 0 ? "text-green-600" : "text-red-600"
+                }`}
+              >
                 {formatCurrency(trade.pnl)}
               </p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Return %</p>
-              <p className={`text-2xl font-bold ${trade.returnPct >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              <p
+                className={`text-2xl font-bold ${
+                  trade.returnPct >= 0 ? "text-green-600" : "text-red-600"
+                }`}
+              >
                 {(trade.returnPct * 100).toFixed(2)}%
               </p>
             </div>
@@ -267,25 +281,25 @@ function TradeLifecycle({ trade }: { trade: Trade }) {
   // Create timeline events
   const events: TimelineEvent[] = [
     {
-      type: 'signal',
+      type: "signal",
       time: trade.signalTime,
       price: trade.signalPrice,
-      description: `${trade.signalType} signal generated`
+      description: `${trade.signalType} signal generated`,
     },
     {
-      type: 'entry',
+      type: "entry",
       time: trade.entryTime,
       price: trade.entryPrice,
       description: `Entered ${trade.side} position`,
-      slippage: trade.entrySlippage
+      slippage: trade.entrySlippage,
     },
     {
-      type: 'exit',
+      type: "exit",
       time: trade.exitTime,
       price: trade.exitPrice,
       description: `Exited: ${trade.exitReason}`,
-      slippage: trade.exitSlippage
-    }
+      slippage: trade.exitSlippage,
+    },
   ];
 
   return (
@@ -298,10 +312,15 @@ function TradeLifecycle({ trade }: { trade: Trade }) {
           <div className="space-y-4">
             {events.map((event, index) => (
               <div key={index} className="flex items-start space-x-3">
-                <div className={`w-3 h-3 rounded-full mt-2 ${
-                  event.type === 'signal' ? 'bg-blue-500' :
-                  event.type === 'entry' ? 'bg-green-500' : 'bg-red-500'
-                }`} />
+                <div
+                  className={`w-3 h-3 rounded-full mt-2 ${
+                    event.type === "signal"
+                      ? "bg-blue-500"
+                      : event.type === "entry"
+                      ? "bg-green-500"
+                      : "bg-red-500"
+                  }`}
+                />
                 <div className="flex-1">
                   <div className="flex items-center justify-between">
                     <p className="font-medium">{event.description}</p>
@@ -312,7 +331,8 @@ function TradeLifecycle({ trade }: { trade: Trade }) {
                   {event.price && (
                     <p className="text-sm text-muted-foreground">
                       Price: {event.price.toFixed(2)}
-                      {event.slippage && ` (Slippage: ${event.slippage.toFixed(2)})`}
+                      {event.slippage &&
+                        ` (Slippage: ${event.slippage.toFixed(2)})`}
                     </p>
                   )}
                 </div>
@@ -328,7 +348,9 @@ function TradeLifecycle({ trade }: { trade: Trade }) {
           <CardContent className="p-4">
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Entry Efficiency</span>
+                <span className="text-sm text-muted-foreground">
+                  Entry Efficiency
+                </span>
                 <span className="text-sm font-medium">
                   {(calculateEntryEfficiency(trade) * 100).toFixed(1)}%
                 </span>
@@ -345,7 +367,9 @@ function TradeLifecycle({ trade }: { trade: Trade }) {
           <CardContent className="p-4">
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Exit Efficiency</span>
+                <span className="text-sm text-muted-foreground">
+                  Exit Efficiency
+                </span>
                 <span className="text-sm font-medium">
                   {(calculateExitEfficiency(trade) * 100).toFixed(1)}%
                 </span>
@@ -364,7 +388,7 @@ function TradeLifecycle({ trade }: { trade: Trade }) {
 
 function MarketContext({ trade }: { trade: Trade }) {
   const context = trade.marketContext;
-  
+
   if (!context) {
     return (
       <Card>
@@ -426,9 +450,7 @@ function MarketContext({ trade }: { trade: Trade }) {
               <Target className="h-4 w-4 text-muted-foreground" />
               <div>
                 <p className="text-sm text-muted-foreground">Regime</p>
-                <p className="text-lg font-bold capitalize">
-                  {context.regime}
-                </p>
+                <p className="text-lg font-bold capitalize">{context.regime}</p>
               </div>
             </div>
           </CardContent>
@@ -455,14 +477,14 @@ function MarketContext({ trade }: { trade: Trade }) {
   );
 }
 
-function TradeAnalysis({ 
-  trade, 
-  entryEfficiency, 
-  exitEfficiency, 
-  riskReward, 
-  drawdown 
-}: { 
-  trade: Trade; 
+function TradeAnalysis({
+  trade,
+  entryEfficiency,
+  exitEfficiency,
+  riskReward,
+  drawdown,
+}: {
+  trade: Trade;
   entryEfficiency: number;
   exitEfficiency: number;
   riskReward: number;
@@ -486,7 +508,7 @@ function TradeAnalysis({
               </div>
               <Progress value={entryEfficiency * 100} />
             </div>
-            
+
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-sm">Exit Efficiency</span>
@@ -536,28 +558,28 @@ function TradeAnalysis({
               <span className="text-sm">Excellent entry execution</span>
             </div>
           )}
-          
+
           {exitEfficiency > 0.7 && (
             <div className="flex items-center space-x-2 text-green-600">
               <Target className="h-4 w-4" />
               <span className="text-sm">Good profit capture</span>
             </div>
           )}
-          
+
           {riskReward > 2 && (
             <div className="flex items-center space-x-2 text-blue-600">
               <BarChart3 className="h-4 w-4" />
               <span className="text-sm">Favorable risk/reward profile</span>
             </div>
           )}
-          
+
           {drawdown > 0.05 && (
             <div className="flex items-center space-x-2 text-orange-600">
               <AlertTriangle className="h-4 w-4" />
               <span className="text-sm">High drawdown experienced</span>
             </div>
           )}
-          
+
           {Math.abs(trade.entrySlippage) > 1 && (
             <div className="flex items-center space-x-2 text-orange-600">
               <AlertTriangle className="h-4 w-4" />

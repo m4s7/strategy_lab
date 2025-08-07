@@ -33,7 +33,7 @@ export class TradeExporter {
 
     const csv = [
       headers.join(','),
-      ...rows.map(row => row.map(cell => 
+      ...rows.map(row => row.map(cell =>
         typeof cell === 'string' && cell.includes(',') ? `"${cell}"` : cell
       ).join(','))
     ].join('\n');
@@ -99,9 +99,9 @@ export class TradeExporter {
 
     const csv = [
       headers.join(','),
-      ...rows.map(row => row.map(cell => 
+      ...rows.map(row => row.map(cell =>
         typeof cell === 'string' && (cell.includes(',') || cell.includes('\n') || cell.includes('"'))
-          ? `"${cell.replace(/"/g, '""')}"` 
+          ? `"${cell.replace(/"/g, '""')}"`
           : cell
       ).join(','))
     ].join('\n');
@@ -155,13 +155,13 @@ Longest Trade: ${Math.max(...trades.map(t => t.duration)) / 60000} minutes
 
 TOP 5 WINNERS
 -------------
-${winners.sort((a, b) => b.pnl - a.pnl).slice(0, 5).map((t, i) => 
+${winners.sort((a, b) => b.pnl - a.pnl).slice(0, 5).map((t, i) =>
   `${i + 1}. ${t.id.slice(0, 8)} - $${t.pnl.toFixed(2)} (${(t.returnPct * 100).toFixed(2)}%)`
 ).join('\n')}
 
 TOP 5 LOSERS
 ------------
-${losers.sort((a, b) => a.pnl - b.pnl).slice(0, 5).map((t, i) => 
+${losers.sort((a, b) => a.pnl - b.pnl).slice(0, 5).map((t, i) =>
   `${i + 1}. ${t.id.slice(0, 8)} - $${t.pnl.toFixed(2)} (${(t.returnPct * 100).toFixed(2)}%)`
 ).join('\n')}
 `;

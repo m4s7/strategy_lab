@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { 
+import {
   Activity,
   TrendingUp,
   TrendingDown,
@@ -11,11 +11,11 @@ import {
   Minus,
   Calculator,
   Target,
-  Clock
-} from 'lucide-react';
-import { useMemo } from 'react';
-import { Trade, TradeStats } from '@/lib/trades/types';
-import { calculateTradeStats } from '@/lib/trades/calculations';
+  Clock,
+} from "lucide-react";
+import { useMemo } from "react";
+import { Trade, TradeStats } from "@/lib/trades/types";
+import { calculateTradeStats } from "@/lib/trades/calculations";
 
 interface TradeStatsSummaryProps {
   trades: Trade[];
@@ -26,22 +26,29 @@ interface StatCardProps {
   title: string;
   value: string | number;
   icon: React.ComponentType<{ className?: string }>;
-  trend?: 'up' | 'down' | 'neutral';
+  trend?: "up" | "down" | "neutral";
   className?: string;
   description?: string;
 }
 
-function StatCard({ title, value, icon: Icon, trend = 'neutral', className, description }: StatCardProps) {
+function StatCard({
+  title,
+  value,
+  icon: Icon,
+  trend = "neutral",
+  className,
+  description,
+}: StatCardProps) {
   const trendColors = {
-    up: 'text-green-600 dark:text-green-400',
-    down: 'text-red-600 dark:text-red-400',
-    neutral: 'text-muted-foreground'
+    up: "text-green-600 dark:text-green-400",
+    down: "text-red-600 dark:text-red-400",
+    neutral: "text-muted-foreground",
   };
 
   const bgColors = {
-    up: 'bg-green-50 dark:bg-green-950/20',
-    down: 'bg-red-50 dark:bg-red-950/20',
-    neutral: 'bg-muted/20'
+    up: "bg-green-50 dark:bg-green-950/20",
+    down: "bg-red-50 dark:bg-red-950/20",
+    neutral: "bg-muted/20",
   };
 
   return (
@@ -53,9 +60,13 @@ function StatCard({ title, value, icon: Icon, trend = 'neutral', className, desc
           </div>
           <div className="flex-1">
             <p className="text-sm font-medium text-muted-foreground">{title}</p>
-            <p className={`text-2xl font-bold ${trendColors[trend]}`}>{value}</p>
+            <p className={`text-2xl font-bold ${trendColors[trend]}`}>
+              {value}
+            </p>
             {description && (
-              <p className="text-xs text-muted-foreground mt-1">{description}</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {description}
+              </p>
             )}
           </div>
         </div>
@@ -64,7 +75,10 @@ function StatCard({ title, value, icon: Icon, trend = 'neutral', className, desc
   );
 }
 
-export function TradeStatsSummary({ trades, className }: TradeStatsSummaryProps) {
+export function TradeStatsSummary({
+  trades,
+  className,
+}: TradeStatsSummaryProps) {
   const stats = useMemo(() => calculateTradeStats(trades), [trades]);
 
   if (trades.length === 0) {
@@ -80,18 +94,19 @@ export function TradeStatsSummary({ trades, className }: TradeStatsSummaryProps)
   }
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
     }).format(value);
   };
 
   const formatDuration = (trades: Trade[]) => {
-    if (trades.length === 0) return '0m';
-    const avgDuration = trades.reduce((sum, t) => sum + t.duration, 0) / trades.length;
+    if (trades.length === 0) return "0m";
+    const avgDuration =
+      trades.reduce((sum, t) => sum + t.duration, 0) / trades.length;
     const minutes = Math.round(avgDuration / 60000);
     if (minutes < 60) return `${minutes}m`;
-    const hours = Math.round(minutes / 60 * 10) / 10;
+    const hours = Math.round((minutes / 60) * 10) / 10;
     return `${hours}h`;
   };
 
@@ -99,9 +114,7 @@ export function TradeStatsSummary({ trades, className }: TradeStatsSummaryProps)
     <div className={`space-y-4 ${className}`}>
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">Trade Performance Overview</h3>
-        <Badge variant="outline">
-          {trades.length} trades analyzed
-        </Badge>
+        <Badge variant="outline">{trades.length} trades analyzed</Badge>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
@@ -111,23 +124,23 @@ export function TradeStatsSummary({ trades, className }: TradeStatsSummaryProps)
           icon={Activity}
           description="Executed positions"
         />
-        
+
         <StatCard
           title="Win Rate"
           value={`${(stats.winRate * 100).toFixed(1)}%`}
           icon={TrendingUp}
-          trend={stats.winRate > 0.5 ? 'up' : 'down'}
+          trend={stats.winRate > 0.5 ? "up" : "down"}
           description="Profitable trades"
         />
-        
+
         <StatCard
           title="Profit Factor"
           value={stats.profitFactor.toFixed(2)}
           icon={Target}
-          trend={stats.profitFactor > 1 ? 'up' : 'down'}
+          trend={stats.profitFactor > 1 ? "up" : "down"}
           description="Wins / Losses ratio"
         />
-        
+
         <StatCard
           title="Avg Winner"
           value={formatCurrency(stats.avgWin)}
@@ -135,7 +148,7 @@ export function TradeStatsSummary({ trades, className }: TradeStatsSummaryProps)
           trend="up"
           className="border-green-200"
         />
-        
+
         <StatCard
           title="Avg Loser"
           value={formatCurrency(stats.avgLoss)}
@@ -143,12 +156,12 @@ export function TradeStatsSummary({ trades, className }: TradeStatsSummaryProps)
           trend="down"
           className="border-red-200"
         />
-        
+
         <StatCard
           title="Expectancy"
           value={formatCurrency(stats.expectancy)}
           icon={Calculator}
-          trend={stats.expectancy > 0 ? 'up' : 'down'}
+          trend={stats.expectancy > 0 ? "up" : "down"}
           description="Expected P&L per trade"
         />
       </div>
@@ -224,35 +237,45 @@ export function TradeStatsSummary({ trades, className }: TradeStatsSummaryProps)
             {stats.winRate >= 0.6 && (
               <div className="flex items-center space-x-2 text-green-600">
                 <TrendingUp className="h-4 w-4" />
-                <span className="text-sm">High win rate indicates good signal quality</span>
+                <span className="text-sm">
+                  High win rate indicates good signal quality
+                </span>
               </div>
             )}
-            
+
             {stats.profitFactor >= 2 && (
               <div className="flex items-center space-x-2 text-green-600">
                 <Target className="h-4 w-4" />
-                <span className="text-sm">Excellent risk management with strong profit factor</span>
+                <span className="text-sm">
+                  Excellent risk management with strong profit factor
+                </span>
               </div>
             )}
-            
+
             {stats.avgWin / Math.abs(stats.avgLoss) >= 2 && (
               <div className="flex items-center space-x-2 text-blue-600">
                 <DollarSign className="h-4 w-4" />
-                <span className="text-sm">Good reward-to-risk ratio on average</span>
+                <span className="text-sm">
+                  Good reward-to-risk ratio on average
+                </span>
               </div>
             )}
-            
+
             {stats.winRate < 0.4 && (
               <div className="flex items-center space-x-2 text-orange-600">
                 <TrendingDown className="h-4 w-4" />
-                <span className="text-sm">Low win rate - consider improving entry signals</span>
+                <span className="text-sm">
+                  Low win rate - consider improving entry signals
+                </span>
               </div>
             )}
-            
+
             {stats.profitFactor < 1 && (
               <div className="flex items-center space-x-2 text-red-600">
                 <Minus className="h-4 w-4" />
-                <span className="text-sm">Strategy is losing money - requires optimization</span>
+                <span className="text-sm">
+                  Strategy is losing money - requires optimization
+                </span>
               </div>
             )}
           </div>

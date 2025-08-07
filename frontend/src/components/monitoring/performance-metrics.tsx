@@ -1,17 +1,27 @@
-'use client';
+"use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { 
-  Clock, 
-  Zap, 
-  TrendingUp, 
-  TrendingDown, 
+import {
+  Clock,
+  Zap,
+  TrendingUp,
+  TrendingDown,
   Activity,
-  Calculator
+  Calculator,
 } from "lucide-react";
-import { formatDistanceToNow, differenceInMilliseconds, addMilliseconds } from "date-fns";
+import {
+  formatDistanceToNow,
+  differenceInMilliseconds,
+  addMilliseconds,
+} from "date-fns";
 
 interface PerformanceMetricsProps {
   eventsProcessed: number;
@@ -28,33 +38,39 @@ export function PerformanceMetrics({
   eventsPerSecond,
   startTime,
   currentTime,
-  estimatedEndTime
+  estimatedEndTime,
 }: PerformanceMetricsProps) {
-  
   const calculateETA = () => {
     if (eventsPerSecond === 0) return null;
-    
+
     const remaining = totalEvents - eventsProcessed;
     const secondsRemaining = remaining / eventsPerSecond;
-    
+
     if (secondsRemaining <= 0) return null;
-    
+
     const estimatedEnd = addMilliseconds(new Date(), secondsRemaining * 1000);
     return estimatedEnd;
   };
 
   const getPerformanceRating = (eps: number) => {
-    if (eps >= 10000) return { label: 'Excellent', color: 'bg-green-500', text: 'text-green-600' };
-    if (eps >= 5000) return { label: 'Good', color: 'bg-blue-500', text: 'text-blue-600' };
-    if (eps >= 1000) return { label: 'Fair', color: 'bg-yellow-500', text: 'text-yellow-600' };
-    return { label: 'Slow', color: 'bg-red-500', text: 'text-red-600' };
+    if (eps >= 10000)
+      return {
+        label: "Excellent",
+        color: "bg-green-500",
+        text: "text-green-600",
+      };
+    if (eps >= 5000)
+      return { label: "Good", color: "bg-blue-500", text: "text-blue-600" };
+    if (eps >= 1000)
+      return { label: "Fair", color: "bg-yellow-500", text: "text-yellow-600" };
+    return { label: "Slow", color: "bg-red-500", text: "text-red-600" };
   };
 
   const getProgressColor = (percentage: number) => {
-    if (percentage >= 90) return 'bg-green-500';
-    if (percentage >= 50) return 'bg-blue-500';
-    if (percentage >= 25) return 'bg-yellow-500';
-    return 'bg-gray-500';
+    if (percentage >= 90) return "bg-green-500";
+    if (percentage >= 50) return "bg-blue-500";
+    if (percentage >= 25) return "bg-yellow-500";
+    return "bg-gray-500";
   };
 
   const formatNumber = (num: number) => {
@@ -65,13 +81,17 @@ export function PerformanceMetrics({
 
   const formatDuration = (seconds: number) => {
     if (seconds < 60) return `${seconds.toFixed(0)}s`;
-    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ${(seconds % 60).toFixed(0)}s`;
-    return `${Math.floor(seconds / 3600)}h ${Math.floor((seconds % 3600) / 60)}m`;
+    if (seconds < 3600)
+      return `${Math.floor(seconds / 60)}m ${(seconds % 60).toFixed(0)}s`;
+    return `${Math.floor(seconds / 3600)}h ${Math.floor(
+      (seconds % 3600) / 60
+    )}m`;
   };
 
   const progress = totalEvents > 0 ? (eventsProcessed / totalEvents) * 100 : 0;
   const eta = calculateETA();
-  const runtime = differenceInMilliseconds(new Date(), new Date(startTime)) / 1000;
+  const runtime =
+    differenceInMilliseconds(new Date(), new Date(startTime)) / 1000;
   const performanceRating = getPerformanceRating(eventsPerSecond);
 
   return (
@@ -94,7 +114,10 @@ export function PerformanceMetrics({
           </div>
           <Progress value={progress} className="h-3" />
           <div className="flex justify-between text-xs text-muted-foreground">
-            <span>{formatNumber(eventsProcessed)} / {formatNumber(totalEvents)} events</span>
+            <span>
+              {formatNumber(eventsProcessed)} / {formatNumber(totalEvents)}{" "}
+              events
+            </span>
             {eta && (
               <span>ETA: {formatDistanceToNow(eta, { addSuffix: true })}</span>
             )}
@@ -111,7 +134,7 @@ export function PerformanceMetrics({
             <div className={`text-lg font-medium ${performanceRating.text}`}>
               {formatNumber(eventsPerSecond)}/sec
             </div>
-            <Badge 
+            <Badge
               className={`${performanceRating.color} text-white text-xs mt-1`}
             >
               {performanceRating.label}
@@ -123,9 +146,7 @@ export function PerformanceMetrics({
               <Clock className="h-4 w-4 text-green-600" />
               <span className="text-xs text-muted-foreground">Runtime</span>
             </div>
-            <div className="text-lg font-medium">
-              {formatDuration(runtime)}
-            </div>
+            <div className="text-lg font-medium">{formatDuration(runtime)}</div>
             <div className="text-xs text-muted-foreground mt-1">
               Since {new Date(startTime).toLocaleTimeString()}
             </div>
@@ -167,24 +188,30 @@ export function PerformanceMetrics({
             <div className="flex justify-between">
               <span className="text-muted-foreground">Average per event:</span>
               <span className="font-mono">
-                {eventsPerSecond > 0 ? (1000 / eventsPerSecond).toFixed(2) : '0'}ms
+                {eventsPerSecond > 0
+                  ? (1000 / eventsPerSecond).toFixed(2)
+                  : "0"}
+                ms
               </span>
             </div>
-            
+
             <div className="flex justify-between">
               <span className="text-muted-foreground">Completion rate:</span>
               <span className="font-mono">
-                {totalEvents > 0 ? ((eventsProcessed / totalEvents) * 100).toFixed(2) : '0'}%
+                {totalEvents > 0
+                  ? ((eventsProcessed / totalEvents) * 100).toFixed(2)
+                  : "0"}
+                %
               </span>
             </div>
-            
+
             {currentTime && (
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Current time:</span>
                 <span className="font-mono">{currentTime}</span>
               </div>
             )}
-            
+
             {eta && (
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Estimated finish:</span>
@@ -200,13 +227,21 @@ export function PerformanceMetrics({
             <h4 className="text-sm font-medium mb-2">Performance Insights</h4>
             <div className="text-xs text-muted-foreground space-y-1">
               {eventsPerSecond < 1000 && (
-                <p>• Processing speed is below optimal. Consider reducing concurrent backtests.</p>
+                <p>
+                  • Processing speed is below optimal. Consider reducing
+                  concurrent backtests.
+                </p>
               )}
               {progress > 50 && eta && (
-                <p>• More than halfway complete. Estimated completion: {formatDistanceToNow(eta, { addSuffix: true })}</p>
+                <p>
+                  • More than halfway complete. Estimated completion:{" "}
+                  {formatDistanceToNow(eta, { addSuffix: true })}
+                </p>
               )}
               {eventsPerSecond > 10000 && (
-                <p>• Excellent processing speed! System is performing optimally.</p>
+                <p>
+                  • Excellent processing speed! System is performing optimally.
+                </p>
               )}
             </div>
           </div>
