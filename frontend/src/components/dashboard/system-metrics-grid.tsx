@@ -1,12 +1,17 @@
 "use client";
 
-import { Cpu, Database, HardDrive, MemoryStick, Activity } from "lucide-react";
+import { Cpu, Database, HardDrive, MemoryStick, Activity, Wifi } from "lucide-react";
 import { MetricCard } from "@/components/ui/metric-card";
 import { StatusIndicator } from "@/components/ui/status-indicator";
+import { ResourceMonitor } from "@/components/monitoring/resource-monitor";
 import { useSystemStatus } from "@/hooks/useSystemStatus";
+import { useWebSocketStatus } from "@/lib/websocket/hooks";
+import { useBacktestMonitor } from "@/hooks/useBacktestMonitor";
 
 export function SystemMetricsGrid() {
   const { metrics, loading, error } = useSystemStatus();
+  const { isConnected } = useWebSocketStatus();
+  const { activeMonitors } = useBacktestMonitor();
 
   if (loading) {
     return (

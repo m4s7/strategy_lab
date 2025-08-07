@@ -10,91 +10,90 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { useBacktestExecution } from "@/hooks/useBacktestExecution";
-import { useSystemStatus } from "@/hooks/useSystemStatus";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { BacktestMonitor } from "@/components/monitoring/backtest-monitor";
+import { ResourceMonitor } from "@/components/monitoring/resource-monitor";
+import { useBacktestMonitor } from "@/hooks/useBacktestMonitor";
+import { useWebSocketStatus } from "@/lib/websocket/hooks";
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import {
   Activity,
-  Cpu,
-  HardDrive,
-  Zap,
+  Wifi,
+  WifiOff,
   Clock,
-  TrendingUp,
-  TrendingDown,
   AlertTriangle,
   CheckCircle,
-  Pause,
-  Play,
-  Square,
   RefreshCw,
   BarChart3,
-  Users,
   Database,
+  Trash2,
+  Settings,
+  Play,
+  Pause,
+  Square,
 } from "lucide-react";
 
 export default function MonitorPage() {
-  const { executions, loading: executionsLoading } = useBacktestExecution();
-  const { status: systemStatus, loading: systemLoading } = useSystemStatus();
+  const { 
+    monitors, 
+    activeMonitors, 
+    abortBacktest, 
+    pauseBacktest, 
+    resumeBacktest,
+    clearCompleted,
+    subscriptionCount 
+  } = useBacktestMonitor();
+  
+  const { status: wsStatus, isConnected, connect, disconnect } = useWebSocketStatus();
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [autoRefresh, setAutoRefresh] = useState(true);
 
   // Update current time every second
   useEffect(() => {
+    if (!autoRefresh) return;
+    
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 1000);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [autoRefresh]);
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value);
-  };
-
-  const formatPercent = (value: number) => {
-    return `${value >= 0 ? "+" : ""}${value.toFixed(2)}%`;
-  };
-
-  const getExecutionStatusBadge = (status: string) => {
-    switch (status) {
-      case "running":
-        return (
-          <Badge variant="default" className="bg-blue-500 text-white">
-            Running
-          </Badge>
-        );
-      case "completed":
-        return (
-          <Badge variant="default" className="bg-green-500 text-white">
-            Completed
-          </Badge>
-        );
-      case "failed":
-        return <Badge variant="destructive">Failed</Badge>;
-      case "paused":
-        return <Badge variant="secondary">Paused</Badge>;
-      case "queued":
-        return <Badge variant="outline">Queued</Badge>;
-      default:
-        return <Badge variant="outline">{status}</Badge>;
+  // Auto-reconnect WebSocket if disconnected
+  useEffect(() => {
+    if (!isConnected && autoRefresh) {
+      const reconnectTimer = setTimeout(() => {
+        connect();
+      }, 5000);
+      
+      return () => clearTimeout(reconnectTimer);
     }
+  }, [isConnected, connect, autoRefresh]);
+
+  const getConnectionStatus = () => {
+    if (isConnected) {
+      return (
+        <Badge className="bg-green-500 text-white">
+          <Wifi className="mr-1 h-3 w-3" />
+          Connected
+        </Badge>
+      );
+    }
+    return (
+      <Badge variant="destructive">
+        <WifiOff className="mr-1 h-3 w-3" />
+        Disconnected
+      </Badge>
+    );
   };
 
-  const getSystemHealthColor = (value: number, threshold: number = 80) => {
-    if (value >= threshold) return "text-red-600";
-    if (value >= threshold * 0.7) return "text-yellow-600";
-    return "text-green-600";
-  };
-
-  const runningExecutions = executions.filter(
-    (e) => e.status === "running" || e.status === "paused"
+  const runningMonitors = monitors.filter(m => m.status === 'running');
+  const pausedMonitors = monitors.filter(m => m.status === 'paused');
+  const queuedMonitors = monitors.filter(m => m.status === 'queued');
+  const completedMonitors = monitors.filter(m => 
+    m.status === 'completed' || m.status === 'aborted' || m.status === 'failed'
   );
-  const queuedExecutions = executions.filter((e) => e.status === "queued");
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -106,39 +105,46 @@ export default function MonitorPage() {
             <span>Real-time Monitor</span>
           </h1>
           <p className="text-muted-foreground">
-            Monitor system performance and active executions
+            Monitor system performance and active backtests in real-time
           </p>
         </div>
-        <div className="text-right">
-          <div className="text-sm text-muted-foreground">Current Time</div>
-          <div className="text-lg font-mono">
-            {format(currentTime, "HH:mm:ss")}
+        <div className="flex items-center space-x-4">
+          <div className="text-right">
+            <div className="text-sm text-muted-foreground">Current Time</div>
+            <div className="text-lg font-mono">
+              {format(currentTime, "HH:mm:ss")}
+            </div>
+          </div>
+          <Separator orientation="vertical" className="h-10" />
+          <div className="flex items-center space-x-2">
+            {getConnectionStatus()}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setAutoRefresh(!autoRefresh)}
+            >
+              <RefreshCw className={`mr-2 h-4 w-4 ${autoRefresh ? 'animate-spin' : ''}`} />
+              {autoRefresh ? 'Pause' : 'Resume'}
+            </Button>
           </div>
         </div>
       </div>
 
-      {/* System Status Overview */}
+      {/* Status Overview Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center space-x-2">
-              <Cpu className="h-4 w-4" />
-              <span>CPU Usage</span>
+              <Play className="h-4 w-4 text-green-600" />
+              <span>Running</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div
-              className={`text-2xl font-bold ${getSystemHealthColor(
-                systemStatus?.cpu_usage || 0
-              )}`}
-            >
-              {systemStatus?.cpu_usage?.toFixed(1) || "0.0"}%
+            <div className="text-2xl font-bold text-green-600">
+              {runningMonitors.length}
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-              <div
-                className="bg-blue-600 h-2 rounded-full transition-all"
-                style={{ width: `${systemStatus?.cpu_usage || 0}%` }}
-              ></div>
+            <div className="text-sm text-muted-foreground">
+              Active backtests
             </div>
           </CardContent>
         </Card>
@@ -146,23 +152,16 @@ export default function MonitorPage() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center space-x-2">
-              <HardDrive className="h-4 w-4" />
-              <span>Memory Usage</span>
+              <Pause className="h-4 w-4 text-yellow-600" />
+              <span>Paused</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div
-              className={`text-2xl font-bold ${getSystemHealthColor(
-                systemStatus?.memory_usage || 0
-              )}`}
-            >
-              {systemStatus?.memory_usage?.toFixed(1) || "0.0"}%
+            <div className="text-2xl font-bold text-yellow-600">
+              {pausedMonitors.length}
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-              <div
-                className="bg-green-600 h-2 rounded-full transition-all"
-                style={{ width: `${systemStatus?.memory_usage || 0}%` }}
-              ></div>
+            <div className="text-sm text-muted-foreground">
+              Paused backtests
             </div>
           </CardContent>
         </Card>
@@ -170,16 +169,16 @@ export default function MonitorPage() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center space-x-2">
-              <BarChart3 className="h-4 w-4" />
-              <span>Active Executions</span>
+              <Clock className="h-4 w-4 text-blue-600" />
+              <span>Queued</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-blue-600">
-              {runningExecutions.length}
+              {queuedMonitors.length}
             </div>
             <div className="text-sm text-muted-foreground">
-              {queuedExecutions.length} queued
+              Waiting to start
             </div>
           </CardContent>
         </Card>
@@ -188,253 +187,260 @@ export default function MonitorPage() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center space-x-2">
               <Database className="h-4 w-4" />
-              <span>Data Status</span>
+              <span>Subscriptions</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">Online</div>
+            <div className="text-2xl font-bold">
+              {subscriptionCount}
+            </div>
             <div className="text-sm text-muted-foreground">
-              All data sources available
+              WebSocket topics
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Active Executions */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>Active Executions</CardTitle>
-              <CardDescription>
-                Currently running and queued backtests
-              </CardDescription>
-            </div>
+      {/* Main Content Tabs */}
+      <Tabs defaultValue="active" className="space-y-6">
+        <div className="flex items-center justify-between">
+          <TabsList className="grid w-fit grid-cols-4">
+            <TabsTrigger value="active">
+              Active ({runningMonitors.length + pausedMonitors.length})
+            </TabsTrigger>
+            <TabsTrigger value="queue">Queue ({queuedMonitors.length})</TabsTrigger>
+            <TabsTrigger value="completed">History ({completedMonitors.length})</TabsTrigger>
+            <TabsTrigger value="system">System</TabsTrigger>
+          </TabsList>
+
+          <div className="flex items-center space-x-2">
+            {completedMonitors.length > 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={clearCompleted}
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Clear History
+              </Button>
+            )}
             <Button variant="outline" size="sm">
-              <RefreshCw className="mr-2 h-4 w-4" />
-              Refresh
+              <Settings className="mr-2 h-4 w-4" />
+              Settings
             </Button>
           </div>
-        </CardHeader>
-        <CardContent>
-          {executionsLoading ? (
-            <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Loading executions...
-              </p>
-            </div>
-          ) : runningExecutions.length === 0 &&
-            queuedExecutions.length === 0 ? (
-            <div className="text-center py-8">
-              <BarChart3 className="mx-auto h-12 w-12 text-muted-foreground" />
-              <h3 className="mt-4 text-lg font-medium">No active executions</h3>
-              <p className="text-muted-foreground">
-                Start a backtest to see real-time monitoring
-              </p>
-            </div>
+        </div>
+
+        <TabsContent value="active" className="space-y-4">
+          {runningMonitors.length === 0 && pausedMonitors.length === 0 ? (
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-center py-8">
+                  <BarChart3 className="mx-auto h-12 w-12 text-muted-foreground" />
+                  <h3 className="mt-4 text-lg font-medium">No active backtests</h3>
+                  <p className="text-muted-foreground mb-4">
+                    Start a backtest to see real-time monitoring
+                  </p>
+                  <Button>Start New Backtest</Button>
+                </div>
+              </CardContent>
+            </Card>
           ) : (
             <div className="space-y-4">
-              {/* Running Executions */}
-              {runningExecutions.map((execution) => (
-                <Card key={execution.id} className="border-blue-200">
-                  <CardContent className="pt-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center space-x-3">
-                        <div className="relative">
-                          <Activity className="h-6 w-6 text-blue-600" />
-                          <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-600 rounded-full animate-pulse"></div>
-                        </div>
-                        <div>
-                          <h4 className="font-medium">
-                            {execution.strategy_name}
-                          </h4>
-                          <p className="text-sm text-muted-foreground">
-                            Started{" "}
-                            {format(new Date(execution.started_at), "HH:mm:ss")}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        {getExecutionStatusBadge(execution.status)}
-                        <Button variant="outline" size="sm">
-                          {execution.status === "paused" ? (
-                            <Play className="h-4 w-4" />
-                          ) : (
-                            <Pause className="h-4 w-4" />
-                          )}
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="text-red-600"
-                        >
-                          <Square className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-
-                    {/* Progress Bar */}
-                    <div className="mb-4">
-                      <div className="flex justify-between text-sm mb-2">
-                        <span>Progress</span>
-                        <span>{execution.progress}%</span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div
-                          className="bg-blue-600 h-2 rounded-full transition-all"
-                          style={{ width: `${execution.progress}%` }}
-                        ></div>
-                      </div>
-                    </div>
-
-                    {/* Real-time Metrics */}
-                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                      <div>
-                        <p className="text-sm text-muted-foreground">
-                          Current Equity
-                        </p>
-                        <p className="text-lg font-semibold">
-                          {formatCurrency(
-                            execution.current_equity ||
-                              execution.initial_capital
-                          )}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">
-                          Unrealized P&L
-                        </p>
-                        <p
-                          className={`text-lg font-semibold ${
-                            (execution.unrealized_pnl || 0) >= 0
-                              ? "text-green-600"
-                              : "text-red-600"
-                          }`}
-                        >
-                          {formatPercent(execution.unrealized_pnl || 0)}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">
-                          Trades Executed
-                        </p>
-                        <p className="text-lg font-semibold">
-                          {execution.trades_completed || 0}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">
-                          Est. Time Left
-                        </p>
-                        <p className="text-lg font-semibold">
-                          {execution.estimated_completion || "Calculating..."}
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+              {/* Running Backtests */}
+              {runningMonitors.map((monitor) => (
+                <BacktestMonitor
+                  key={monitor.id}
+                  backtestId={monitor.id}
+                  initialData={monitor}
+                  onAbort={abortBacktest}
+                  onPause={pauseBacktest}
+                  onResume={resumeBacktest}
+                />
               ))}
 
-              {/* Queued Executions */}
-              {queuedExecutions.map((execution) => (
-                <Card key={execution.id} className="border-orange-200">
-                  <CardContent className="pt-6">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        <Clock className="h-6 w-6 text-orange-600" />
-                        <div>
-                          <h4 className="font-medium">
-                            {execution.strategy_name}
-                          </h4>
-                          <p className="text-sm text-muted-foreground">
-                            Queued at{" "}
-                            {format(new Date(execution.created_at), "HH:mm:ss")}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        {getExecutionStatusBadge(execution.status)}
-                        <span className="text-sm text-muted-foreground">
-                          Priority: {execution.priority || "Normal"}
-                        </span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+              {/* Paused Backtests */}
+              {pausedMonitors.map((monitor) => (
+                <BacktestMonitor
+                  key={monitor.id}
+                  backtestId={monitor.id}
+                  initialData={monitor}
+                  onAbort={abortBacktest}
+                  onPause={pauseBacktest}
+                  onResume={resumeBacktest}
+                />
               ))}
             </div>
           )}
-        </CardContent>
-      </Card>
+        </TabsContent>
 
-      {/* Recent Activity */}
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>System Alerts</CardTitle>
-            <CardDescription>Recent warnings and notifications</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex items-start space-x-3">
-              <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
-              <div>
-                <p className="text-sm font-medium">All systems operational</p>
-                <p className="text-xs text-muted-foreground">
-                  {format(currentTime, "HH:mm:ss")}
-                </p>
-              </div>
+        <TabsContent value="queue" className="space-y-4">
+          {queuedMonitors.length === 0 ? (
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-center py-8">
+                  <Clock className="mx-auto h-12 w-12 text-muted-foreground" />
+                  <h3 className="mt-4 text-lg font-medium">No queued backtests</h3>
+                  <p className="text-muted-foreground">
+                    All backtests are either running or completed
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-4">
+              {queuedMonitors.map((monitor) => (
+                <BacktestMonitor
+                  key={monitor.id}
+                  backtestId={monitor.id}
+                  initialData={monitor}
+                  onAbort={abortBacktest}
+                  compact={true}
+                />
+              ))}
             </div>
-            <div className="flex items-start space-x-3">
-              <AlertTriangle className="h-5 w-5 text-yellow-600 mt-0.5" />
-              <div>
-                <p className="text-sm font-medium">High CPU usage detected</p>
-                <p className="text-xs text-muted-foreground">5 minutes ago</p>
-              </div>
-            </div>
-            <div className="flex items-start space-x-3">
-              <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
-              <div>
-                <p className="text-sm font-medium">
-                  Data feed connection restored
-                </p>
-                <p className="text-xs text-muted-foreground">15 minutes ago</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+          )}
+        </TabsContent>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Performance Summary</CardTitle>
-            <CardDescription>Today's execution statistics</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">
-                Executions Completed:
-              </span>
-              <span className="font-medium">
-                {executions.filter((e) => e.status === "completed").length}
-              </span>
+        <TabsContent value="completed" className="space-y-4">
+          {completedMonitors.length === 0 ? (
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-center py-8">
+                  <CheckCircle className="mx-auto h-12 w-12 text-muted-foreground" />
+                  <h3 className="mt-4 text-lg font-medium">No completed backtests</h3>
+                  <p className="text-muted-foreground">
+                    Completed backtests will appear here
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-4">
+              {completedMonitors.map((monitor) => (
+                <BacktestMonitor
+                  key={monitor.id}
+                  backtestId={monitor.id}
+                  initialData={monitor}
+                  compact={true}
+                />
+              ))}
             </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Average Duration:</span>
-              <span className="font-medium">2m 34s</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Success Rate:</span>
-              <span className="font-medium text-green-600">98.5%</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">
-                Total Data Processed:
-              </span>
-              <span className="font-medium">1.2M ticks</span>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="system" className="space-y-6">
+          {/* System Resource Monitor */}
+          <ResourceMonitor />
+
+          {/* Connection Status */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Connection Status</CardTitle>
+              <CardDescription>
+                WebSocket connection and subscription details
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                <div className="space-y-2">
+                  <div className="text-sm text-muted-foreground">WebSocket Status</div>
+                  {getConnectionStatus()}
+                </div>
+                
+                <div className="space-y-2">
+                  <div className="text-sm text-muted-foreground">Active Subscriptions</div>
+                  <div className="text-lg font-medium">{subscriptionCount}</div>
+                </div>
+                
+                <div className="space-y-2">
+                  <div className="text-sm text-muted-foreground">Auto Refresh</div>
+                  <Badge variant={autoRefresh ? 'default' : 'secondary'}>
+                    {autoRefresh ? 'Enabled' : 'Disabled'}
+                  </Badge>
+                </div>
+              </div>
+
+              <Separator className="my-4" />
+
+              <div className="flex items-center space-x-2">
+                {!isConnected && (
+                  <Button onClick={connect} size="sm">
+                    <Wifi className="mr-2 h-4 w-4" />
+                    Reconnect
+                  </Button>
+                )}
+                
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setAutoRefresh(!autoRefresh)}
+                >
+                  {autoRefresh ? 'Disable' : 'Enable'} Auto Refresh
+                </Button>
+                
+                <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  Refresh Page
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* System Alerts */}
+          <Card>
+            <CardHeader>
+              <CardTitle>System Alerts</CardTitle>
+              <CardDescription>Recent warnings and notifications</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {isConnected ? (
+                <div className="flex items-start space-x-3">
+                  <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium">Real-time monitoring active</p>
+                    <p className="text-xs text-muted-foreground">
+                      {format(currentTime, "HH:mm:ss")}
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-start space-x-3">
+                  <AlertTriangle className="h-5 w-5 text-red-600 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium">WebSocket disconnected</p>
+                    <p className="text-xs text-muted-foreground">
+                      Real-time updates unavailable
+                    </p>
+                  </div>
+                </div>
+              )}
+              
+              {runningMonitors.length > 3 && (
+                <div className="flex items-start space-x-3">
+                  <AlertTriangle className="h-5 w-5 text-yellow-600 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium">High concurrent backtest load</p>
+                    <p className="text-xs text-muted-foreground">
+                      {runningMonitors.length} backtests running simultaneously
+                    </p>
+                  </div>
+                </div>
+              )}
+              
+              <div className="flex items-start space-x-3">
+                <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium">State persistence enabled</p>
+                  <p className="text-xs text-muted-foreground">
+                    Monitor state saved across page refreshes
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
