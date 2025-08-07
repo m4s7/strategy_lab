@@ -1,132 +1,221 @@
 # Strategy Lab
 
-A high-performance futures trading backtesting framework for developing and optimizing scalping strategies on MNQ (Micro E-mini NASDAQ-100) futures.
-
-## Overview
-
-Strategy Lab is a modular Python framework designed for:
-- High-frequency tick data processing (100K-500K ticks/second)
-- Level 1 and Level 2 market data analysis
-- Rapid strategy development and testing
-- Comprehensive parameter optimization
-- Robust out-of-sample validation
+A modular backtesting and optimization framework for CME MNQ futures trading strategies, built with Next.js frontend and FastAPI backend.
 
 ## Features
 
-- **High Performance**: Process millions of ticks per day with optimized data structures
-- **Modular Architecture**: Pluggable strategy system for rapid development
-- **Comprehensive Data Support**: Level 1 (trades) and Level 2 (order book) data
-- **Advanced Optimization**: Grid search, genetic algorithms, and walk-forward analysis
-- **Risk Management**: Built-in position sizing, stop-loss, and drawdown controls
-- **Detailed Analytics**: Performance metrics, trade analysis, and visualization
-
-## Installation
-
-### Prerequisites
-
-- Python 3.12 or higher
-- 64GB RAM recommended for processing large datasets
-- Ubuntu/Linux environment
-
-### Setup
-
-1. Clone the repository:
-```bash
-git clone https://github.com/yourusername/strategy_lab.git
-cd strategy_lab
-```
-
-2. Create a virtual environment using uv:
-```bash
-uv venv
-source .venv/bin/activate
-```
-
-3. Install dependencies:
-```bash
-uv pip install -e ".[dev]"
-```
+- 🚀 **Modern Stack**: Next.js 14+ with App Router, FastAPI with async/await
+- 📊 **Real-time Updates**: WebSocket integration for live data streaming
+- 🎨 **Beautiful UI**: shadcn/ui components with dark theme
+- 🗄️ **Flexible Database**: SQLite with SQLAlchemy ORM and migrations
+- 🐳 **Docker Ready**: Full containerized development environment
+- 🔧 **Development Tools**: Hot reload, linting, formatting, pre-commit hooks
 
 ## Quick Start
 
-1. Place your MNQ tick data in the `data/MNQ/` directory organized by contract month
-2. Create a strategy configuration in `configs/`
-3. Run a backtest:
+### Prerequisites
+
+- Node.js 20+
+- Python 3.12+
+- pnpm package manager
+- uv Python package manager
+- Docker (optional)
+
+### Option 1: Local Development
+
 ```bash
-strategy-lab backtest --config configs/my_strategy.yaml
+# Clone the repository
+git clone <repository-url>
+cd strategy_lab
+
+# Set up the entire development environment
+make setup
+
+# Start development servers
+make dev
+```
+
+Access the application:
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:8000
+- **API Documentation**: http://localhost:8000/docs
+
+### Option 2: Docker Development
+
+```bash
+# Start with Docker Compose
+make docker-dev
+```
+
+## Development Commands
+
+### Environment Management
+```bash
+make setup         # Set up development environment
+make clean         # Clean build artifacts and caches
+make health-check  # Check if all services are running
+```
+
+### Development
+```bash
+make dev           # Start development servers
+make build         # Build applications for production
+make test          # Run all tests
+make lint          # Run linting checks
+make format        # Format code
+```
+
+### Database
+```bash
+make db-migrate    # Run database migrations
+make db-seed       # Seed database with sample data
+make db-reset      # Reset database (migrate + seed)
+```
+
+### Docker
+```bash
+make docker-build  # Build Docker images
+make docker-dev    # Start development with Docker
+make docker-clean  # Clean Docker containers and images
 ```
 
 ## Project Structure
 
 ```
 strategy_lab/
-├── src/strategy_lab/       # Main package source
-│   ├── core/              # Core framework components
-│   ├── data/              # Data processing and ingestion
-│   ├── strategies/        # Trading strategy implementations
-│   ├── backtesting/       # Backtesting engine
-│   ├── optimization/      # Parameter optimization
-│   ├── analysis/          # Performance analysis
-│   └── utils/            # Utility functions
-├── tests/                 # Test suite
-├── configs/              # Configuration files
-├── docs/                 # Documentation
-└── data/                 # Market data (gitignored)
+├── frontend/              # Next.js frontend application
+│   ├── src/
+│   │   ├── app/          # Next.js App Router pages
+│   │   ├── components/   # Reusable UI components
+│   │   ├── lib/          # Utilities and configurations
+│   │   └── hooks/        # Custom React hooks
+│   └── public/           # Static assets
+├── backend/              # FastAPI backend application
+│   ├── app/
+│   │   ├── api/          # API routes
+│   │   ├── database/     # Database models and configuration
+│   │   ├── websocket/    # WebSocket handlers
+│   │   └── core/         # Core application logic
+│   ├── tests/            # Backend tests
+│   └── alembic/          # Database migrations
+└── docs/                 # Documentation and project stories
 ```
 
-## Development
+## Technology Stack
 
-### Code Style
+### Frontend
+- **Next.js 14+** with App Router and TypeScript
+- **shadcn/ui** for component library
+- **Tailwind CSS** for styling
+- **Zustand** for state management
+- **WebSocket** client for real-time updates
 
-This project uses:
-- `black` for code formatting
-- `ruff` for linting
-- `mypy` for type checking
-- `pytest` for testing
+### Backend
+- **FastAPI** with async/await patterns
+- **SQLAlchemy** with async support
+- **Alembic** for database migrations
+- **WebSocket** support with connection management
+- **SQLite** database (development)
 
-Run quality checks:
+### Development Tools
+- **pnpm** for frontend package management
+- **uv** for Python package management
+- **ESLint** and **Prettier** for code quality
+- **Black** and **ruff** for Python formatting
+- **pre-commit** hooks for automated code quality
+- **Docker** and **Docker Compose** for containerization
+
+## Environment Variables
+
+### Frontend (.env.local)
 ```bash
-black src tests
-ruff check src tests
-mypy src
-pytest
+NEXT_PUBLIC_API_URL=http://localhost:8000
+NEXT_PUBLIC_WS_URL=ws://localhost:8000
 ```
 
-### Testing
-
-Run the test suite:
+### Backend (.env)
 ```bash
-pytest tests/
+DATABASE_URL=sqlite+aiosqlite:///./data/strategy_lab.db
+DEBUG=True
+ENVIRONMENT=development
+CORS_ORIGINS=["http://localhost:3000"]
 ```
 
-With coverage:
+## Development Workflow
+
+1. **Code Quality**: All commits go through pre-commit hooks that run linting, formatting, and basic checks
+2. **Hot Reload**: Both frontend and backend support hot reload for rapid development
+3. **API First**: Backend API is fully documented with automatic OpenAPI/Swagger docs
+4. **Type Safety**: Full TypeScript on frontend, Python typing on backend
+5. **Testing**: Comprehensive test setup (tests to be implemented)
+
+## Common Tasks
+
+### Adding a New API Endpoint
+1. Create the endpoint in `backend/app/api/`
+2. Add database models if needed in `backend/app/database/models.py`
+3. Create migration: `cd backend && alembic revision --autogenerate -m "description"`
+4. Run migration: `make db-migrate`
+
+### Adding a New Frontend Component
+1. Create component in `frontend/src/components/`
+2. Follow existing patterns for shadcn/ui integration
+3. Add to the relevant page in `frontend/src/app/`
+
+### Real-time Features
+- Use the WebSocket client in `frontend/src/lib/websocket/`
+- Backend WebSocket handlers in `backend/app/websocket/`
+- Automatic reconnection and subscription management included
+
+## Troubleshooting
+
+### Development Server Won't Start
 ```bash
-pytest --cov=src/strategy_lab tests/
+# Check if ports are in use
+lsof -i :3000
+lsof -i :8000
+
+# Clean and restart
+make clean
+make setup
+make dev
 ```
 
-## Documentation
+### Database Issues
+```bash
+# Reset database completely
+make db-reset
 
-See the `docs/` directory for:
-- Architecture documentation
-- Strategy development guide
-- API reference
-- Performance optimization tips
+# Check database health
+make health-check
+```
+
+### Docker Issues
+```bash
+# Clean Docker environment
+make docker-clean
+
+# Rebuild from scratch
+make docker-build
+make docker-dev
+```
+
+### Pre-commit Hooks Not Working
+```bash
+# Install pre-commit hooks
+pre-commit install
+
+# Run manually
+pre-commit run --all-files
+```
 
 ## License
 
-MIT License - see LICENSE file for details
+This project is private and proprietary.
 
 ## Contributing
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes with tests
-4. Run quality checks
-5. Submit a pull request
-
-## Support
-
-For questions and support:
-- Check the documentation in `docs/`
-- Review examples in `configs/`
-- Open an issue on GitHub
+1. Follow the existing code style and patterns
+2. Run `make test` before committing
+3. All commits must pass pre-commit hooks
+4. Update documentation for new features
