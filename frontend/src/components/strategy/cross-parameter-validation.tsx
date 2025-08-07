@@ -9,11 +9,15 @@ interface CrossParameterRule {
 
 // Define cross-parameter validation rules for different strategies
 const crossParameterRules: Record<string, CrossParameterRule[]> = {
-  "order_book_scalper": [
+  order_book_scalper: [
     {
       parameters: ["stop_loss", "take_profit"],
       validate: (values) => {
-        if (values.stop_loss && values.take_profit && values.stop_loss >= values.take_profit) {
+        if (
+          values.stop_loss &&
+          values.take_profit &&
+          values.stop_loss >= values.take_profit
+        ) {
           return "Stop loss must be less than take profit";
         }
         return null;
@@ -22,29 +26,41 @@ const crossParameterRules: Record<string, CrossParameterRule[]> = {
     {
       parameters: ["min_spread", "max_spread"],
       validate: (values) => {
-        if (values.min_spread && values.max_spread && values.min_spread > values.max_spread) {
+        if (
+          values.min_spread &&
+          values.max_spread &&
+          values.min_spread > values.max_spread
+        ) {
           return "Minimum spread must be less than or equal to maximum spread";
         }
         return null;
       },
     },
   ],
-  "momentum_breakout": [
+  momentum_breakout: [
     {
       parameters: ["lookback_period", "entry_threshold"],
       validate: (values) => {
-        if (values.lookback_period && values.lookback_period < 10 && values.entry_threshold > 2) {
+        if (
+          values.lookback_period &&
+          values.lookback_period < 10 &&
+          values.entry_threshold > 2
+        ) {
           return "High entry threshold requires longer lookback period (at least 10)";
         }
         return null;
       },
     },
   ],
-  "mean_reversion": [
+  mean_reversion: [
     {
       parameters: ["bollinger_period", "bollinger_std"],
       validate: (values) => {
-        if (values.bollinger_period && values.bollinger_period < 20 && values.bollinger_std > 2.5) {
+        if (
+          values.bollinger_period &&
+          values.bollinger_period < 20 &&
+          values.bollinger_std > 2.5
+        ) {
           return "High standard deviation requires longer Bollinger period (at least 20)";
         }
         return null;
@@ -53,8 +69,11 @@ const crossParameterRules: Record<string, CrossParameterRule[]> = {
     {
       parameters: ["entry_z_score", "exit_z_score"],
       validate: (values) => {
-        if (values.entry_z_score && values.exit_z_score && 
-            Math.abs(values.entry_z_score) <= Math.abs(values.exit_z_score)) {
+        if (
+          values.entry_z_score &&
+          values.exit_z_score &&
+          Math.abs(values.entry_z_score) <= Math.abs(values.exit_z_score)
+        ) {
           return "Entry Z-score magnitude must be greater than exit Z-score magnitude";
         }
         return null;

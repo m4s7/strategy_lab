@@ -11,7 +11,8 @@ const mockStrategies: Strategy[] = [
     id: "order_book_scalper",
     name: "Order Book Scalper",
     version: "1.0.0",
-    description: "High-frequency scalping strategy based on order book imbalances",
+    description:
+      "High-frequency scalping strategy based on order book imbalances",
     category: "Scalping",
     author: "Strategy Lab",
     created_at: "2024-01-01",
@@ -191,7 +192,9 @@ describe("ParameterForm", () => {
       />
     );
 
-    expect(screen.getByText(/Value must be between 1 and 48/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Value must be between 1 and 48/)
+    ).toBeInTheDocument();
   });
 
   it("calls onChange when parameter is updated", () => {
@@ -281,7 +284,9 @@ describe("ConfigurationPreview", () => {
       />
     );
 
-    expect(screen.getByText("Estimated Resource Requirements")).toBeInTheDocument();
+    expect(
+      screen.getByText("Estimated Resource Requirements")
+    ).toBeInTheDocument();
     expect(screen.getByText("CPU Usage")).toBeInTheDocument();
     expect(screen.getByText("Memory")).toBeInTheDocument();
     expect(screen.getByText("Est. Time")).toBeInTheDocument();
@@ -355,7 +360,9 @@ describe("StrategyDocumentation", () => {
       />
     );
 
-    expect(screen.queryByText("Strategy Documentation")).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("Strategy Documentation")
+    ).not.toBeInTheDocument();
   });
 });
 

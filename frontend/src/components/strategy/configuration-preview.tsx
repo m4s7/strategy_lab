@@ -11,7 +11,16 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Strategy } from "@/hooks/useStrategies";
-import { CheckCircle, AlertCircle, Copy, FileJson, Cpu, MemoryStick, Clock, HardDrive } from "lucide-react";
+import {
+  CheckCircle,
+  AlertCircle,
+  Copy,
+  FileJson,
+  Cpu,
+  MemoryStick,
+  Clock,
+  HardDrive,
+} from "lucide-react";
 import { useState } from "react";
 
 interface ConfigurationPreviewProps {
@@ -22,7 +31,10 @@ interface ConfigurationPreviewProps {
 }
 
 // Helper function to estimate resource usage based on strategy and configuration
-function estimateResourceUsage(strategy: Strategy, configuration: Record<string, any>) {
+function estimateResourceUsage(
+  strategy: Strategy,
+  configuration: Record<string, any>
+) {
   // Base estimates
   let cpu = 20; // Base CPU usage %
   let memory = 512; // Base memory MB
@@ -77,7 +89,10 @@ function estimateResourceUsage(strategy: Strategy, configuration: Record<string,
   }
 
   // Adjust based on common parameters
-  if (configuration.position_size && parseFloat(configuration.position_size) > 5) {
+  if (
+    configuration.position_size &&
+    parseFloat(configuration.position_size) > 5
+  ) {
     cpu += 5; // More positions = more calculations
     memory += 64;
   }
@@ -96,7 +111,7 @@ function estimateResourceUsage(strategy: Strategy, configuration: Record<string,
     cpu += 15;
     memory += 256;
     // Double the time for optimization
-    const [min, max] = time.split("-").map(t => parseInt(t));
+    const [min, max] = time.split("-").map((t) => parseInt(t));
     time = `${min * 2}-${max * 2} min`;
   }
 

@@ -74,10 +74,12 @@ export function StrategyDocumentation({
             {/* Documentation Content */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold">Strategy Details</h3>
-              
+
               {strategy.documentation ? (
                 <div className="prose prose-sm dark:prose-invert max-w-none">
-                  <div dangerouslySetInnerHTML={{ __html: strategy.documentation }} />
+                  <div
+                    dangerouslySetInnerHTML={{ __html: strategy.documentation }}
+                  />
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -85,8 +87,9 @@ export function StrategyDocumentation({
                   <div>
                     <h4 className="font-medium mb-2">Trading Logic</h4>
                     <p className="text-sm text-muted-foreground">
-                      This strategy implements a {strategy.category.toLowerCase()} approach
-                      to trading MNQ futures. It analyzes market conditions and generates
+                      This strategy implements a{" "}
+                      {strategy.category.toLowerCase()} approach to trading MNQ
+                      futures. It analyzes market conditions and generates
                       trading signals based on the configured parameters.
                     </p>
                   </div>
@@ -102,13 +105,17 @@ export function StrategyDocumentation({
                   </div>
 
                   <div>
-                    <h4 className="font-medium mb-2">Suitable Market Conditions</h4>
+                    <h4 className="font-medium mb-2">
+                      Suitable Market Conditions
+                    </h4>
                     <p className="text-sm text-muted-foreground">
-                      This strategy performs best in {strategy.category === "Scalping" 
-                        ? "high-liquidity, low-volatility" 
-                        : strategy.category === "Momentum" 
-                        ? "trending, high-volatility" 
-                        : "range-bound"} market conditions.
+                      This strategy performs best in{" "}
+                      {strategy.category === "Scalping"
+                        ? "high-liquidity, low-volatility"
+                        : strategy.category === "Momentum"
+                        ? "trending, high-volatility"
+                        : "range-bound"}{" "}
+                      market conditions.
                     </p>
                   </div>
                 </div>
@@ -126,7 +133,9 @@ export function StrategyDocumentation({
                     <div className="flex items-start justify-between">
                       <div className="space-y-1">
                         <div className="flex items-center space-x-2">
-                          <span className="font-medium text-sm">{param.name}</span>
+                          <span className="font-medium text-sm">
+                            {param.name}
+                          </span>
                           {param.required && (
                             <Badge variant="outline" className="text-xs">
                               Required
@@ -142,7 +151,10 @@ export function StrategyDocumentation({
                       </div>
                       {param.default !== undefined && (
                         <div className="text-sm text-muted-foreground">
-                          Default: <span className="font-mono">{String(param.default)}</span>
+                          Default:{" "}
+                          <span className="font-mono">
+                            {String(param.default)}
+                          </span>
                         </div>
                       )}
                     </div>
@@ -166,11 +178,18 @@ export function StrategyDocumentation({
 
             {/* Performance Notes */}
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Performance Considerations</h3>
+              <h3 className="text-lg font-semibold">
+                Performance Considerations
+              </h3>
               <div className="bg-muted/50 rounded-lg p-4">
                 <ul className="text-sm space-y-2">
-                  <li>• This strategy processes tick-level data in real-time</li>
-                  <li>• Recommended minimum tick data: 3 months for reliable backtesting</li>
+                  <li>
+                    • This strategy processes tick-level data in real-time
+                  </li>
+                  <li>
+                    • Recommended minimum tick data: 3 months for reliable
+                    backtesting
+                  </li>
                   <li>• Average execution time: 2-5 seconds per trading day</li>
                   <li>• Memory usage scales with data window size parameter</li>
                 </ul>

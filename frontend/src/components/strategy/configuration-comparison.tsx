@@ -74,11 +74,23 @@ export function ConfigurationComparison({
       case "same":
         return <Badge variant="secondary">Same</Badge>;
       case "different":
-        return <Badge variant="outline" className="text-orange-600">Changed</Badge>;
+        return (
+          <Badge variant="outline" className="text-orange-600">
+            Changed
+          </Badge>
+        );
       case "missing":
-        return <Badge variant="outline" className="text-red-600">Not Set</Badge>;
+        return (
+          <Badge variant="outline" className="text-red-600">
+            Not Set
+          </Badge>
+        );
       case "added":
-        return <Badge variant="outline" className="text-blue-600">New</Badge>;
+        return (
+          <Badge variant="outline" className="text-blue-600">
+            New
+          </Badge>
+        );
       default:
         return null;
     }
@@ -96,7 +108,10 @@ export function ConfigurationComparison({
 
         {/* Template Selection */}
         <div className="space-y-4">
-          <Select value={selectedTemplateId} onValueChange={setSelectedTemplateId}>
+          <Select
+            value={selectedTemplateId}
+            onValueChange={setSelectedTemplateId}
+          >
             <SelectTrigger>
               <SelectValue placeholder="Select a template to compare" />
             </SelectTrigger>
@@ -125,23 +140,27 @@ export function ConfigurationComparison({
                   <div>Template Value</div>
                   <div className="text-center">Difference</div>
                 </div>
-                
+
                 {strategy.parameters.map((param) => {
                   const currentValue = currentConfig[param.name];
                   const templateValue = selectedTemplate.parameters[param.name];
                   const status = compareValues(currentValue, templateValue);
-                  
+
                   return (
                     <div
                       key={param.name}
                       className="grid grid-cols-5 gap-2 p-2 hover:bg-muted/50 rounded-md text-sm"
                     >
                       <div className="font-medium">{param.name}</div>
-                      <div className="font-mono">{formatValue(currentValue)}</div>
+                      <div className="font-mono">
+                        {formatValue(currentValue)}
+                      </div>
                       <div className="flex justify-center">
                         {getComparisonIcon(status)}
                       </div>
-                      <div className="font-mono">{formatValue(templateValue)}</div>
+                      <div className="font-mono">
+                        {formatValue(templateValue)}
+                      </div>
                       <div className="flex justify-center">
                         {getStatusBadge(status)}
                       </div>
@@ -158,18 +177,29 @@ export function ConfigurationComparison({
               <div className="space-y-1">
                 <p className="text-sm font-medium">Comparison Summary</p>
                 <p className="text-xs text-muted-foreground">
-                  {strategy.parameters.filter(p => 
-                    compareValues(currentConfig[p.name], selectedTemplate.parameters[p.name]) === "same"
-                  ).length} parameters match, {
-                  strategy.parameters.filter(p => 
-                    compareValues(currentConfig[p.name], selectedTemplate.parameters[p.name]) === "different"
-                  ).length} differ
+                  {
+                    strategy.parameters.filter(
+                      (p) =>
+                        compareValues(
+                          currentConfig[p.name],
+                          selectedTemplate.parameters[p.name]
+                        ) === "same"
+                    ).length
+                  }{" "}
+                  parameters match,{" "}
+                  {
+                    strategy.parameters.filter(
+                      (p) =>
+                        compareValues(
+                          currentConfig[p.name],
+                          selectedTemplate.parameters[p.name]
+                        ) === "different"
+                    ).length
+                  }{" "}
+                  differ
                 </p>
               </div>
-              <Button
-                onClick={() => onOpenChange(false)}
-                variant="outline"
-              >
+              <Button onClick={() => onOpenChange(false)} variant="outline">
                 Close
               </Button>
             </div>

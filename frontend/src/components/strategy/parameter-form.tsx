@@ -61,7 +61,9 @@ export function ParameterForm({
   };
 
   // Check if a parameter should be visible based on dependencies
-  const isParameterVisible = (param: typeof strategy.parameters[0]): boolean => {
+  const isParameterVisible = (
+    param: (typeof strategy.parameters)[0]
+  ): boolean => {
     if (!param.dependencies || param.dependencies.length === 0) {
       return true;
     }
@@ -84,7 +86,10 @@ export function ParameterForm({
           case "less_than":
             return depValue < dep.condition.value;
           case "in":
-            return Array.isArray(dep.condition.value) && dep.condition.value.includes(depValue);
+            return (
+              Array.isArray(dep.condition.value) &&
+              dep.condition.value.includes(depValue)
+            );
           default:
             return true;
         }
