@@ -1,5 +1,9 @@
 # UI_016: Real-time Monitoring System
 
+## Story Details
+- **Story ID**: UI_016
+- **Status**: Done
+
 ## Story
 As a trader, I want to monitor running backtests in real-time so that I can track progress and make decisions about whether to continue or abort long-running simulations.
 

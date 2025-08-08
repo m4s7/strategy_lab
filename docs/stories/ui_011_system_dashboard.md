@@ -6,7 +6,7 @@
 - **Story Points**: 5
 - **Priority**: High
 - **Type**: User Interface
-- **Status**: Ready for Review
+- **Status**: Done
 
 ## User Story
 **As a** trading researcher

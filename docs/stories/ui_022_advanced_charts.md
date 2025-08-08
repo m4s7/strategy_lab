@@ -1,5 +1,9 @@
 # UI_022: Advanced Time Series Charts
 
+## Story Details
+- **Story ID**: UI_022
+- **Status**: Done
+
 ## Story
 As a trader, I want to visualize backtest results with advanced charting capabilities including candlestick charts, technical indicators, and custom overlays so that I can perform detailed market analysis.
 

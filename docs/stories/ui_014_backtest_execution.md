@@ -6,6 +6,7 @@
 - **Story Points**: 8
 - **Priority**: Critical
 - **Type**: User Interface + Backend Integration
+- **Status**: Done
 
 ## User Story
 **As a** trading researcher

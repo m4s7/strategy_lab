@@ -1,5 +1,9 @@
 # UI_024: Trade-by-Trade Analysis
 
+## Story Details
+- **Story ID**: UI_024
+- **Status**: Done
+
 ## Story
 As a trader, I want to analyze individual trades in detail including entry/exit timing, slippage, market conditions, and profitability patterns so that I can identify areas for strategy improvement.
 

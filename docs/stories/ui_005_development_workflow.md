@@ -6,6 +6,7 @@
 - **Story Points**: 3
 - **Priority**: High
 - **Type**: Development Infrastructure
+- **Status**: Done
 
 ## User Story
 **As a** developer

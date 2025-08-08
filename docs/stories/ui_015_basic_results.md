@@ -6,6 +6,7 @@
 - **Story Points**: 5
 - **Priority**: High
 - **Type**: Data Visualization + API Integration
+- **Status**: Done
 
 ## User Story
 **As a** trading researcher

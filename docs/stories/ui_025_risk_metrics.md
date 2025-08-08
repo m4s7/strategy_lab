@@ -1,5 +1,9 @@
 # UI_025: Risk Metrics Visualization
 
+## Story Details
+- **Story ID**: UI_025
+- **Status**: Done
+
 ## Story
 As a trader, I want comprehensive risk metrics visualization including VaR, CVaR, drawdown analysis, and stress testing so that I can understand and manage the risk profile of my strategies.
 

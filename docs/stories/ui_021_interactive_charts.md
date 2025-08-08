@@ -6,6 +6,7 @@
 - **Story Points**: 8
 - **Priority**: High
 - **Type**: Data Visualization
+- **Status**: Done
 
 ## User Story
 **As a** trading researcher

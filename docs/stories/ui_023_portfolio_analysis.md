@@ -1,5 +1,9 @@
 # UI_023: Portfolio Analysis Dashboard
 
+## Story Details
+- **Story ID**: UI_023
+- **Status**: Done
+
 ## Story
 As a trader, I want to analyze portfolio-level metrics across multiple strategies including correlation analysis, risk contributions, and portfolio optimization suggestions so that I can build robust trading systems.
 

@@ -6,6 +6,7 @@
 - **Story Points**: 5
 - **Priority**: Critical
 - **Type**: Technical Foundation
+- **Status**: Done
 
 ## User Story
 **As a** developer
