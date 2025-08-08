@@ -1,5 +1,9 @@
 # UI_026: Custom Analysis Notebooks
 
+## Story Details
+- **Story ID**: UI_026
+- **Status**: Done
+
 ## Story
 As a trader, I want to create custom analysis notebooks with code, visualizations, and markdown documentation so that I can perform ad-hoc analysis and share insights with my team.
 

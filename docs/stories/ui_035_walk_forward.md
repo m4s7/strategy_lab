@@ -1,5 +1,9 @@
 # UI_035: Walk-Forward Optimization
 
+## Story Details
+- **Story ID**: UI_035
+- **Status**: Done
+
 ## Story
 As a trader, I want to perform walk-forward optimization to validate strategy parameters over time and ensure they remain robust in changing market conditions.
 

@@ -1,5 +1,9 @@
 # UI_033: Optimization Execution & Monitoring
 
+## Story Details
+- **Story ID**: UI_033
+- **Status**: Done
+
 ## Story
 As a trader, I want to execute and monitor grid search optimizations with real-time progress updates, pause/resume capabilities, and partial results so that I can efficiently find optimal parameters.
 

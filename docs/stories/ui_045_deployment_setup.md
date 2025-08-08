@@ -1,5 +1,7 @@
 # UI_045: Deployment & Infrastructure Setup
 
+**Status:** Not Started
+
 ## Story
 As a DevOps engineer, I want to set up a robust deployment pipeline and infrastructure so that the application can be deployed reliably and scaled as needed.
 

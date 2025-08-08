@@ -1,5 +1,9 @@
 # UI_032: Grid Search Parameter Setup
 
+## Story Details
+- **Story ID**: UI_032
+- **Status**: Done
+
 ## Story
 As a trader, I want to define parameter ranges and constraints for grid search optimization so that I can systematically find optimal strategy parameters.
 

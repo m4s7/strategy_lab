@@ -6,6 +6,7 @@
 - **Story Points**: 8
 - **Priority**: High
 - **Type**: Algorithm Implementation + UI
+- **Status**: Done
 
 ## User Story
 **As a** trading researcher

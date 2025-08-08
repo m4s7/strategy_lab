@@ -1,5 +1,9 @@
 # UI_043: Error Handling & Recovery
 
+## Story Details
+- **Story ID**: UI_043
+- **Status**: Done
+
 ## Story
 As a trader, I want the application to handle errors gracefully and recover automatically when possible so that my trading analysis workflow is not disrupted by technical issues.
 

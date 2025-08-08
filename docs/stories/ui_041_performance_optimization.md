@@ -1,5 +1,9 @@
 # UI_041: UI Performance Optimization
 
+## Story Details
+- **Story ID**: UI_041
+- **Status**: Done
+
 ## Story
 As a trader, I want the web interface to be fast and responsive even when working with large datasets and complex visualizations so that I can analyze results efficiently without delays.
 

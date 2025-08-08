@@ -1,5 +1,9 @@
 # UI_034: Optimization Results Analysis
 
+## Story Details
+- **Story ID**: UI_034
+- **Status**: Done
+
 ## Story
 As a trader, I want to analyze optimization results with advanced visualizations, parameter sensitivity analysis, and robustness testing so that I can select the best parameters with confidence.
 

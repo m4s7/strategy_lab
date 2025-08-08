@@ -1,5 +1,7 @@
 # UI_044: Comprehensive Testing Suite
 
+**Status:** Not Started
+
 ## Story
 As a developer, I want a comprehensive testing suite that covers unit, integration, and end-to-end tests so that I can ensure the application works correctly and prevent regressions.
 
