@@ -1,6 +1,6 @@
 # UI_036: Genetic Algorithm Optimization
 
-**Status:** Not Started
+**Status:** Done
 
 ## Story
 As a trader, I want to use genetic algorithms for strategy optimization so that I can efficiently explore large parameter spaces and find optimal combinations through evolutionary methods.

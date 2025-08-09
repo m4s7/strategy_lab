@@ -4,7 +4,7 @@
 **Epic**: Epic 4 - Strategy Optimization Module
 **Priority**: Medium
 **Estimated Effort**: 8 story points
-**Status**: Not Started
+**Status**: Done
 
 ## Story
 **As a** trading researcher
