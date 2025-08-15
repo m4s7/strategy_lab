@@ -1,0 +1,59 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Testing
+coverage/
+.nyc_output/
+playwright-report/
+test-results/
+tests/
+
+# Build outputs
+.next/
+out/
+dist/
+
+# Environment files
+.env*
+!.env.example
+
+# Version control
+.git/
+.gitignore
+.github/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Documentation
+README.md
+docs/
+
+# Development files
+.eslintrc*
+.prettierrc*
+jest.config.js
+playwright.config.ts
+tsconfig.json
+next-env.d.ts
+
+# Temporary files
+*.tmp
+*.temp
+.cache/

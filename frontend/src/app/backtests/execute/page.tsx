@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BacktestExecutionControl } from "@/components/execution/backtest-execution-control";
@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Settings, Play } from "lucide-react";
 import Link from "next/link";
 
-export default function BacktestExecutionPage() {
+function BacktestExecutionContent() {
   const searchParams = useSearchParams();
   const configurationId = searchParams.get("configId");
   const [selectedExecutionId, setSelectedExecutionId] = useState<
@@ -234,5 +234,13 @@ function ExecutionHistory() {
         )}
       </CardContent>
     </Card>
+  );
+}
+
+export default function BacktestExecutionPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <BacktestExecutionContent />
+    </Suspense>
   );
 }

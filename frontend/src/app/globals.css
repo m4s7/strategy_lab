@@ -1,5 +1,8 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "../styles/design-system.css";
+@import "../styles/ux-polish.css";
+@import "../styles/responsive.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -136,5 +139,10 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+
+  /* Main content focus target */
+  #main-content:focus {
+    outline: none;
   }
 }

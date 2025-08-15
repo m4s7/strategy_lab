@@ -1,0 +1,24 @@
+[Unit]
+Description=Strategy Lab FastAPI Backend
+After=network.target postgresql.service redis.service
+Wants=postgresql.service redis.service
+
+[Service]
+Type=simple
+User=dev
+Group=dev
+WorkingDirectory=/home/dev/strategy_lab/backend
+EnvironmentFile=/home/dev/strategy_lab/.env.production
+Environment="PATH=/home/dev/.local/bin:/usr/local/bin:/usr/bin:/bin"
+Environment="PYTHONPATH=/home/dev/strategy_lab/backend"
+ExecStart=/home/dev/.local/bin/uv run uvicorn app.main:app --host 127.0.0.1 --port 8000 --log-level info
+Restart=always
+RestartSec=10
+StandardOutput=append:/var/log/strategylab/backend.log
+StandardError=append:/var/log/strategylab/backend-error.log
+
+# Security (simplified for now)
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target

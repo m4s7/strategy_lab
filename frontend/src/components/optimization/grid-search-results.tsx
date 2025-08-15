@@ -29,7 +29,7 @@ import {
 import {
   Download,
   Filter,
-  Sort,
+  ArrowUpDown,
   TrendingUp,
   Target,
   BarChart3,
@@ -325,7 +325,7 @@ export function GridSearchResults({
             <TabsContent value="table" className="space-y-4">
               <div className="flex items-center gap-4 mb-4">
                 <div className="flex items-center gap-2">
-                  <Sort className="h-4 w-4" />
+                  <ArrowUpDown className="h-4 w-4" />
                   <span className="text-sm">Sort by:</span>
                   <Select value={sortMetric} onValueChange={setSortMetric}>
                     <SelectTrigger className="w-40">

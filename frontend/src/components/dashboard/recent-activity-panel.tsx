@@ -1,6 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { API_URL } from "@/lib/config";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -43,7 +44,7 @@ export function RecentActivityPanel() {
         if (backtest.status === "completed") {
           try {
             const response = await fetch(
-              `${process.env.NEXT_PUBLIC_API_URL}/api/v1/results?backtest_id=${backtest.id}`
+              `${API_URL}/v1/results?backtest_id=${backtest.id}`
             );
             if (response.ok) {
               const results = (await response.json()) as Array<{

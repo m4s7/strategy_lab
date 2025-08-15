@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { InteractiveChartSuite } from "@/components/charts/interactive-chart-suite";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -36,7 +36,7 @@ const sampleChartData = {
   },
 };
 
-export default function InteractiveChartsPage() {
+function InteractiveChartsContent() {
   const searchParams = useSearchParams();
   const backtestId = searchParams.get("backtestId");
   const [fullscreen, setFullscreen] = useState(false);
@@ -115,5 +115,13 @@ export default function InteractiveChartsPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function InteractiveChartsPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <InteractiveChartsContent />
+    </Suspense>
   );
 }

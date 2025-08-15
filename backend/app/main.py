@@ -112,14 +112,15 @@ app.include_router(http_router, prefix="/api/v1")
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request: Request, exc: HTTPException):
     """Global HTTP exception handler."""
+    error_response = ErrorResponse(
+        error=exc.__class__.__name__,
+        message=str(exc.detail),
+        timestamp=datetime.utcnow(),
+        request_id=getattr(request.state, "request_id", "unknown"),
+    )
     return JSONResponse(
         status_code=exc.status_code,
-        content=ErrorResponse(
-            error=exc.__class__.__name__,
-            message=str(exc.detail),
-            timestamp=datetime.utcnow(),
-            request_id=getattr(request.state, "request_id", "unknown"),
-        ).model_dump(),
+        content=error_response.model_dump(mode="json"),
     )
 
 
@@ -128,15 +129,16 @@ async def general_exception_handler(request: Request, exc: Exception):
     """Global exception handler for unhandled exceptions."""
     logger.error(f"Unhandled exception: {exc}", exc_info=True)
 
+    error_response = ErrorResponse(
+        error="InternalServerError",
+        message="An internal server error occurred",
+        detail=str(exc) if settings.debug else None,
+        timestamp=datetime.utcnow(),
+        request_id=getattr(request.state, "request_id", "unknown"),
+    )
     return JSONResponse(
         status_code=500,
-        content=ErrorResponse(
-            error="InternalServerError",
-            message="An internal server error occurred",
-            detail=str(exc) if settings.debug else None,
-            timestamp=datetime.utcnow(),
-            request_id=getattr(request.state, "request_id", "unknown"),
-        ).model_dump(),
+        content=error_response.model_dump(mode="json"),
     )
 
 

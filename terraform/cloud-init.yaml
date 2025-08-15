@@ -1,0 +1,138 @@
+#cloud-config
+package_update: true
+package_upgrade: true
+
+packages:
+  - docker.io
+  - docker-compose
+  - git
+  - htop
+  - iotop
+  - curl
+  - wget
+  - vim
+  - ufw
+  - fail2ban
+  - unattended-upgrades
+  - postgresql-client
+  - redis-tools
+  - certbot
+  - python3-certbot-nginx
+
+users:
+  - name: deploy
+    groups: docker
+    shell: /bin/bash
+    sudo: ['ALL=(ALL) NOPASSWD:ALL']
+    ssh_authorized_keys:
+      - ssh-rsa AAAAB3... # Add your SSH public key here
+
+write_files:
+  - path: /etc/docker/daemon.json
+    content: |
+      {
+        "log-driver": "json-file",
+        "log-opts": {
+          "max-size": "10m",
+          "max-file": "3"
+        },
+        "metrics-addr": "127.0.0.1:9323",
+        "experimental": true
+      }
+
+  - path: /etc/fail2ban/jail.local
+    content: |
+      [DEFAULT]
+      bantime = 3600
+      findtime = 600
+      maxretry = 5
+
+      [sshd]
+      enabled = true
+
+  - path: /opt/strategy-lab/.env.prod
+    content: |
+      DOMAIN=${domain}
+      ENVIRONMENT=${environment}
+      DB_HOST=${db_host}
+      DB_PORT=${db_port}
+      DB_NAME=${db_name}
+      DB_USER=${db_user}
+      DB_PASSWORD=${db_password}
+
+runcmd:
+  # Configure firewall
+  - ufw default deny incoming
+  - ufw default allow outgoing
+  - ufw allow 22/tcp
+  - ufw allow 80/tcp
+  - ufw allow 443/tcp
+  - ufw --force enable
+
+  # Configure fail2ban
+  - systemctl enable fail2ban
+  - systemctl start fail2ban
+
+  # Configure unattended upgrades
+  - dpkg-reconfigure -plow unattended-upgrades
+
+  # Setup application directory
+  - mkdir -p /opt/strategy-lab
+  - chown deploy:deploy /opt/strategy-lab
+
+  # Clone repository
+  - su - deploy -c "git clone https://github.com/yourusername/strategy-lab.git /opt/strategy-lab"
+
+  # Setup Docker
+  - systemctl enable docker
+  - systemctl start docker
+
+  # Install Docker Compose v2
+  - mkdir -p /usr/local/lib/docker/cli-plugins/
+  - curl -SL https://github.com/docker/compose/releases/latest/download/docker-compose-linux-x86_64 -o /usr/local/lib/docker/cli-plugins/docker-compose
+  - chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+
+  # Setup swap
+  - fallocate -l 4G /swapfile
+  - chmod 600 /swapfile
+  - mkswap /swapfile
+  - swapon /swapfile
+  - echo '/swapfile none swap sw 0 0' >> /etc/fstab
+
+  # Setup monitoring
+  - docker run -d --name node-exporter -p 9100:9100 --restart=unless-stopped prom/node-exporter:latest
+
+  # Configure automatic security updates
+  - echo 'Unattended-Upgrade::Automatic-Reboot "true";' >> /etc/apt/apt.conf.d/50unattended-upgrades
+  - echo 'Unattended-Upgrade::Automatic-Reboot-Time "02:00";' >> /etc/apt/apt.conf.d/50unattended-upgrades
+
+  # Create backup script
+  - |
+    cat > /opt/strategy-lab/scripts/backup.sh << 'EOF'
+    #!/bin/bash
+    set -e
+
+    # Load environment variables
+    source /opt/strategy-lab/.env.prod
+
+    # Backup configuration
+    BACKUP_DIR="/backup"
+    DATE=$(date +%Y%m%d_%H%M%S)
+
+    # Create backup directory
+    mkdir -p $BACKUP_DIR
+
+    # Backup database
+    echo "Backing up database..."
+    PGPASSWORD=$DB_PASSWORD pg_dump -h $DB_HOST -p $DB_PORT -U $DB_USER $DB_NAME | gzip > $BACKUP_DIR/db_$DATE.sql.gz
+
+    # Upload to Spaces
+    # Add s3cmd or rclone configuration here
+
+    echo "Backup completed successfully"
+    EOF
+
+  - chmod +x /opt/strategy-lab/scripts/backup.sh
+  - echo "0 2 * * * /opt/strategy-lab/scripts/backup.sh >> /var/log/backup.log 2>&1" | crontab -u deploy -
+
+final_message: "Strategy Lab server setup complete!"

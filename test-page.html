@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Page for Errors</title>
+</head>
+<body>
+    <h1>Testing Strategy Lab Endpoints</h1>
+    <div id="results"></div>
+
+    <script>
+        const resultsDiv = document.getElementById('results');
+
+        async function testEndpoint(name, url) {
+            const result = document.createElement('div');
+            result.innerHTML = `<h3>Testing ${name}</h3>`;
+            resultsDiv.appendChild(result);
+
+            try {
+                // Create iframe to test for console errors
+                const iframe = document.createElement('iframe');
+                iframe.src = url;
+                iframe.width = '100%';
+                iframe.height = '400px';
+                iframe.style.border = '1px solid #ccc';
+                iframe.style.marginBottom = '20px';
+
+                iframe.onload = function() {
+                    result.innerHTML += `<p style="color: green;">✓ ${name} loaded successfully</p>`;
+
+                    // Try to access iframe content if same origin
+                    try {
+                        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                        const errors = iframeDoc.querySelectorAll('.error');
+                        if (errors.length > 0) {
+                            result.innerHTML += `<p style="color: red;">Found ${errors.length} error elements</p>`;
+                        }
+                    } catch (e) {
+                        console.log(`Cannot access ${name} iframe content (cross-origin)`);
+                    }
+                };
+
+                iframe.onerror = function(e) {
+                    result.innerHTML += `<p style="color: red;">✗ ${name} failed to load: ${e}</p>`;
+                };
+
+                resultsDiv.appendChild(iframe);
+
+                // Also try fetch to check API
+                const response = await fetch(url, { mode: 'no-cors' });
+                result.innerHTML += `<p>Fetch status: Response received (no-cors mode)</p>`;
+
+            } catch (error) {
+                result.innerHTML += `<p style="color: red;">Error testing ${name}: ${error.message}</p>`;
+            }
+        }
+
+        // Test all endpoints
+        testEndpoint('Development (3456)', 'http://localhost:3456');
+        setTimeout(() => testEndpoint('Production Build (3457)', 'http://localhost:3457'), 1000);
+        setTimeout(() => testEndpoint('Live Site', 'https://lab.m4s8.dev'), 2000);
+
+        // Test API endpoints
+        async function testAPI() {
+            const apiTests = [
+                { name: 'Dev API Health', url: 'http://localhost:8000/health' },
+                { name: 'Prod API Health', url: 'http://localhost:8001/health' },
+                { name: 'Dev API Backtests', url: 'http://localhost:8000/api/v1/backtests/recent' },
+                { name: 'Prod API Backtests', url: 'http://localhost:8001/api/v1/backtests/recent' },
+            ];
+
+            for (const test of apiTests) {
+                const result = document.createElement('div');
+                result.innerHTML = `<h4>API Test: ${test.name}</h4>`;
+
+                try {
+                    const response = await fetch(test.url);
+                    const data = await response.json();
+                    result.innerHTML += `<pre style="color: green;">Status: ${response.status}\nData: ${JSON.stringify(data, null, 2)}</pre>`;
+                } catch (error) {
+                    result.innerHTML += `<p style="color: red;">Error: ${error.message}</p>`;
+                }
+
+                resultsDiv.appendChild(result);
+            }
+        }
+
+        setTimeout(testAPI, 3000);
+    </script>
+</body>
+</html>

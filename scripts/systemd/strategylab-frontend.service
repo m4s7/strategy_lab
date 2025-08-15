@@ -1,0 +1,24 @@
+[Unit]
+Description=Strategy Lab Next.js Frontend
+After=network.target strategylab-backend.service
+Wants=strategylab-backend.service
+
+[Service]
+Type=simple
+User=dev
+Group=dev
+WorkingDirectory=/home/dev/strategy_lab/frontend
+EnvironmentFile=/home/dev/strategy_lab/.env.production
+Environment="NODE_ENV=production"
+Environment="PORT=3456"
+ExecStart=/home/dev/.npm-global/bin/pnpm start:prod
+Restart=always
+RestartSec=10
+StandardOutput=append:/var/log/strategylab/frontend.log
+StandardError=append:/var/log/strategylab/frontend-error.log
+
+# Security (simplified for now)
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target

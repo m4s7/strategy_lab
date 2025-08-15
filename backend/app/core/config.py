@@ -15,7 +15,12 @@ class Settings(BaseSettings):
     port: int = 8000
 
     # CORS settings
-    cors_origins: List[str] = ["http://localhost:3000"]
+    cors_origins: List[str] = [
+        "http://localhost:3000",
+        "http://localhost:3456",
+        "http://localhost:3457",
+        "https://lab.m4s8.dev",
+    ]
 
     # Database settings
     database_url: str = "sqlite+aiosqlite:///./data/strategy_lab.db"

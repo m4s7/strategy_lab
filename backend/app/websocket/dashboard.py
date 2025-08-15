@@ -2,7 +2,7 @@ import asyncio
 import logging
 from datetime import datetime
 from typing import Dict, Any
-from ..database.database import get_db
+from ..database.connection import get_db_session
 from ..api.system import get_system_status, get_system_stats
 from .connection_manager import connection_manager
 
@@ -43,7 +43,9 @@ class DashboardUpdater:
             try:
                 # Get system status and stats
                 system_status = await get_system_status()
-                system_stats = await get_system_stats(next(get_db()))
+                async for db in get_db_session():
+                    system_stats = await get_system_stats(db)
+                    break
 
                 # Broadcast system status update
                 await connection_manager.broadcast_to_topic(

@@ -1,0 +1,399 @@
+/* Responsive Design System - Strategy Lab */
+
+@layer utilities {
+  /* Container Queries Polyfill */
+  @supports (container-type: inline-size) {
+    .container-query {
+      container-type: inline-size;
+    }
+  }
+
+  /* Responsive Grid System */
+  .responsive-grid {
+    display: grid;
+    gap: var(--spacing-4);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  }
+
+  .responsive-grid-sm {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+  }
+
+  .responsive-grid-lg {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 400px), 1fr));
+  }
+
+  /* Fluid Typography */
+  .fluid-text-xs {
+    font-size: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+  }
+
+  .fluid-text-sm {
+    font-size: clamp(0.875rem, 0.825rem + 0.25vw, 1rem);
+  }
+
+  .fluid-text-base {
+    font-size: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+  }
+
+  .fluid-text-lg {
+    font-size: clamp(1.125rem, 1.05rem + 0.375vw, 1.25rem);
+  }
+
+  .fluid-text-xl {
+    font-size: clamp(1.25rem, 1.15rem + 0.5vw, 1.5rem);
+  }
+
+  .fluid-text-2xl {
+    font-size: clamp(1.5rem, 1.35rem + 0.75vw, 1.875rem);
+  }
+
+  .fluid-text-3xl {
+    font-size: clamp(1.875rem, 1.65rem + 1.125vw, 2.25rem);
+  }
+
+  .fluid-text-4xl {
+    font-size: clamp(2.25rem, 1.95rem + 1.5vw, 3rem);
+  }
+
+  /* Fluid Spacing */
+  .fluid-p-1 {
+    padding: clamp(0.25rem, 0.2rem + 0.25vw, 0.375rem);
+  }
+
+  .fluid-p-2 {
+    padding: clamp(0.5rem, 0.45rem + 0.25vw, 0.75rem);
+  }
+
+  .fluid-p-4 {
+    padding: clamp(1rem, 0.9rem + 0.5vw, 1.5rem);
+  }
+
+  .fluid-p-6 {
+    padding: clamp(1.5rem, 1.35rem + 0.75vw, 2.25rem);
+  }
+
+  .fluid-p-8 {
+    padding: clamp(2rem, 1.8rem + 1vw, 3rem);
+  }
+
+  /* Responsive Layout Utilities */
+  .stack {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-4);
+  }
+
+  .cluster {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-4);
+    align-items: center;
+  }
+
+  .sidebar-layout {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-6);
+  }
+
+  .sidebar-layout > * {
+    flex: 1 1 100%;
+  }
+
+  @media (min-width: 768px) {
+    .sidebar-layout > :first-child {
+      flex: 0 0 280px;
+    }
+
+    .sidebar-layout > :last-child {
+      flex: 1 1 0;
+      min-width: 0;
+    }
+  }
+
+  /* Touch-Friendly Sizing */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  .touch-target-sm {
+    min-height: 36px;
+    min-width: 36px;
+  }
+
+  .touch-target-lg {
+    min-height: 48px;
+    min-width: 48px;
+  }
+
+  /* Responsive Tables */
+  .responsive-table {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .responsive-table table {
+    min-width: 600px;
+  }
+
+  /* Mobile-First Card Layout */
+  .card-mobile {
+    border-radius: 0.5rem;
+    border: 1px solid hsl(var(--color-border));
+    background-color: hsl(var(--color-surface));
+    padding: 1rem;
+  }
+
+  @media (min-width: 640px) {
+    .card-mobile {
+      padding: 1.5rem;
+    }
+  }
+
+  /* Responsive Navigation */
+  .nav-mobile {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: var(--z-sticky);
+    background: hsl(var(--color-background));
+    border-top: 1px solid hsl(var(--color-border));
+  }
+
+  @media (min-width: 768px) {
+    .nav-mobile {
+      position: static;
+      border-top: none;
+    }
+  }
+
+  /* Responsive Dialog */
+  .dialog-mobile {
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    margin: 0;
+    border-radius: 0;
+  }
+
+  @media (min-width: 640px) {
+    .dialog-mobile {
+      width: auto;
+      height: auto;
+      max-width: 90vw;
+      max-height: 90vh;
+      margin: 2rem;
+      border-radius: var(--radius-lg);
+    }
+  }
+
+  /* Viewport-Based Sizing */
+  .h-screen-safe {
+    height: 100vh;
+    height: 100dvh;
+  }
+
+  .min-h-screen-safe {
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+
+  .max-h-screen-safe {
+    max-height: 100vh;
+    max-height: 100dvh;
+  }
+}
+
+/* Breakpoint System */
+@layer utilities {
+  /* Mobile First Breakpoints */
+  @media (min-width: 640px) {
+    .sm\:block { display: block; }
+    .sm\:hidden { display: none; }
+    .sm\:flex { display: flex; }
+    .sm\:grid { display: grid; }
+  }
+
+  @media (min-width: 768px) {
+    .md\:block { display: block; }
+    .md\:hidden { display: none; }
+    .md\:flex { display: flex; }
+    .md\:grid { display: grid; }
+  }
+
+  @media (min-width: 1024px) {
+    .lg\:block { display: block; }
+    .lg\:hidden { display: none; }
+    .lg\:flex { display: flex; }
+    .lg\:grid { display: grid; }
+  }
+
+  @media (min-width: 1280px) {
+    .xl\:block { display: block; }
+    .xl\:hidden { display: none; }
+    .xl\:flex { display: flex; }
+    .xl\:grid { display: grid; }
+  }
+
+  @media (min-width: 1536px) {
+    .2xl\:block { display: block; }
+    .2xl\:hidden { display: none; }
+    .2xl\:flex { display: flex; }
+    .2xl\:grid { display: grid; }
+  }
+
+  /* 4K Support */
+  @media (min-width: 2560px) {
+    .4k\:scale-125 {
+      transform: scale(1.25);
+    }
+
+    .4k\:text-lg {
+      font-size: 1.125rem;
+    }
+
+    .4k\:p-8 {
+      padding: 2rem;
+    }
+  }
+}
+
+/* Print Styles */
+@media print {
+  /* Hide non-essential elements */
+  .no-print,
+  .sidebar,
+  .navigation,
+  .footer,
+  .floating-controls {
+    display: none !important;
+  }
+
+  /* Optimize for printing */
+  body {
+    font-size: 12pt;
+    line-height: 1.5;
+    color: black;
+    background: white;
+  }
+
+  .print-break-before {
+    page-break-before: always;
+  }
+
+  .print-break-after {
+    page-break-after: always;
+  }
+
+  .print-break-inside-avoid {
+    page-break-inside: avoid;
+  }
+
+  /* Ensure links are visible */
+  a[href]:after {
+    content: " (" attr(href) ")";
+  }
+
+  /* Optimize tables */
+  table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+
+  th, td {
+    border: 1px solid #999;
+    padding: 0.5rem;
+  }
+
+  /* Optimize images */
+  img {
+    max-width: 100%;
+    page-break-inside: avoid;
+  }
+}
+
+/* Responsive Chart Container */
+@layer components {
+  .chart-container {
+    position: relative;
+    width: 100%;
+    height: 0;
+    padding-bottom: 56.25%; /* 16:9 aspect ratio */
+  }
+
+  .chart-container > * {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  @media (min-width: 768px) {
+    .chart-container {
+      padding-bottom: 50%; /* 2:1 aspect ratio */
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .chart-container {
+      padding-bottom: 40%; /* 2.5:1 aspect ratio */
+    }
+  }
+}
+
+/* Responsive Utilities for Trading UI */
+@layer utilities {
+  /* Order Book Responsive Layout */
+  .order-book-mobile {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--spacing-2);
+  }
+
+  @media (min-width: 768px) {
+    .order-book-mobile {
+      grid-template-columns: 1fr 1fr;
+      gap: var(--spacing-4);
+    }
+  }
+
+  /* Chart Controls Responsive */
+  .chart-controls-mobile {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-2);
+    font-size: var(--font-size-sm);
+  }
+
+  @media (min-width: 640px) {
+    .chart-controls-mobile {
+      flex-wrap: nowrap;
+      font-size: var(--font-size-base);
+    }
+  }
+
+  /* Trading Panel Responsive */
+  .trading-panel-mobile {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: hsl(var(--color-background));
+    border-top: 1px solid hsl(var(--color-border));
+    padding: var(--spacing-4);
+  }
+
+  @media (min-width: 1024px) {
+    .trading-panel-mobile {
+      position: static;
+      border-top: none;
+      border-left: 1px solid hsl(var(--color-border));
+    }
+  }
+}

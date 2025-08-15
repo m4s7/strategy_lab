@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { API_URL } from "../lib/config";
 
 export interface ValidationRule {
   min?: number;
@@ -54,9 +55,7 @@ export const useStrategies = () => {
   useEffect(() => {
     const fetchStrategies = async () => {
       try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/v1/strategies`
-        );
+        const response = await fetch(`${API_URL}/v1/strategies`);
         if (!response.ok) throw new Error("Failed to fetch strategies");
         const data = await response.json();
         setStrategies(data.strategies);
@@ -86,9 +85,7 @@ export const useStrategy = (strategyId: string) => {
 
     const fetchStrategy = async () => {
       try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/v1/strategies/${strategyId}`
-        );
+        const response = await fetch(`${API_URL}/v1/strategies/${strategyId}`);
         if (!response.ok) throw new Error("Failed to fetch strategy");
         const data = await response.json();
         setStrategy(data);
@@ -113,7 +110,7 @@ export const useStrategyValidation = (strategyId: string) => {
     setValidating(true);
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/strategies/${strategyId}/validate`,
+        `${API_URL}/v1/strategies/${strategyId}/validate`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -149,7 +146,7 @@ export const useConfigurationTemplates = (strategyId: string) => {
       setLoading(true);
       try {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/v1/strategies/${strategyId}/templates`
+          `${API_URL}/v1/strategies/${strategyId}/templates`
         );
         if (!response.ok) throw new Error("Failed to fetch templates");
         const data = await response.json();
@@ -199,7 +196,7 @@ export const useConfigurationTemplates = (strategyId: string) => {
   const loadTemplate = async (templateId: string) => {
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/strategies/templates/${templateId}`
+        `${API_URL}/v1/strategies/templates/${templateId}`
       );
       if (!response.ok) throw new Error("Failed to load template");
       const template = await response.json();
@@ -214,7 +211,7 @@ export const useConfigurationTemplates = (strategyId: string) => {
   const deleteTemplate = async (templateId: string) => {
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/strategies/templates/${templateId}`,
+        `${API_URL}/v1/strategies/templates/${templateId}`,
         { method: "DELETE" }
       );
       if (!response.ok) throw new Error("Failed to delete template");

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useWebSocket } from "../lib/websocket/client";
+import { API_URL } from "../lib/config";
 
 export interface ExecutionProgress {
   percentage: number;
@@ -69,9 +70,7 @@ export const useBacktestExecution = () => {
 
   const fetchExecutions = async () => {
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/execution`
-      );
+      const response = await fetch(`${API_URL}/v1/execution`);
       if (!response.ok) throw new Error("Failed to fetch executions");
       const data = await response.json();
       setExecutions(data);
@@ -83,14 +82,11 @@ export const useBacktestExecution = () => {
   const startExecution = async (request: ExecutionRequest) => {
     setLoading(true);
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/execution/start`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(request),
-        }
-      );
+      const response = await fetch(`${API_URL}/v1/execution/start`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(request),
+      });
 
       if (!response.ok) throw new Error("Failed to start execution");
 
@@ -113,7 +109,7 @@ export const useBacktestExecution = () => {
   ) => {
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/execution/${executionId}/control`,
+        `${API_URL}/v1/execution/${executionId}/control`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

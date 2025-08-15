@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { API_URL } from "../lib/config";
 
 export interface EquityPoint {
   timestamp: string;
@@ -85,9 +86,7 @@ export const useResults = () => {
   useEffect(() => {
     const fetchResults = async () => {
       try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/v1/results`
-        );
+        const response = await fetch(`${API_URL}/v1/results`);
         if (!response.ok) throw new Error("Failed to fetch results");
         const data = await response.json();
         setResults(data);
@@ -117,9 +116,7 @@ export const useResult = (resultId: string) => {
 
     const fetchResult = async () => {
       try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/v1/results/${resultId}`
-        );
+        const response = await fetch(`${API_URL}/v1/results/${resultId}`);
         if (!response.ok) {
           if (response.status === 404) {
             throw new Error("Result not found");
@@ -143,7 +140,7 @@ export const useResult = (resultId: string) => {
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/results/${resultId}/export/${format}`
+        `${API_URL}/v1/results/${resultId}/export/${format}`
       );
       if (!response.ok) throw new Error("Failed to export result");
 
@@ -172,7 +169,7 @@ export const useResult = (resultId: string) => {
   const generateMockResult = async (executionId: string) => {
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/results/generate/${executionId}`,
+        `${API_URL}/v1/results/generate/${executionId}`,
         { method: "POST" }
       );
       if (!response.ok) throw new Error("Failed to generate result");

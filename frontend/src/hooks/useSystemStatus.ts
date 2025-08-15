@@ -1,5 +1,9 @@
 import { useState, useEffect } from "react";
-import { useWebSocket } from "../lib/websocket/client";
+import {
+  useWebSocketSubscription,
+  useWebSocketStatus,
+} from "../lib/websocket/hooks";
+import { API_URL } from "../lib/config";
 
 interface SystemMetrics {
   cpu: number;
@@ -45,13 +49,15 @@ export const useSystemStatus = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const { connectionStatus, subscribe, unsubscribe } = useWebSocket();
+  const { status: connectionStatus } = useWebSocketStatus();
+  const { data: wsMetrics } =
+    useWebSocketSubscription<SystemMetrics>("system:status");
+  const { data: wsStats } =
+    useWebSocketSubscription<SystemStats>("system:stats");
 
   const fetchSystemStatus = async () => {
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/system/status`
-      );
+      const response = await fetch(`${API_URL}/v1/system/status`);
       if (!response.ok) throw new Error("Failed to fetch system status");
       const data = await response.json();
       setMetrics(data);
@@ -62,9 +68,7 @@ export const useSystemStatus = () => {
 
   const fetchSystemStats = async () => {
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/system/stats`
-      );
+      const response = await fetch(`${API_URL}/v1/system/stats`);
       if (!response.ok) throw new Error("Failed to fetch system stats");
       const data = await response.json();
       setStats(data);
@@ -82,18 +86,6 @@ export const useSystemStatus = () => {
 
     loadInitialData();
 
-    // Set up real-time updates
-    const handleSystemUpdate = (data: any) => {
-      if (data.type === "system_status") {
-        setMetrics(data.payload);
-      } else if (data.type === "system_stats") {
-        setStats(data.payload);
-      }
-    };
-
-    subscribe("system:status", handleSystemUpdate);
-    subscribe("system:stats", handleSystemUpdate);
-
     // Fallback polling every 30 seconds
     const interval = setInterval(() => {
       fetchSystemStatus();
@@ -101,11 +93,22 @@ export const useSystemStatus = () => {
     }, 30000);
 
     return () => {
-      unsubscribe("system:status");
-      unsubscribe("system:stats");
       clearInterval(interval);
     };
-  }, [subscribe, unsubscribe]);
+  }, []);
+
+  // Update metrics and stats from WebSocket data
+  useEffect(() => {
+    if (wsMetrics) {
+      setMetrics(wsMetrics);
+    }
+  }, [wsMetrics]);
+
+  useEffect(() => {
+    if (wsStats) {
+      setStats(wsStats);
+    }
+  }, [wsStats]);
 
   return {
     metrics,

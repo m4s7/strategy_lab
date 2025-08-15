@@ -5,7 +5,7 @@ from datetime import datetime
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
-from ..database.database import get_db
+from ..database.connection import get_db_session as get_db
 from ..database.models import Backtest, BacktestStatus
 
 router = APIRouter()
@@ -79,7 +79,7 @@ async def get_system_stats(db: AsyncSession = Depends(get_db)) -> Dict[str, Any]
         SELECT
             status,
             COUNT(*) as count,
-            AVG(CAST((julianday(updated_at) - julianday(created_at)) * 86400 AS INTEGER)) as avg_duration
+            AVG(CAST((julianday(COALESCE(completed_at, created_at)) - julianday(created_at)) * 86400 AS INTEGER)) as avg_duration
         FROM backtests
         WHERE DATE(created_at) = DATE('now')
         GROUP BY status

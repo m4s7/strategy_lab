@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -30,7 +30,7 @@ interface OptimizationRun {
   bestSharpe: number;
 }
 
-export default function OptimizationPage() {
+function OptimizationContent() {
   const searchParams = useSearchParams();
   const initialOptimizationId = searchParams.get("id");
 
@@ -319,5 +319,13 @@ export default function OptimizationPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function OptimizationPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <OptimizationContent />
+    </Suspense>
   );
 }

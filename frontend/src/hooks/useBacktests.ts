@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { useWebSocket } from "../lib/websocket/client";
+import { useWebSocketSubscription } from "../lib/websocket/hooks";
+import { API_URL } from "../lib/config";
 
 export interface Backtest {
   id: string;
@@ -16,16 +17,18 @@ export const useRecentBacktests = (limit = 10) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const { subscribe, unsubscribe } = useWebSocket();
+  // Use WebSocket subscription for real-time updates
+  const { data: wsBacktestUpdates } = useWebSocketSubscription("backtest:all");
 
   const fetchRecentBacktests = async () => {
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/backtests/recent?limit=${limit}`
+        `${API_URL}/v1/backtests/recent?limit=${limit}`
       );
       if (!response.ok) throw new Error("Failed to fetch recent backtests");
       const data = await response.json();
       setBacktests(data);
+      setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error");
     }
@@ -39,24 +42,15 @@ export const useRecentBacktests = (limit = 10) => {
     };
 
     loadInitialData();
+  }, [limit]);
 
-    // Set up real-time updates
-    const handleBacktestUpdate = (data: any) => {
-      if (
-        data.type === "backtest_created" ||
-        data.type === "backtest_updated"
-      ) {
-        // Refetch recent backtests when there are updates
-        fetchRecentBacktests();
-      }
-    };
-
-    subscribe("backtest:all", handleBacktestUpdate);
-
-    return () => {
-      unsubscribe("backtest:all");
-    };
-  }, [limit, subscribe, unsubscribe]);
+  // Handle WebSocket updates
+  useEffect(() => {
+    if (wsBacktestUpdates) {
+      // Refetch when we get WebSocket updates
+      fetchRecentBacktests();
+    }
+  }, [wsBacktestUpdates]);
 
   return {
     backtests,
@@ -71,16 +65,16 @@ export const useActiveBacktests = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const { subscribe, unsubscribe } = useWebSocket();
+  // Use WebSocket subscription for real-time updates
+  const { data: wsActiveUpdates } = useWebSocketSubscription("backtest:active");
 
   const fetchActiveBacktests = async () => {
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/backtests/active`
-      );
+      const response = await fetch(`${API_URL}/v1/backtests/active`);
       if (!response.ok) throw new Error("Failed to fetch active backtests");
       const data = await response.json();
       setBacktests(data);
+      setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error");
     }
@@ -95,26 +89,20 @@ export const useActiveBacktests = () => {
 
     loadInitialData();
 
-    // Set up real-time updates for active backtests
-    const handleBacktestUpdate = (data: any) => {
-      if (
-        data.type === "backtest_updated" ||
-        data.type === "backtest_progress"
-      ) {
-        fetchActiveBacktests();
-      }
-    };
-
-    subscribe("backtest:active", handleBacktestUpdate);
-
     // Refresh active backtests more frequently
     const interval = setInterval(fetchActiveBacktests, 10000);
 
     return () => {
-      unsubscribe("backtest:active");
       clearInterval(interval);
     };
-  }, [subscribe, unsubscribe]);
+  }, []);
+
+  // Handle WebSocket updates
+  useEffect(() => {
+    if (wsActiveUpdates) {
+      fetchActiveBacktests();
+    }
+  }, [wsActiveUpdates]);
 
   return {
     backtests,

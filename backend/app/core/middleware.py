@@ -54,9 +54,17 @@ class LoggingMiddleware(BaseHTTPMiddleware):
 
 def add_cors_middleware(app):
     """Add CORS middleware to the FastAPI app."""
+    # Force CORS origins to include all necessary localhost ports
+    cors_origins = [
+        "http://localhost:3000",
+        "http://localhost:3456",
+        "http://localhost:3457",
+        "https://lab.m4s8.dev",
+    ]
+
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=settings.cors_origins,
+        allow_origins=cors_origins,
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],

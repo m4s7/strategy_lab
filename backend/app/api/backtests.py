@@ -19,6 +19,31 @@ async def create_backtest(
     return backtest
 
 
+@router.get("/recent", response_model=List[BacktestResponse])
+async def get_recent_backtests(limit: int = 10, db: AsyncSession = Depends(get_db)):
+    """Get recent backtests for dashboard display."""
+    stmt = select(Backtest).order_by(desc(Backtest.created_at)).limit(limit)
+    result = await db.execute(stmt)
+    backtests = result.scalars().all()
+    return backtests
+
+
+@router.get("/active", response_model=List[BacktestResponse])
+async def get_active_backtests(db: AsyncSession = Depends(get_db)):
+    """Get currently running backtests."""
+    stmt = (
+        select(Backtest)
+        .where(
+            and_(Backtest.status.in_([BacktestStatus.RUNNING, BacktestStatus.PENDING]))
+        )
+        .order_by(desc(Backtest.created_at))
+    )
+
+    result = await db.execute(stmt)
+    backtests = result.scalars().all()
+    return backtests
+
+
 @router.get("/", response_model=List[BacktestResponse])
 async def get_backtests(
     skip: int = 0,
@@ -57,28 +82,3 @@ async def update_backtest_status(
     if not backtest:
         raise HTTPException(status_code=404, detail="Backtest not found")
     return {"message": f"Backtest status updated to {status}", "backtest": backtest}
-
-
-@router.get("/recent", response_model=List[BacktestResponse])
-async def get_recent_backtests(limit: int = 10, db: AsyncSession = Depends(get_db)):
-    """Get recent backtests for dashboard display."""
-    stmt = select(Backtest).order_by(desc(Backtest.created_at)).limit(limit)
-    result = await db.execute(stmt)
-    backtests = result.scalars().all()
-    return backtests
-
-
-@router.get("/active", response_model=List[BacktestResponse])
-async def get_active_backtests(db: AsyncSession = Depends(get_db)):
-    """Get currently running backtests."""
-    stmt = (
-        select(Backtest)
-        .where(
-            and_(Backtest.status.in_([BacktestStatus.RUNNING, BacktestStatus.PENDING]))
-        )
-        .order_by(desc(Backtest.created_at))
-    )
-
-    result = await db.execute(stmt)
-    backtests = result.scalars().all()
-    return backtests
