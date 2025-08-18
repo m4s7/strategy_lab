@@ -1,0 +1,239 @@
+{
+  "name": "strategy-lab-development-workflow",
+  "version": "1.0.0",
+  "orchestrator": "multi-agent-coordinator",
+  "total_agents": 20,
+  "description": "Specialized workflow for Strategy Lab - High-performance backtesting system for MNQ futures scalping",
+  "project_context": {
+    "domain": "quantitative_trading",
+    "technology_stack": ["Rust", "Next.js", "PostgreSQL", "HFTBacktest"],
+    "focus": "scalping_strategies",
+    "data_type": "futures_tick_data"
+  },
+  "stages": [
+    {
+      "stage_id": "analysis",
+      "name": "Project Analysis & Documentation Review",
+      "execution": "parallel",
+      "agents": [
+        {
+          "agent": "futures-trading-strategist",
+          "scope": "trading_requirements_analysis",
+          "dependencies": ["docs/PRD_Strategy_Lab.md", "docs/stories/"],
+          "output": "trading_analysis.md"
+        },
+        {
+          "agent": "futures-tick-data-specialist",
+          "scope": "data_pipeline_requirements",
+          "dependencies": ["docs/MNQ_parquet_files.md"],
+          "output": "data_requirements.md"
+        },
+        {
+          "agent": "quant-analyst",
+          "scope": "performance_metrics_design",
+          "dependencies": ["docs/stories/4.2-results-analysis-reporting.md"],
+          "output": "metrics_specification.md"
+        },
+        {
+          "agent": "architect-reviewer",
+          "scope": "system_architecture_validation",
+          "dependencies": ["docs/backtest-system-architecture-plan.md"],
+          "output": "architecture_review.md"
+        }
+      ],
+      "timeout": 1800
+    },
+    {
+      "stage_id": "backend_core",
+      "name": "Rust Backend & Data Pipeline",
+      "execution": "sequential",
+      "substages": [
+        {
+          "name": "Data Foundation",
+          "execution": "parallel",
+          "agents": [
+            {
+              "agent": "rust-engineer", 
+              "scope": "tick_data_ingestion",
+              "dependencies": ["docs/stories/1.1-data-ingestion-validation.md"],
+              "output": "src/data/ingestion.rs"
+            },
+            {
+              "agent": "futures-tick-data-specialist",
+              "scope": "order_book_reconstruction", 
+              "dependencies": ["docs/stories/1.2-order-book-reconstruction.md"],
+              "output": "src/market/order_book.rs"
+            }
+          ]
+        },
+        {
+          "name": "Strategy Framework", 
+          "execution": "sequential",
+          "agents": [
+            {
+              "agent": "rust-engineer",
+              "scope": "strategy_template_system",
+              "dependencies": ["docs/stories/2.1-strategy-template-system.md", "src/market/order_book.rs"],
+              "output": "src/strategy/"
+            },
+            {
+              "agent": "futures-trading-strategist",
+              "scope": "hftbacktest_integration",
+              "dependencies": ["docs/stories/2.2-strategy-execution-engine.md"],
+              "output": "src/backtesting/"
+            }
+          ]
+        },
+        {
+          "name": "Optimization Engine",
+          "execution": "parallel", 
+          "agents": [
+            {
+              "agent": "quant-analyst",
+              "scope": "parameter_optimization",
+              "dependencies": ["docs/stories/3.1-multi-algorithm-optimization.md"],
+              "output": "src/optimization/"
+            },
+            {
+              "agent": "rust-engineer",
+              "scope": "performance_monitoring",
+              "dependencies": ["docs/stories/3.2-performance-monitoring.md"],
+              "output": "src/monitoring/"
+            }
+          ]
+        }
+      ],
+      "timeout": 5400
+    },
+    {
+      "stage_id": "frontend_interface",
+      "name": "Next.js Web Interface",
+      "execution": "parallel",
+      "agents": [
+        {
+          "agent": "nextjs-developer",
+          "scope": "strategy_management_dashboard",
+          "dependencies": ["docs/stories/4.1-strategy-management-dashboard.md", "src/strategy/"],
+          "output": "frontend/app/"
+        },
+        {
+          "agent": "typescript-pro",
+          "scope": "type_definitions",
+          "dependencies": ["src/backtesting/", "src/optimization/"],
+          "output": "frontend/types/"
+        },
+        {
+          "agent": "frontend-developer",
+          "scope": "analysis_components",
+          "dependencies": ["docs/stories/4.2-results-analysis-reporting.md"],
+          "output": "frontend/components/analysis/"
+        }
+      ],
+      "timeout": 3600
+    },
+    {
+      "stage_id": "user_experience",
+      "name": "UX Enhancement & Cognitive Load Management",
+      "execution": "sequential",
+      "agents": [
+        {
+          "agent": "ux-researcher",
+          "scope": "cognitive_load_optimization",
+          "dependencies": ["docs/stories/4.3-cognitive-load-management.md"],
+          "output": "ux/cognitive_design.md"
+        },
+        {
+          "agent": "frontend-developer",
+          "scope": "guided_workflow_implementation",
+          "dependencies": ["docs/stories/4.4-guided-workflow-system.md", "ux/cognitive_design.md"],
+          "output": "frontend/components/guided/"
+        }
+      ],
+      "timeout": 2400
+    },
+    {
+      "stage_id": "integration_testing",
+      "name": "Integration & Performance Testing", 
+      "execution": "parallel",
+      "agents": [
+        {
+          "agent": "test-automator",
+          "scope": "end_to_end_testing",
+          "dependencies": ["frontend/app/", "src/"],
+          "output": "tests/"
+        },
+        {
+          "agent": "qa-expert",
+          "scope": "performance_validation",
+          "dependencies": ["src/backtesting/", "tests/"],
+          "output": "performance_reports/"
+        },
+        {
+          "agent": "futures-tick-data-specialist",
+          "scope": "data_pipeline_validation",
+          "dependencies": ["src/data/", "tests/"],
+          "output": "data_validation_report.md"
+        }
+      ],
+      "timeout": 3600
+    },
+    {
+      "stage_id": "deployment_optimization",
+      "name": "Deployment & Final Optimization",
+      "execution": "sequential", 
+      "agents": [
+        {
+          "agent": "deployment-engineer",
+          "scope": "production_deployment",
+          "dependencies": ["frontend/", "src/", "tests/"],
+          "output": "deployment/"
+        },
+        {
+          "agent": "code-reviewer",
+          "scope": "final_code_review",
+          "dependencies": ["src/", "frontend/", "tests/"],
+          "output": "code_review_final.md"
+        }
+      ],
+      "timeout": 1800
+    }
+  ],
+  "agent_registry": {
+    "trading_specialists": [
+      "futures-trading-strategist",
+      "futures-tick-data-specialist", 
+      "quant-analyst"
+    ],
+    "core_development": [
+      "rust-engineer",
+      "nextjs-developer",
+      "typescript-pro",
+      "frontend-developer"
+    ],
+    "architecture_quality": [
+      "architect-reviewer",
+      "code-reviewer",
+      "qa-expert",
+      "test-automator"
+    ],
+    "user_experience": [
+      "ux-researcher"
+    ],
+    "infrastructure": [
+      "deployment-engineer"
+    ]
+  },
+  "collaboration_patterns": {
+    "trading_team": ["futures-trading-strategist", "futures-tick-data-specialist", "quant-analyst"],
+    "rust_team": ["rust-engineer", "futures-tick-data-specialist"],
+    "frontend_team": ["nextjs-developer", "typescript-pro", "frontend-developer", "ux-researcher"],
+    "quality_team": ["qa-expert", "test-automator", "code-reviewer"]
+  },
+  "success_criteria": {
+    "performance": "Process 100K-500K ticks/second",
+    "usability": "Implement new strategy in <30 minutes", 
+    "business": "Identify 1-2 profitable strategies",
+    "efficiency": "Utilize 12+ CPU cores",
+    "throughput": "Process trading day in <2 hours"
+  }
+}

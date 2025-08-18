@@ -1,6 +1,6 @@
 # Agent Registry - Multi-Agent Swarm
 
-## Total Agents: 31 (11 Original + 19 New + 1 Rust Engineer)
+## Total Agents: 32 (11 Original + 20 New + 1 Rust Engineer)
 
 ## 📊 Agent Categories
 
@@ -43,11 +43,12 @@
 | `data-scientist` | Statistical modeling, ML research | memory, exa, sequential_thinking, ref | ✅ Active |
 | `postgres-pro` | PostgreSQL optimization | memory, ref, sequential_thinking | ✅ Active |
 
-### 💰 Finance & Trading (3 agents)
+### 💰 Finance & Trading (4 agents)
 | Agent | Purpose | MCP Servers | Status |
 |-------|---------|-------------|--------|
 | `fintech-engineer` | Financial systems, compliance | memory, ref, sequential_thinking, exa | ✅ Active |
 | `futures-trading-strategist` | Futures trading strategies | memory, exa, sequential_thinking, ref | ✅ Active |
+| `futures-tick-data-specialist` | Level 1 & Level 2 futures tick data processing | code_interpreter, file_operations, data_analysis | ✅ Active |
 | `quant-analyst` | Quantitative analysis, modeling | memory, exa, sequential_thinking, ref | ✅ Active |
 
 ### 🛠️ Developer Experience (2 agents)
@@ -80,13 +81,16 @@
 
 | MCP Server | Agent Count | Primary Use Case |
 |------------|-------------|------------------|
-| `memory` | 30/30 | Universal - All agents use for persistence |
-| `sequential_thinking` | 26/30 | Complex problem solving |
-| `ref` | 23/30 | Documentation and references |
-| `exa` | 16/30 | Research and web search |
-| `shadcn_ui` | 5/30 | UI/UX related agents |
-| `playwright` | 4/30 | Testing agents |
-| `puppeteer` | 4/30 | Testing and automation |
+| `memory` | 31/32 | Universal - Most agents use for persistence |
+| `sequential_thinking` | 26/32 | Complex problem solving |
+| `ref` | 23/32 | Documentation and references |
+| `exa` | 16/32 | Research and web search |
+| `shadcn_ui` | 5/32 | UI/UX related agents |
+| `playwright` | 4/32 | Testing agents |
+| `puppeteer` | 4/32 | Testing and automation |
+| `code_interpreter` | 1/32 | Specialized data processing |
+| `file_operations` | 1/32 | File handling |
+| `data_analysis` | 1/32 | Data analysis tools |
 
 ## 🚀 Quick Start Commands
 
@@ -183,6 +187,6 @@ python3 .claude/scripts/test-mcp-integration.py
 - `prd-writer` → `ux-researcher` → `architect-reviewer` → Development Team → `qa-expert`
 
 ---
-*Last Updated: 2024-08-16*
-*Total Active Agents: 30*
+*Last Updated: 2024-08-18*
+*Total Active Agents: 32*
 *MCP Integration: 100%*

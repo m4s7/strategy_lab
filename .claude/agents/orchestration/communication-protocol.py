@@ -36,15 +36,55 @@ class Colors:
 
 # Agent color mapping
 AGENT_COLORS = {
+    # Programming languages
     'python-pro': Colors.PYTHON,
+    'typescript-pro': Colors.TYPESCRIPT,
+    'rust-engineer': Colors.PYTHON,  # Using Python blue for Rust
+    
+    # Frontend/Web
     'nextjs-developer': Colors.JAVASCRIPT,
+    'frontend-developer': Colors.JAVASCRIPT,
+    'websocket-engineer': Colors.JAVASCRIPT,
+    
+    # Quality & Testing
     'qa-expert': Colors.QA,
     'test-automator': Colors.QA,
+    'debugger': Colors.QA,
+    'code-reviewer': Colors.QA,
+    'refactoring-specialist': Colors.QA,
+    
+    # Finance & Trading
     'quant-analyst': Colors.FINANCE,
     'fintech-engineer': Colors.FINANCE,
     'futures-trading-strategist': Colors.FINANCE,
+    'futures-tick-data-specialist': Colors.FINANCE,
+    
+    # Business & Product
     'product-manager': Colors.BUSINESS,
     'prd-writer': Colors.BUSINESS,
+    'ux-researcher': Colors.BUSINESS,
+    
+    # Data & AI
+    'data-engineer': Colors.INFO,
+    'data-scientist': Colors.INFO,
+    'data-analyst': Colors.INFO,
+    'data-researcher': Colors.INFO,
+    'ai-engineer': Colors.INFO,
+    
+    # Infrastructure & DevOps
+    'deployment-engineer': Colors.WARNING,
+    'tooling-engineer': Colors.WARNING,
+    'postgres-pro': Colors.WARNING,
+    
+    # Architecture & Design
+    'architect-reviewer': Colors.TYPESCRIPT,
+    'api-designer': Colors.TYPESCRIPT,
+    
+    # Research & Analysis
+    'research-analyst': Colors.BUSINESS,
+    'search-specialist': Colors.BUSINESS,
+    
+    # Orchestration
     'multi-agent-coordinator': Colors.ORCHESTRATOR,
     'agent-organizer': Colors.ORCHESTRATOR,
 }
@@ -101,6 +141,46 @@ class AgentOrchestrator:
             self.config = json.load(f)
         self.active_agents = {}
         self.message_queue = asyncio.Queue()
+        self.project_context = self._scan_project_context()
+    
+    def _scan_project_context(self) -> Dict[str, Any]:
+        """Scan project structure and documentation"""
+        context = {
+            "docs_files": [],
+            "stories": [],
+            "project_structure": {},
+            "available_agents": list(self.config.get('agent_registry', {}).keys())
+        }
+        
+        # Scan docs folder
+        docs_path = Path("docs")
+        if docs_path.exists():
+            context["docs_files"] = [str(f) for f in docs_path.rglob("*.md")]
+            print(f"{Colors.INFO}📁 Found {len(context['docs_files'])} documentation files{Colors.RESET}")
+            
+        # Scan stories folder specifically
+        stories_path = Path("docs/stories")
+        if stories_path.exists():
+            context["stories"] = [str(f) for f in stories_path.glob("*.md")]
+            print(f"{Colors.INFO}📖 Found {len(context['stories'])} user stories{Colors.RESET}")
+            
+        # List available agents from registry
+        agent_count = sum(len(agents) for agents in self.config.get('agent_registry', {}).values())
+        print(f"{Colors.INFO}🤖 Agent registry contains {agent_count} specialized agents{Colors.RESET}")
+        
+        return context
+    
+    def display_available_agents(self):
+        """Display all available agents by category"""
+        print(f"{Colors.ORCHESTRATOR}{Colors.BOLD}Available Agents by Category:{Colors.RESET}\n")
+        
+        agent_registry = self.config.get('agent_registry', {})
+        for category, agents in agent_registry.items():
+            print(f"  {Colors.UNDERLINE}{category.replace('_', ' ').title()}:{Colors.RESET}")
+            for agent in agents:
+                color = get_agent_color(agent)
+                print(f"    {color}• {agent}{Colors.RESET}")
+            print()
         
     async def execute_stage(self, stage: Dict) -> Dict[str, Any]:
         """Execute a workflow stage"""
@@ -186,6 +266,17 @@ class AgentOrchestrator:
         print(f"{Colors.ORCHESTRATOR}{Colors.BOLD}{'='*60}{Colors.RESET}")
         print(f"{Colors.ORCHESTRATOR}{Colors.BOLD}Starting workflow:{Colors.RESET} {Colors.INFO}{self.config['name']}{Colors.RESET}")
         print(f"{Colors.ORCHESTRATOR}{Colors.BOLD}{'='*60}{Colors.RESET}\n")
+        
+        # Display project context
+        print(f"{Colors.INFO}{Colors.BOLD}Project Context:{Colors.RESET}")
+        if self.project_context["docs_files"]:
+            print(f"  📁 Documentation: {len(self.project_context['docs_files'])} files")
+        if self.project_context["stories"]:
+            print(f"  📖 User Stories: {len(self.project_context['stories'])} stories")
+        print()
+        
+        # Display available agents
+        self.display_available_agents()
         
         for stage in self.config['stages']:
             result = await self.execute_stage(stage)
