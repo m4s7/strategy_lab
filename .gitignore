@@ -1,2 +1,12 @@
 logs/
 data/
+
+# Added by cargo
+/target
+
+# Node.js
+frontend/node_modules/
+node_modules/
+
+# Dependencies
+*.lock

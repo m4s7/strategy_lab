@@ -1,0 +1,74 @@
+[package]
+name = "strategy_lab"
+version = "0.1.0"
+edition = "2021"
+authors = ["Strategy Lab Team"]
+description = "High-performance backtesting system for MNQ futures scalping strategies"
+
+[dependencies]
+# Data Processing
+arrow = "53"
+parquet = "53"
+polars = { version = "0.44", features = ["lazy", "parquet", "temporal", "streaming"] }
+
+# Performance & Memory
+rayon = "1.10"
+tokio = { version = "1.40", features = ["full"] }
+crossbeam = "0.8"
+memmap2 = "0.9"
+
+# Error Handling & Validation
+thiserror = "1.0"
+anyhow = "1.0"
+validator = { version = "0.18", features = ["derive"] }
+
+# Serialization & Configuration
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+toml = "0.8"
+
+# Logging & Monitoring
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# Time & Dates
+chrono = { version = "0.4", features = ["serde"] }
+
+# Database
+sqlx = { version = "0.8", features = ["runtime-tokio-rustls", "postgres", "chrono", "uuid"] }
+uuid = { version = "1.10", features = ["v4", "serde"] }
+
+# Decimal precision for prices
+rust_decimal = { version = "1.36", features = ["serde-float"] }
+
+# System monitoring
+sysinfo = "0.31"
+
+# Random number generation
+rand = "0.8"
+
+# Additional utilities
+serde_yaml = "0.9"
+
+# Web server
+axum = { version = "0.6", features = ["ws"] }
+tower = "0.4"
+tower-http = { version = "0.4", features = ["cors"] }
+futures = "0.3"
+
+[dev-dependencies]
+criterion = { version = "0.5", features = ["html_reports"] }
+proptest = "1.5"
+
+[[bench]]
+name = "data_ingestion"
+harness = false
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+
+[profile.dev]
+opt-level = 1
