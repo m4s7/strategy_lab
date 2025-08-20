@@ -1,8 +1,10 @@
 //! Strategy execution with realistic order fills and transaction costs
 
 use crate::data::TickData;
-use crate::strategy::{Order, OrderFill, OrderSide, OrderType, Position};
-use crate::backtesting::{TransactionCostModel, SlippageConfig};
+use crate::strategy::{Order, OrderSide, OrderType, Position};
+use crate::strategy::traits::OrderFill;
+use crate::backtesting::{TransactionCostModel};
+use crate::backtesting::engine::SlippageConfig;
 use chrono::Utc;
 use rust_decimal::Decimal;
 use uuid::Uuid;

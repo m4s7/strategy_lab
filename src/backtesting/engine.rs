@@ -1,8 +1,10 @@
 //! Core backtesting engine implementation
 
 use crate::data::{DataIngestionEngine, IngestionConfig, TickData};
-use crate::market::{OrderBook, OrderBookManager};
-use crate::strategy::{Strategy, StrategyContext, Order, OrderFill, OrderSide};
+use crate::market::{OrderBook};
+use crate::market::order_book::OrderBookManager;
+use crate::strategy::{Strategy, StrategyContext, Order, OrderSide};
+use crate::strategy::traits::OrderFill;
 use crate::backtesting::{
     StrategyExecutor, TransactionCostModel, PerformanceMetrics, BacktestReport
 };
@@ -182,8 +184,11 @@ impl BacktestEngine {
         let ticks = engine.ingest_file(path).await?;
         
         // Filter by date range
+        let start_nanos = self.config.start_date.timestamp_nanos_opt().unwrap_or(0);
+        let end_nanos = self.config.end_date.timestamp_nanos_opt().unwrap_or(i64::MAX);
+        
         let filtered: Vec<_> = ticks.into_iter()
-            .filter(|t| t.timestamp >= self.config.start_date && t.timestamp <= self.config.end_date)
+            .filter(|t| t.timestamp >= start_nanos && t.timestamp <= end_nanos)
             .collect();
         
         Ok(filtered)
@@ -312,6 +317,27 @@ pub struct BacktestResult {
     pub ticks_processed: usize,
     pub processing_time_secs: f64,
     pub ticks_per_second: f64,
+}
+
+impl Default for BacktestResult {
+    fn default() -> Self {
+        Self {
+            initial_capital: Decimal::from(10000),
+            final_capital: Decimal::from(10000),
+            total_pnl: Decimal::ZERO,
+            total_trades: 0,
+            winning_trades: 0,
+            losing_trades: 0,
+            win_rate: 0.0,
+            sharpe_ratio: 0.0,
+            max_drawdown: Decimal::ZERO,
+            profit_factor: 0.0,
+            avg_trade_duration: 0.0,
+            ticks_processed: 0,
+            processing_time_secs: 0.0,
+            ticks_per_second: 0.0,
+        }
+    }
 }
 
 impl BacktestResult {

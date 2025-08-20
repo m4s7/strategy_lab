@@ -1,6 +1,6 @@
 //! Transaction cost and slippage models
 
-use crate::backtesting::TransactionCostConfig;
+use crate::backtesting::engine::TransactionCostConfig;
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 

@@ -1,6 +1,7 @@
 //! Performance and risk metrics calculation
 
-use crate::strategy::{OrderFill, Position};
+use crate::strategy::Position;
+use crate::strategy::traits::OrderFill;
 use chrono::{DateTime, Utc};
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
@@ -9,12 +10,21 @@ use std::collections::VecDeque;
 /// Performance metrics tracker
 #[derive(Debug, Clone)]
 pub struct PerformanceMetrics {
-    equity_curve: Vec<(DateTime<Utc>, Decimal)>,
-    returns: Vec<f64>,
-    trades: Vec<TradeRecord>,
-    high_water_mark: Decimal,
-    current_drawdown: Decimal,
-    max_drawdown: Decimal,
+    pub equity_curve: Vec<(DateTime<Utc>, Decimal)>,
+    pub returns: Vec<f64>,
+    pub trades: Vec<TradeRecord>,
+    pub high_water_mark: Decimal,
+    pub current_drawdown: Decimal,
+    pub max_drawdown: Decimal,
+    pub total_return: f64,
+    pub sharpe_ratio: f64,
+    pub win_rate: f64,
+    pub profit_factor: f64,
+    pub total_trades: usize,
+    pub avg_trade_duration_ms: u64,
+    pub volatility: f64,
+    pub beta: f64,
+    pub alpha: f64,
 }
 
 impl PerformanceMetrics {
@@ -26,6 +36,15 @@ impl PerformanceMetrics {
             high_water_mark: Decimal::ZERO,
             current_drawdown: Decimal::ZERO,
             max_drawdown: Decimal::ZERO,
+            total_return: 0.0,
+            sharpe_ratio: 0.0,
+            win_rate: 0.0,
+            profit_factor: 0.0,
+            total_trades: 0,
+            avg_trade_duration_ms: 0,
+            volatility: 0.0,
+            beta: 0.0,
+            alpha: 0.0,
         }
     }
     

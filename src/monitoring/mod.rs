@@ -9,11 +9,14 @@ pub mod metrics;
 pub mod resource;
 pub mod progress;
 pub mod websocket;
+pub mod websocket_tests;
 pub mod dashboard;
+pub mod types;
 
 pub use monitor::{PerformanceMonitor, MonitorConfig};
 pub use metrics::{SystemMetrics, OptimizationMetrics};
 pub use resource::{ResourceMonitor, ResourceUsage};
-pub use progress::{ProgressTracker, JobProgress};
-pub use websocket::{WebSocketServer, MonitoringUpdate};
-pub use dashboard::{DashboardData, MetricSnapshot};
+pub use progress::ProgressTracker;
+pub use websocket::WebSocketServer;
+pub use dashboard::DashboardData;
+pub use types::{MonitoringUpdate, UpdateType};

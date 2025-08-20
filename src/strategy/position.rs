@@ -1,6 +1,7 @@
 //! Position tracking and management
 
-use crate::strategy::{OrderSide, OrderFill};
+use crate::strategy::{OrderSide};
+use crate::strategy::traits::OrderFill;
 use chrono::{DateTime, Utc};
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};

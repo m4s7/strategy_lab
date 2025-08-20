@@ -14,4 +14,4 @@ pub use engine::{BacktestEngine, BacktestConfig, BacktestResult};
 pub use executor::{StrategyExecutor, ExecutionContext};
 pub use models::{TransactionCostModel, SlippageModel, LatencyModel};
 pub use metrics::{PerformanceMetrics, RiskMetrics, TradeStatistics};
-pub use report::{BacktestReport, ReportGenerator};
+pub use report::BacktestReport;

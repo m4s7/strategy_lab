@@ -1,7 +1,7 @@
 //! System resource monitoring
 
 use serde::{Deserialize, Serialize};
-use sysinfo::{System, SystemExt, ProcessExt, CpuExt};
+use sysinfo::System;
 use std::sync::{Arc, Mutex};
 
 /// Resource usage data

@@ -14,9 +14,12 @@ pub mod examples;
 
 pub use traits::{Strategy, StrategyContext, StrategyMetrics};
 pub use config::{StrategyConfig, StrategyParameters};
-pub use orders::{Order, OrderType, OrderSide};
+pub use orders::{Order, OrderType, OrderSide, OrderFill};
 pub use position::{Position, PositionManager};
 pub use signals::{Signal, SignalType};
 
 // Re-export example strategies
 pub use examples::{OrderBookImbalanceStrategy, BidAskBounceStrategy};
+
+#[cfg(test)]
+mod strategy_tests;

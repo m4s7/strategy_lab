@@ -1,7 +1,8 @@
 //! Genetic algorithm optimization
 
-use crate::backtesting::{BacktestEngine, BacktestConfig, BacktestResult};
-use crate::strategy::{Strategy, ParameterValue};
+use crate::backtesting::{BacktestEngine, BacktestConfig, BacktestResult, PerformanceMetrics};
+use crate::strategy::Strategy;
+use crate::strategy::config::ParameterValue;
 use crate::optimization::{OptimizationResult, ParameterSet, ObjectiveFunction};
 use rand::prelude::*;
 use rayon::prelude::*;
@@ -153,6 +154,10 @@ impl GeneticOptimizer {
                         backtest_result: result.clone(),
                         objective_value: fitness,
                         timestamp: chrono::Utc::now(),
+                        metrics: PerformanceMetrics::new(),
+                        equity_curve: Vec::new(),
+                        trade_analysis: None,
+                        parameter_sensitivity: None,
                     })
                 } else {
                     None
@@ -199,7 +204,7 @@ impl GeneticOptimizer {
                 
                 Ok(())
             })
-            .collect::<Result<Vec<_>, Box<dyn std::error::Error>>>()?;
+            .collect::<Result<Vec<_>, _>>()?;
         
         // Update best individual
         if let Some(best) = self.population.iter()

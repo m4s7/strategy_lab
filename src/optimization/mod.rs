@@ -14,6 +14,6 @@ pub mod results;
 pub use grid_search::{GridSearchOptimizer, GridSearchConfig};
 pub use genetic::{GeneticOptimizer, GeneticConfig};
 pub use walk_forward::{WalkForwardAnalysis, WalkForwardConfig};
-pub use parallel::{ParallelOptimizer, OptimizationJob};
+pub use parallel::ParallelOptimizer;
 pub use objective::{ObjectiveFunction, OptimizationObjective};
 pub use results::{OptimizationResult, ParameterSet, OptimizationReport};

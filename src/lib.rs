@@ -15,6 +15,13 @@ pub mod optimization;
 pub mod monitoring;
 pub mod api;
 pub mod reporting;
+pub mod analysis;
+pub mod workflow;
+pub mod database;
+pub mod jobs;
+pub mod statistics;
+pub mod performance;
+pub mod fault_tolerance;
 
 // Re-export commonly used types
 pub use data::{TickData, DataLevel, MarketDataType, IngestionConfig};

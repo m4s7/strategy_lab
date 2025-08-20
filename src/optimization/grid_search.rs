@@ -1,7 +1,8 @@
 //! Grid search optimization implementation
 
-use crate::backtesting::{BacktestEngine, BacktestConfig, BacktestResult};
-use crate::strategy::{Strategy, StrategyConfig, ParameterValue};
+use crate::backtesting::{BacktestEngine, BacktestConfig, BacktestResult, PerformanceMetrics};
+use crate::strategy::{Strategy, StrategyConfig};
+use crate::strategy::config::ParameterValue;
 use crate::optimization::{OptimizationResult, ParameterSet, ObjectiveFunction};
 use rayon::prelude::*;
 use rust_decimal::Decimal;
@@ -166,6 +167,10 @@ impl GridSearchOptimizer {
                                 backtest_result: backtest_result.clone(),
                                 objective_value: config.objective.calculate(&backtest_result),
                                 timestamp: chrono::Utc::now(),
+                                metrics: PerformanceMetrics::new(),
+                                equity_curve: Vec::new(),
+                                trade_analysis: None,
+                                parameter_sensitivity: None,
                             };
                             
                             // Update results

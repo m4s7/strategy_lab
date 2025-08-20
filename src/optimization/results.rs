@@ -1,7 +1,7 @@
 //! Optimization results and reporting
 
-use crate::backtesting::BacktestResult;
-use crate::strategy::ParameterValue;
+use crate::backtesting::{BacktestResult, PerformanceMetrics};
+use crate::strategy::config::ParameterValue;
 use chrono::{DateTime, Utc};
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
@@ -14,6 +14,10 @@ pub struct OptimizationResult {
     pub backtest_result: BacktestResult,
     pub objective_value: f64,
     pub timestamp: DateTime<Utc>,
+    pub metrics: PerformanceMetrics,
+    pub equity_curve: Vec<f64>,
+    pub trade_analysis: Option<serde_json::Value>,
+    pub parameter_sensitivity: Option<serde_json::Value>,
 }
 
 /// Set of parameters
@@ -35,6 +39,14 @@ impl ParameterSet {
     
     pub fn get_decimal(&self, name: &str) -> Option<Decimal> {
         self.parameters.get(name).and_then(|v| v.as_decimal())
+    }
+    
+    pub fn from_hashmap(params: HashMap<String, f64>) -> Self {
+        let mut parameter_set = Self::new();
+        for (key, value) in params {
+            parameter_set.parameters.insert(key, ParameterValue::Float(value));
+        }
+        parameter_set
     }
 }
 

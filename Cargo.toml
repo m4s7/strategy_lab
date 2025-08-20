@@ -31,8 +31,8 @@ toml = "0.8"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
-# Time & Dates
-chrono = { version = "0.4", features = ["serde"] }
+# Time & Dates - pinned to avoid conflict with Arrow
+chrono = { version = "0.4.38", features = ["serde"] }
 
 # Database
 sqlx = { version = "0.8", features = ["runtime-tokio-rustls", "postgres", "chrono", "uuid"] }
@@ -50,11 +50,26 @@ rand = "0.8"
 # Additional utilities
 serde_yaml = "0.9"
 
+# Custom backtesting implementation - removed hftbacktest due to dependency conflicts
+# hftbacktest = "0.9.1"
+
+# Statistical libraries
+statrs = "0.17"
+
+# Redis for job queueing
+redis = { version = "0.26", features = ["tokio-comp", "connection-manager"] }
+
 # Web server
 axum = { version = "0.6", features = ["ws"] }
 tower = "0.4"
 tower-http = { version = "0.4", features = ["cors"] }
 futures = "0.3"
+
+# WebSocket
+tokio-tungstenite = "0.21"
+
+# Bytes for Parquet reader
+bytes = "1.5"
 
 [dev-dependencies]
 criterion = { version = "0.5", features = ["html_reports"] }

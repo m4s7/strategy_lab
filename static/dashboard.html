@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Strategy Lab - Real-time Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        
+        .header {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1rem 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .header .subtitle {
+            opacity: 0.8;
+            font-size: 1.1rem;
+        }
+        
+        .container {
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card h3 {
+            margin-bottom: 1rem;
+            color: #4fc3f7;
+            font-size: 1.3rem;
+        }
+        
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.8rem;
+            padding: 0.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+        
+        .metric-label {
+            font-weight: 500;
+        }
+        
+        .metric-value {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        
+        .positive {
+            color: #4caf50;
+        }
+        
+        .negative {
+            color: #f44336;
+        }
+        
+        .neutral {
+            color: #ff9800;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+        
+        .status-running {
+            background: #4caf50;
+            animation: pulse 2s infinite;
+        }
+        
+        .status-stopped {
+            background: #f44336;
+        }
+        
+        .status-pending {
+            background: #ff9800;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 0.5rem 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4caf50, #81c784);
+            transition: width 0.3s ease;
+        }
+        
+        .log-container {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .log-entry {
+            margin-bottom: 0.3rem;
+            padding: 0.2rem 0;
+        }
+        
+        .log-timestamp {
+            color: #81c784;
+            margin-right: 0.5rem;
+        }
+        
+        .log-level-info {
+            color: #4fc3f7;
+        }
+        
+        .log-level-warn {
+            color: #ff9800;
+        }
+        
+        .log-level-error {
+            color: #f44336;
+        }
+        
+        .chart-placeholder {
+            width: 100%;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255, 255, 255, 0.6);
+            font-style: italic;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s ease;
+        }
+        
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .btn-primary {
+            background: #4fc3f7;
+        }
+        
+        .btn-primary:hover {
+            background: #29b6f6;
+        }
+        
+        .connection-status {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+        
+        .connected {
+            background: #4caf50;
+        }
+        
+        .disconnected {
+            background: #f44336;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Strategy Lab Dashboard</h1>
+        <div class="subtitle">Real-time High-Frequency Trading Strategy Monitor</div>
+    </div>
+    
+    <div class="connection-status" id="connectionStatus">
+        <span class="status-indicator status-stopped"></span>
+        Disconnected
+    </div>
+    
+    <div class="container">
+        <div class="controls">
+            <button class="btn btn-primary" onclick="startStrategy()">Start Strategy</button>
+            <button class="btn" onclick="stopStrategy()">Stop Strategy</button>
+            <button class="btn" onclick="resetMetrics()">Reset Metrics</button>
+            <button class="btn" onclick="exportData()">Export Data</button>
+        </div>
+        
+        <div class="grid">
+            <div class="card">
+                <h3>Strategy Performance</h3>
+                <div class="metric">
+                    <span class="metric-label">Total PnL:</span>
+                    <span class="metric-value positive" id="totalPnl">$0.00</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Daily Return:</span>
+                    <span class="metric-value neutral" id="dailyReturn">0.00%</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Sharpe Ratio:</span>
+                    <span class="metric-value" id="sharpeRatio">0.00</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Max Drawdown:</span>
+                    <span class="metric-value negative" id="maxDrawdown">0.00%</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Win Rate:</span>
+                    <span class="metric-value" id="winRate">0.00%</span>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3>Trading Activity</h3>
+                <div class="metric">
+                    <span class="metric-label">Total Trades:</span>
+                    <span class="metric-value" id="totalTrades">0</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Winning Trades:</span>
+                    <span class="metric-value positive" id="winningTrades">0</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Losing Trades:</span>
+                    <span class="metric-value negative" id="losingTrades">0</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Avg Trade Duration:</span>
+                    <span class="metric-value" id="avgDuration">0ms</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Position Size:</span>
+                    <span class="metric-value" id="positionSize">0</span>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3>System Status</h3>
+                <div class="metric">
+                    <span class="metric-label">Strategy Status:</span>
+                    <span class="metric-value" id="strategyStatus">
+                        <span class="status-indicator status-stopped"></span>Stopped
+                    </span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Market Data:</span>
+                    <span class="metric-value" id="marketDataStatus">
+                        <span class="status-indicator status-stopped"></span>Disconnected
+                    </span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Order Manager:</span>
+                    <span class="metric-value" id="orderManagerStatus">
+                        <span class="status-indicator status-stopped"></span>Inactive
+                    </span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Risk Manager:</span>
+                    <span class="metric-value" id="riskManagerStatus">
+                        <span class="status-indicator status-running"></span>Active
+                    </span>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3>Risk Metrics</h3>
+                <div class="metric">
+                    <span class="metric-label">Portfolio Value:</span>
+                    <span class="metric-value" id="portfolioValue">$50,000.00</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Available Margin:</span>
+                    <span class="metric-value" id="availableMargin">$49,500.00</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Daily VaR (95%):</span>
+                    <span class="metric-value" id="dailyVar">$0.00</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Position Risk:</span>
+                    <span class="metric-value" id="positionRisk">Low</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="grid">
+            <div class="card">
+                <h3>Performance Chart</h3>
+                <div class="chart-placeholder">
+                    Real-time P&L chart will be displayed here
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3>Order Book</h3>
+                <div class="chart-placeholder">
+                    MNQ order book visualization
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h3>System Logs</h3>
+            <div class="log-container" id="logContainer">
+                <div class="log-entry">
+                    <span class="log-timestamp">12:00:00.000</span>
+                    <span class="log-level-info">[INFO]</span>
+                    Strategy Lab dashboard initialized
+                </div>
+                <div class="log-entry">
+                    <span class="log-timestamp">12:00:01.234</span>
+                    <span class="log-level-info">[INFO]</span>
+                    Waiting for WebSocket connection...
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let ws = null;
+        let reconnectInterval = null;
+        
+        function connectWebSocket() {
+            try {
+                ws = new WebSocket('ws://localhost:8080/ws');
+                
+                ws.onopen = function() {
+                    updateConnectionStatus(true);
+                    addLogEntry('Connected to Strategy Lab server', 'info');
+                    if (reconnectInterval) {
+                        clearInterval(reconnectInterval);
+                        reconnectInterval = null;
+                    }
+                };
+                
+                ws.onmessage = function(event) {
+                    try {
+                        const data = JSON.parse(event.data);
+                        updateDashboard(data);
+                    } catch (e) {
+                        console.error('Failed to parse WebSocket message:', e);
+                    }
+                };
+                
+                ws.onclose = function() {
+                    updateConnectionStatus(false);
+                    addLogEntry('Disconnected from server', 'warn');
+                    
+                    if (!reconnectInterval) {
+                        reconnectInterval = setInterval(() => {
+                            addLogEntry('Attempting to reconnect...', 'info');
+                            connectWebSocket();
+                        }, 5000);
+                    }
+                };
+                
+                ws.onerror = function(error) {
+                    addLogEntry('WebSocket error: ' + error, 'error');
+                };
+                
+            } catch (e) {
+                updateConnectionStatus(false);
+                addLogEntry('Failed to connect: ' + e.message, 'error');
+            }
+        }
+        
+        function updateConnectionStatus(connected) {
+            const statusEl = document.getElementById('connectionStatus');
+            const indicator = statusEl.querySelector('.status-indicator');
+            
+            if (connected) {
+                statusEl.textContent = 'Connected';
+                statusEl.className = 'connection-status connected';
+                indicator.className = 'status-indicator status-running';
+            } else {
+                statusEl.textContent = 'Disconnected';
+                statusEl.className = 'connection-status disconnected';
+                indicator.className = 'status-indicator status-stopped';
+            }
+            
+            statusEl.prepend(indicator);
+        }
+        
+        function updateDashboard(data) {
+            if (data.type === 'metrics') {
+                updateMetrics(data.payload);
+            } else if (data.type === 'status') {
+                updateStatus(data.payload);
+            } else if (data.type === 'log') {
+                addLogEntry(data.payload.message, data.payload.level);
+            }
+        }
+        
+        function updateMetrics(metrics) {
+            const formatCurrency = (value) => '$' + value.toFixed(2);
+            const formatPercent = (value) => (value * 100).toFixed(2) + '%';
+            
+            document.getElementById('totalPnl').textContent = formatCurrency(metrics.total_pnl || 0);
+            document.getElementById('dailyReturn').textContent = formatPercent(metrics.daily_return || 0);
+            document.getElementById('sharpeRatio').textContent = (metrics.sharpe_ratio || 0).toFixed(2);
+            document.getElementById('maxDrawdown').textContent = formatPercent(metrics.max_drawdown || 0);
+            document.getElementById('winRate').textContent = formatPercent(metrics.win_rate || 0);
+            
+            document.getElementById('totalTrades').textContent = metrics.total_trades || 0;
+            document.getElementById('winningTrades').textContent = metrics.winning_trades || 0;
+            document.getElementById('losingTrades').textContent = metrics.losing_trades || 0;
+            document.getElementById('avgDuration').textContent = (metrics.avg_duration || 0) + 'ms';
+            document.getElementById('positionSize').textContent = metrics.position_size || 0;
+            
+            document.getElementById('portfolioValue').textContent = formatCurrency(metrics.portfolio_value || 50000);
+            document.getElementById('availableMargin').textContent = formatCurrency(metrics.available_margin || 49500);
+            document.getElementById('dailyVar').textContent = formatCurrency(metrics.daily_var || 0);
+            document.getElementById('positionRisk').textContent = metrics.position_risk || 'Low';
+        }
+        
+        function updateStatus(status) {
+            updateStatusIndicator('strategyStatus', status.strategy_running);
+            updateStatusIndicator('marketDataStatus', status.market_data_connected);
+            updateStatusIndicator('orderManagerStatus', status.order_manager_active);
+        }
+        
+        function updateStatusIndicator(elementId, isActive) {
+            const element = document.getElementById(elementId);
+            const indicator = element.querySelector('.status-indicator');
+            
+            if (isActive) {
+                indicator.className = 'status-indicator status-running';
+            } else {
+                indicator.className = 'status-indicator status-stopped';
+            }
+        }
+        
+        function addLogEntry(message, level = 'info') {
+            const container = document.getElementById('logContainer');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            
+            const timestamp = new Date().toLocaleTimeString('en-US', { 
+                hour12: false, 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                second: '2-digit',
+                fractionalSecondDigits: 3
+            });
+            
+            entry.innerHTML = `
+                <span class="log-timestamp">${timestamp}</span>
+                <span class="log-level-${level}">[${level.toUpperCase()}]</span>
+                ${message}
+            `;
+            
+            container.appendChild(entry);
+            container.scrollTop = container.scrollHeight;
+            
+            // Keep only last 100 log entries
+            while (container.children.length > 100) {
+                container.removeChild(container.firstChild);
+            }
+        }
+        
+        function startStrategy() {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ action: 'start_strategy' }));
+                addLogEntry('Start strategy command sent', 'info');
+            } else {
+                addLogEntry('Cannot send command: not connected', 'error');
+            }
+        }
+        
+        function stopStrategy() {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ action: 'stop_strategy' }));
+                addLogEntry('Stop strategy command sent', 'info');
+            } else {
+                addLogEntry('Cannot send command: not connected', 'error');
+            }
+        }
+        
+        function resetMetrics() {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ action: 'reset_metrics' }));
+                addLogEntry('Reset metrics command sent', 'info');
+            } else {
+                addLogEntry('Cannot send command: not connected', 'error');
+            }
+        }
+        
+        function exportData() {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ action: 'export_data' }));
+                addLogEntry('Export data command sent', 'info');
+            } else {
+                addLogEntry('Cannot send command: not connected', 'error');
+            }
+        }
+        
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            addLogEntry('Dashboard loaded, connecting to server...', 'info');
+            connectWebSocket();
+            
+            // Update timestamps every second
+            setInterval(() => {
+                // Additional periodic updates can go here
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

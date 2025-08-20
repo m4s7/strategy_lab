@@ -347,3 +347,7 @@ impl OrderBookManager {
         report
     }
 }
+
+#[cfg(test)]
+#[path = "order_book_tests.rs"]
+mod order_book_tests;

@@ -11,6 +11,9 @@ pub struct Order {
     /// Unique order identifier
     pub id: String,
     
+    /// Trading symbol
+    pub symbol: String,
+    
     /// Order type
     pub order_type: OrderType,
     
@@ -19,6 +22,9 @@ pub struct Order {
     
     /// Order quantity
     pub quantity: i32,
+    
+    /// Price (for any order type)
+    pub price: Option<Decimal>,
     
     /// Limit price (for limit orders)
     pub limit_price: Option<Decimal>,
@@ -41,9 +47,11 @@ impl Order {
     pub fn market(side: OrderSide, quantity: i32) -> Self {
         Self {
             id: Uuid::new_v4().to_string(),
+            symbol: "MNQZ24".to_string(),  // Default symbol
             order_type: OrderType::Market,
             side,
             quantity,
+            price: None,
             limit_price: None,
             stop_price: None,
             time_in_force: TimeInForce::IOC,
@@ -56,9 +64,11 @@ impl Order {
     pub fn limit(side: OrderSide, quantity: i32, price: Decimal) -> Self {
         Self {
             id: Uuid::new_v4().to_string(),
+            symbol: "MNQZ24".to_string(),  // Default symbol
             order_type: OrderType::Limit,
             side,
             quantity,
+            price: Some(price),
             limit_price: Some(price),
             stop_price: None,
             time_in_force: TimeInForce::GTC,
@@ -71,9 +81,11 @@ impl Order {
     pub fn stop(side: OrderSide, quantity: i32, stop_price: Decimal) -> Self {
         Self {
             id: Uuid::new_v4().to_string(),
+            symbol: "MNQZ24".to_string(),  // Default symbol
             order_type: OrderType::Stop,
             side,
             quantity,
+            price: Some(stop_price),
             limit_price: None,
             stop_price: Some(stop_price),
             time_in_force: TimeInForce::GTC,
@@ -86,9 +98,11 @@ impl Order {
     pub fn stop_limit(side: OrderSide, quantity: i32, stop_price: Decimal, limit_price: Decimal) -> Self {
         Self {
             id: Uuid::new_v4().to_string(),
+            symbol: "MNQZ24".to_string(),  // Default symbol
             order_type: OrderType::StopLimit,
             side,
             quantity,
+            price: Some(limit_price),
             limit_price: Some(limit_price),
             stop_price: Some(stop_price),
             time_in_force: TimeInForce::GTC,
@@ -197,4 +211,26 @@ pub struct ExecutionReport {
     pub commission: Decimal,
     pub timestamp: DateTime<Utc>,
     pub reject_reason: Option<String>,
+}
+
+/// Order fill information
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct OrderFill {
+    /// Order identifier
+    pub order_id: String,
+    
+    /// Fill timestamp
+    pub timestamp: DateTime<Utc>,
+    
+    /// Fill price
+    pub price: Decimal,
+    
+    /// Fill quantity
+    pub quantity: i32,
+    
+    /// Order side
+    pub side: OrderSide,
+    
+    /// Commission paid
+    pub commission: Decimal,
 }

@@ -7,9 +7,10 @@
 use crate::data::TickData;
 use crate::market::OrderBookState;
 use crate::strategy::{
-    Order, OrderFill, OrderSide, Position, Signal, SignalType,
+    Order, OrderSide, Position, Signal, SignalType,
     Strategy, StrategyConfig, StrategyContext, StrategyMetrics,
 };
+use crate::strategy::traits::OrderFill;
 use rust_decimal::Decimal;
 use tracing::{debug, info};
 

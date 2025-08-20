@@ -2,7 +2,7 @@
 
 use crate::monitoring::{
     ResourceMonitor, ProgressTracker, SystemMetrics, OptimizationMetrics,
-    WebSocketServer, MonitoringUpdate
+    WebSocketServer, MonitoringUpdate, UpdateType
 };
 use serde::{Deserialize, Serialize};
 use std::sync::{Arc, Mutex};
@@ -98,7 +98,7 @@ impl PerformanceMonitor {
         
         // Start WebSocket server if configured
         if let Some(ref mut ws) = self.websocket_server {
-            ws.start().await?;
+            ws.start("127.0.0.1:8080").await?;
         }
         
         // Start monitoring loop
@@ -203,25 +203,35 @@ impl PerformanceMonitor {
         }
         
         MonitoringUpdate {
+            update_type: UpdateType::SystemMetrics,
             timestamp: chrono::Utc::now(),
-            resources,
-            progress,
-            system_metrics: sys_metrics,
-            optimization_metrics: opt_metrics,
-            alerts,
+            data: serde_json::json!({
+                "resources": resources,
+                "progress": progress,
+                "system_metrics": sys_metrics,
+                "optimization_metrics": opt_metrics,
+                "alerts": alerts,
+            }),
         }
     }
     
     /// Process monitoring update
     async fn process_update(&mut self, update: MonitoringUpdate) {
-        // Log alerts
-        for alert in &update.alerts {
-            warn!("{}", alert);
+        // Log alerts if present
+        if let Some(alerts) = update.data.get("alerts") {
+            if let Some(alerts_array) = alerts.as_array() {
+                for alert in alerts_array {
+                    if let Some(alert_str) = alert.as_str() {
+                        warn!("{}", alert_str);
+                    }
+                }
+            }
         }
         
         // Send to WebSocket clients
         if let Some(ref mut ws) = self.websocket_server {
-            ws.broadcast(update.clone()).await;
+            // ws.broadcast(update.clone()).await;
+            // TODO: Implement broadcast method
         }
         
         // Save to file if configured
@@ -229,7 +239,11 @@ impl PerformanceMonitor {
             self.save_update(&update).await;
         }
         
-        debug!("Monitoring update processed: {} jobs active", update.progress.len());
+        let jobs_count = update.data.get("progress")
+            .and_then(|p| p.as_object())
+            .map(|obj| obj.len())
+            .unwrap_or(0);
+        debug!("Monitoring update processed: {} jobs active", jobs_count);
     }
     
     /// Save monitoring update to file

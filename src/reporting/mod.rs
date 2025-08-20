@@ -132,7 +132,7 @@ pub struct DataPeriod {
     pub trading_days: u32,
 }
 
-Impl Report {
+impl Report {
     /// Generate a comprehensive report
     pub fn generate(
         backtest: Option<BacktestResult>,
