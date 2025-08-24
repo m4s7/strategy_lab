@@ -87,3 +87,11 @@ panic = "abort"
 
 [profile.dev]
 opt-level = 1
+
+[[bin]]
+name = "api_server"
+path = "src/bin/api_server.rs"
+
+[[bin]]
+name = "server"
+path = "src/bin/server.rs"

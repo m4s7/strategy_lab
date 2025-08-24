@@ -55,6 +55,14 @@ pub struct WebSocketConnection {
 }
 
 #[derive(Debug, Clone)]
+pub struct ConnectionState {
+    pub id: uuid::Uuid,
+    pub connected_at: chrono::DateTime<chrono::Utc>,
+    pub last_ping: chrono::DateTime<chrono::Utc>,
+    pub subscriptions: Vec<String>,
+}
+
+#[derive(Debug, Clone)]
 pub enum SubscriptionType {
     ProgressUpdates,
     SystemMetrics,

@@ -48,3 +48,34 @@ coverage/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Playwright MCP
+.playwright-mcp/
+
+# Standalone API build
+standalone_api/target/
+standalone_api/Cargo.lock
+
+# Frontend build artifacts
+frontend/.next/
+frontend/out/
+
+# TypeScript
+*.tsbuildinfo
+frontend/next-env.d.ts
+
+# Test scripts
+test_all_endpoints.sh
+
+# Deployment scripts  
+deploy.sh
+setup_nginx.sh
+
+# Service files
+*.service
+
+# PostCSS config
+frontend/postcss.config.js
+
+# Public assets (if auto-generated)
+frontend/public/.gitkeep

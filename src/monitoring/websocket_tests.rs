@@ -5,11 +5,10 @@
 
 use crate::monitoring::{
     WebSocketServer, MonitoringUpdate, PerformanceMonitor,
-    ResourceUsage, UpdateType
+    ResourceUsage, UpdateType, websocket::ConnectionState
 };
 use crate::jobs::JobStatus;
 use crate::monitoring::progress::ProgressUpdate;
-use crate::jobs::JobStatus;
 use std::sync::{Arc, atomic::{AtomicBool, Ordering}};
 use std::time::{Duration, Instant};
 use tokio::sync::{mpsc, RwLock};

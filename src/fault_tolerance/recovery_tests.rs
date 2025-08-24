@@ -4,10 +4,14 @@
 //! for the Strategy Lab high-frequency trading system.
 
 use super::*;
+use crate::fault_tolerance::error_recovery::{
+    RecoveryConfig, ErrorType, ErrorSeverity, SystemState, UserImpact
+};
 use std::time::{Duration, Instant};
 use std::sync::{Arc, atomic::{AtomicU64, AtomicBool, Ordering}};
 use tokio::sync::{mpsc, RwLock, Mutex};
 use uuid::Uuid;
+use std::collections::HashMap;
 use chrono::Utc;
 use serde_json::json;
 
