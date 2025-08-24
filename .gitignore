@@ -67,10 +67,6 @@ frontend/next-env.d.ts
 # Test scripts
 test_all_endpoints.sh
 
-# Deployment scripts  
-deploy.sh
-setup_nginx.sh
-
 # Service files
 *.service
 
